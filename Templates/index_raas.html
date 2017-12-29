@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block head_js %}
+<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+{% endblock %}
+
+
+{% block content %}
+<div class="login-pg-raas">
+	<div class="row">
+		<div class="container-fluid">
+			{% csrf_token %}
+			<div id="okta-login-container"></div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+	raas_flag = true;
+</script>
+<script src="{% static 'js/oidc_css.js' %}" type="text/javascript"></script>
+{% endblock %}

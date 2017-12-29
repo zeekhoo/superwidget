@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    {% load bootstrap3 %}
+    {% bootstrap_javascript jquery=1 %}
+    {% load static %}
+    <script src="{% static 'js/getCookie.js' %}" type="text/javascript"></script>
+    <script src="{% static 'js/oauth2.js' %}" type="text/javascript"></script>
+
+    {% csrf_token %}
+    <script type="text/javascript">
+    window.onload=oauth2Callback('/oauth2/postback', '/');
+    </script>
+</body>
+</html>

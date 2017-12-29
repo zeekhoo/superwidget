@@ -1,0 +1,11 @@
+#okta-sign-in .auth-header{
+    display: none;
+}
+
+.o-form-has-errors{
+    color: #5F5E5E;
+}
+
+#okta-sign-in .auth-divider .auth-divider-text{
+    background: transparent;
+}

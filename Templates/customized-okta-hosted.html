@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Strict//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CUSTOM LOGIN PAGE</title>
+
+    <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
+	<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+
+
+    <style>
+          body {
+            background-image: url('https://c1.staticflickr.com/5/4049/4366064520_85d4879191_b.jpg');
+            background-repeat: no-repeat;
+            background-position: center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+          }
+    </style>
+
+</head>
+<body>
+    <div id="okta-login-container"></div>
+
+
+    <script type="text/javascript">
+		var baseUrl = 'https://dev-881615.oktapreview.com';
+
+        var config = {
+        	baseUrl: baseUrl,
+			features: {
+				rememberMe: true,
+				autoPush: false,
+				multiOptionalFactorEnroll: true,
+				smsRecovery: true,
+				callRecovery: true,
+				selfServiceUnlock: true,
+			}
+        };
+
+        var oktaSignIn = new OktaSignIn(config);
+        oktaSignIn.renderEl(
+        	{ el: '#okta-login-container' },
+			function success(res) {
+				console.log(res);
+				if (res.status === 'SUCCESS') {
+					res.session.setCookieAndRedirect(baseUrl + '/home/admin-entry');
+				}
+			},
+            function(error) {
+                console.log(error.message, error);
+            }
+        );
+    </script>
+</body>
+</html>

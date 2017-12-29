@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block head_js %}
+<script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.11.0/okta-auth-js.min.js" type="text/javascript"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+	<div class="login-pg">
+		<div class="no-widget">
+			<div class="container-fluid">
+				<div class="col-md-6">
+					<div id="login_form">
+						<form class="form-inline" name="LoginForm">
+							<div class="form-group">
+								<input type="text" class="form-control" id="un" name="username" placeholder="Username">
+							</div>
+							<div class="form-group">
+								<input type="password" class="form-control" id="pw" name="password" placeholder="Password">
+							</div>
+							<div class="form-group">
+								<button type="button" onclick="do_login(this.form.username.value, this.form.password.value)"
+									  class="btn btn-block btn-primary">Sign in</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% load static %}
+{% block page_js %}
+<script src="{% static 'js/custom_ui.js' %}" type="text/javascript"></script>
+{% endblock %}
+

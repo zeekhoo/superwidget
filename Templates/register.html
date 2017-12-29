@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+  <div class="reg_page">
+    <div id="register">
+        <form class="form-horizontal" name="RegistrationForm" action="{% url 'register_user' %}" method="post">
+          {% csrf_token %}
+          <h3>All fields are required</h3>
+
+          <div class="form-group {% if form.firstName.errors %} has-error {% endif %}">
+              <p>{{ form.firstName.errors }}</p>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name">
+            </div>
+          </div>
+          <div class="form-group {% if form.lastName.errors %} has-error {% endif %}">
+              <p>{{ form.lastName.errors }}</p>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name">
+            </div>
+          </div>
+
+          <div class="form-group {% if form.email.errors %} has-error {% endif %}">
+              <p>{{ form.email.errors }}</p>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="email" name="email" placeholder="Email">
+            </div>
+          </div>
+          <div class="form-group {% if form.password1.errors %} has-error {% endif %}">
+              <p>{{ form.password1.errors }}</p>
+            <div class="col-md-4">
+              <input type="password" class="form-control" id="password1" name="password1" placeholder="Password">
+            </div>
+          </div>
+          <div class="form-group {% if form.password2.errors %} has-error {% endif %}">
+              <p>{{ form.password2.errors }}</p>
+            <div class="col-md-4">
+              <input type="password" class="form-control" id="password2" name="password2" placeholder="Password (again)">
+            </div>
+          </div>
+          <div class="form-group hidden">
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="redirect" name="redirect">
+            </div>
+          </div>
+          <div class="form-group hidden">
+            <div class="col-sm-2">
+              <input type="text" class="form-control" id="lang" name="lang">
+            </div>
+          </div>
+
+          <div class="form-group">
+            {% if form.errors %}
+            <p>{{ form.non_field_errors }}</p>
+            {% endif %}
+            <div class="col-sm-offset-0 col-sm-4">
+              <button type="submit" value="Register" class="btn btn-block btn-primary">Register</button>
+            </div>
+          </div>
+        </form>
+    </div>
+    Already registered? <a href="{% url 'home' %}">Click here to login</a>
+  </div>
+</div>
+{% endblock %}

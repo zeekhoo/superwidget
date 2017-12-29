@@ -1,0 +1,15 @@
+venv
+*.DS_Store
+*.pyc
+__pycache__
+*.sqlite3
+.idea/*
+Templates/z*
+node_modules
+static/css/okta-sign-in.min.css
+static/js/okta*
+static/font
+static/img
+static/labels
+.env_dev
+.env_preview
