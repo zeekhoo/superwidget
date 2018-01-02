@@ -8,6 +8,7 @@ Templates/z*
 node_modules
 static/css/okta-sign-in.min.css
 static/js/okta*
+static/js/z*
 static/font
 static/img
 static/labels

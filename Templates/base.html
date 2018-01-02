@@ -36,6 +36,7 @@
         var lnkd = '{{ lnkd }}';
         var raas_flag = false;
     </script>
+
     {% block head_js %}{% endblock head_js %}
 
     {% block head %}{% endblock head %}
@@ -69,9 +70,6 @@
                 <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>
                 <li><a href="{% url 'customized_okta_hosted' %}">"Custom Sign-in"</a></li>
                 {% else %}
-                <!--<li><a href="{% url 'app_b' %}">App B</a></li>-->
-                <!--<li><a href="{% url 'app_b' %}">App C</a></li>-->
-                <!--<li><a href="{% url 'app_b' %}">App D</a></li>-->
                 <li><a href="{% url 'tokens' %}">Show Tokens</a></li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% endif %}

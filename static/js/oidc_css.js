@@ -1,12 +1,8 @@
-//Note: "org", "iss" and "aud" variables were loaded outside this script
+//must initialize "org", "iss", "aud" and "raas_flag" variables outside this script
 var base_url = 'https://' + org;            //e.g. 'https://zeekhoo.okta.com'
 var issuer = base_url + '/oauth2/' + iss;   //e.g. 'https://zeekhoo.okta.com/oauth2/ausxkcyonq9Ht1uvi1t6'
-var client_a = aud;                        //e.g. 'zXkxpyie6BCcutIWnk3B'
-
-var client_b = '0oa4ox4jzjHj9vWgR1t7';
-var client_id = client_a;
+var client_id = aud;                        //e.g. 'zXkxpyie6BCcutIWnk3B'
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
-
 
 var oktaSignIn = new OktaSignIn({
     baseUrl: base_url,
@@ -35,29 +31,21 @@ var oktaSignIn = new OktaSignIn({
     },
     i18n: {
         'en': {
-        'primaryauth.submit': 'Login',
-        'needhelp': 'Need help?',
-        'password.forgot.email.or.username.placeholder': 'Username',
-        'security.favorite_security_question': 'What was the super secret password OneAmerica mailed to you?',
-        'password.forgot.emailSent.desc': 'Sent email to {0}. If you dont receive an email, please call (xxx)-yyy-zzzz',
+            'primaryauth.submit': 'Login',
+            'needhelp': 'Need help?',
+            'password.forgot.email.or.username.placeholder': 'Username',
         }
-    }
-});
-
-oktaSignIn.on('pageRendered', function(data) {
-    console.log('page=' + data.page);
-    console.log('url=' + window.location);
-    if(data.page==='mfa-verify'){
-        console.log('bingo!');
-//        oktaSignIn.hide();
     }
 });
 
 oktaSignIn.session.get(function (res) {
   console.log(res);
 
-  if (res.status === 'ACTIVE') {
-    get_profile(token);
+  var token = oktaSignIn.tokenManager.get('access_token');
+  console.log('token = ' + token);
+
+  if (res.status === 'ACTIVE' && token) {
+    get_profile(token.access_token);
   }
   else {
     console.log('no session. render the login widget');
@@ -75,8 +63,8 @@ oktaSignIn.session.get(function (res) {
         }
         if (res.status === 'SUCCESS') {
             console.log('success!');
-            var token = oktaSignIn.tokenManager.get('access_token').accessToken;
-            get_profile(token);
+            token = oktaSignIn.tokenManager.get('access_token');
+            get_profile(token.accessToken);
         }
       },
       function error(err) {
