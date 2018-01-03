@@ -1,9 +1,6 @@
 var baseUrl = 'https://' + org;           //e.g. 'https://zeekhoo.okta.com'
 var issuer = baseUrl + '/oauth2/' + iss;  //e.g. https://zeekhoo.okta.com/oauth2/ausxkcyonq9Ht1uvi1t6'
-var client_a = aud;                       //e.g. 'zXkxpyie6BCcutIWnk3B'
-
-var client_b = '0oa4ox4jzjHj9vWgR1t7';
-var client_id = client_a;
+var client_id = aud;                      //e.g. 'zXkxpyie6BCcutIWnk3B'
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
 
 

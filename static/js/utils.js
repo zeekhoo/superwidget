@@ -30,3 +30,22 @@ function get_profile(access_token) {
     }
 }
 
+
+function openInNewTab(url) {
+  var win = window.open(url, '_blank');
+  win.focus();
+}
+
+function link_to_widget_js() {
+    var js_location = '/static/js/oidc_css.js';
+
+    var url = del_auth_url.split('/')[1];
+
+    var pathArray = window.location.pathname.split('/');
+    if (pathArray[1]) {
+        if (pathArray[1] === url) {
+            js_location = '/static/js/oidc_idp.js'
+        }
+    }
+    openInNewTab(js_location);
+}

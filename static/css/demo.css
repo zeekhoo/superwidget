@@ -35,7 +35,21 @@
     display: none;
 }
 
+.navbar-login-alt {
+    display: none;
+}
+
 .no-widget {
     padding-top: 15px;
     padding-bottom: 500px;
+}
+
+.link-to-form {
+    margin: auto;
+    padding-top: 1px;
+    margin-top: -12px;
+    text-align: center;
+    background-color: white;
+    position: center;
+    width: 400px;
 }

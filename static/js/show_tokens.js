@@ -15,8 +15,10 @@ oktaSignIn.session.get(function (res) {
     var access_token_parts = access_token.split('.');
 
     document.getElementById('id_token').innerHTML = id_token;
+    document.getElementById('id_token_header').innerHTML = prettyPrint(window.atob(id_token_parts[0]));
     document.getElementById('id_token_decoded').innerHTML = prettyPrint(window.atob(id_token_parts[1]));
     document.getElementById('access_token').innerHTML = access_token;
+    document.getElementById('access_token_header').innerHTML = prettyPrint(window.atob(access_token_parts[0]));
     document.getElementById('access_token_decoded').innerHTML = prettyPrint(window.atob(access_token_parts[1]));
   }
 });

@@ -46,9 +46,6 @@ def view_home(request):
                     login(request, u)
             except Exception as e:
                 print('exception: {}'.format(e))
-
-        # if not request.user.is_authenticated:
-        #     return render(request, 'not_authenticated.html')
         return HttpResponseRedirect(reverse('profile'))
     else:
         print('no profile in request')
@@ -56,11 +53,16 @@ def view_home(request):
     return view_login(request)
 
 
+def not_authenticated(request):
+    return render(request, 'not_authenticated.html')
+
+
 def view_profile(request):
     if 'profile' in request.session:
         p = {'profile': request.session['profile']}
     else:
-        p = {}
+        return HttpResponseRedirect(reverse('not_authenticated'))
+
     return render(request, 'profile.html', p)
 
 

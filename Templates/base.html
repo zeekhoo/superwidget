@@ -35,6 +35,7 @@
         var fb = '{{ fb }}';
         var lnkd = '{{ lnkd }}';
         var raas_flag = false;
+        var del_auth_url = "{% url 'login_idp' %}";
     </script>
 
     {% block head_js %}{% endblock head_js %}
@@ -47,45 +48,63 @@
 
   <body>
       <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-          <div class="navbar-header">
-              {% if 'profile' not in request.session %}
-              <a class="navbar-brand" href="{% url 'login' %}">Login</a>
-              {% else %}
-              <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.given_name }}!</a>
-              {% endif %}
+          <div class="container-fluid">
+              <div class="navbar-header">
+                  {% if 'profile' not in request.session %}
+                  <a class="navbar-brand" href="{% url 'login' %}">Widget Login</a>
+                  {% else %}
+                  <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.given_name }}!</a>
+                  {% endif %}
 
-              <button type="button" class="navbar-toggle btn btn-link" data-toggle="collapse" data-target="#navbar-responsive-collapse">
-                <span class = "sr-only">Toggle navigation</span>
-                <span>Menu <b class = "caret"></b></span>
-              </button>
+                  <button type="button" class="navbar-toggle btn btn-link" data-toggle="collapse" data-target="#navbar-responsive-collapse">
+                    <span class = "sr-only">Toggle navigation</span>
+                    <span>Menu <b class = "caret"></b></span>
+                  </button>
+              </div>
+
+              <div class="navbar-collapse collapse" id="navbar-responsive-collapse">
+                  <ul class="nav navbar-nav">
+                      {% if 'profile' not in request.session %}
+                      <li><a href="{% url 'login_css' %}">Widget Custom css</a></li>
+                      <li><a href="{% url 'customized_okta_hosted' %}">"Okta Hosted" Login</a></li>
+                      <li><a href="{% url 'login_custom' %}">No-widget Login</a></li>
+                      <li><a href="{% url 'login_idp' %}">Del Auth</a></li>
+                      <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>
+                      {% else %}
+                      <li><a href="{% url 'tokens' %}">Show Tokens</a></li>
+                      <li><a href="{% url 'logout' %}">Logout</a></li>
+                      {% endif %}
+                  </ul>
+                  <div id="show-code">
+                      <ul class="nav navbar-nav navbar-right">
+                          <li style="font-size:11px;"><a href="#" onclick="link_to_widget_js()">Show me the widget code...</a></li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="navbar-login-alt" id="navbar-login-alt">
+                  <form class="navbar-form navbar-left" role="login">
+                      <div class="form-group">
+                          <input type="text" class="form-control" name="username" placeholder="Username">
+                          <input type="password" class="form-control" name="password" placeholder="Password">
+                      </div>
+                      <button type="button" class="btn btn-primary" onclick="do_login(this.form.username.value, this.form.password.value)">
+                          Sign In</button>
+                  </form>
+                  <ul class="nav navbar-nav navbar-right">
+                      <li style="font-size:11px;"><a href="/static/js/custom_ui.js" target="_blank">Show login Code...</a></li>
+                  </ul>
+
+              </div>
           </div>
-
-        <div class="navbar-collapse collapse" id="navbar-responsive-collapse">
-            <ul class="nav navbar-nav">
-                {% if 'profile' not in request.session %}
-                <li><a href="{% url 'login_css' %}">Custom css</a></li>
-                <li><a href="{% url 'login_custom' %}">No-widget Login</a></li>
-                <li><a href="{% url 'login_idp' %}">Del Auth</a></li>
-                <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>
-                <li><a href="{% url 'customized_okta_hosted' %}">"Custom Sign-in"</a></li>
-                {% else %}
-                <li><a href="{% url 'tokens' %}">Show Tokens</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-                {% endif %}
-          </ul>
-        </div>
       </div>
-    </div>
 
-    <div class="bg-fill">
-      {% block content %}
-      {% endblock content %}
-    </div>
+      <div class="bg-fill">
+          {% block content %}
+          {% endblock content %}
+      </div>
 
   </body>
 
   {% block page_js %}
   {% endblock page_js %}
 </html>
-

@@ -15,6 +15,7 @@ oktaSignIn.session.get(function (res) {
                 return;
             } else {
                 console.log('logged out successfully');
+                window.location.href = "/";
             }
         });
     }

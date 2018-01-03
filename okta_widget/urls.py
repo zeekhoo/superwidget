@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from .views import not_authenticated
 from .views import view_home, view_tokens
 from .views import view_login, view_logout, view_profile
 from .views import oauth2_post, oauth2_callback, registration_view, registration_success
@@ -62,6 +63,9 @@ urlpatterns = [
 
     url(r'^register/', registration_view, name='register_user'),
     url(r'^success/$', registration_success, name='registration_success'),
+
+    url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
+
 ]
 
 # urlpatterns += staticfiles_urlpatterns()
