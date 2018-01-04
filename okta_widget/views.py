@@ -59,7 +59,9 @@ def not_authenticated(request):
 
 def view_profile(request):
     if 'profile' in request.session:
-        p = {'profile': request.session['profile']}
+        p = {'profile': request.session['profile'],
+             'org': OKTA_ORG
+             }
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
 
@@ -78,8 +80,8 @@ def view_login_css(request):
     return render(request, 'index_css.html', c)
 
 
-def customized_okta_hosted(request):
-    return render(request, 'customized-okta-hosted.html')
+def okta_hosted_login(request):
+    return render(request, 'customized-okta-hosted.html', c)
 
 
 def view_login_custom(request):
@@ -162,9 +164,6 @@ def oauth2_post(request):
         if 'code' in request.POST:
             code = request.POST['code']
             print('auth code = {}'.format(code))
-
-            if 'state' in request.POST:
-                CLIENT_ID = request.POST['state']
 
             client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
             tokens = client.token(code, 'http://localhost:8000/oauth2/postback', ISSUER)

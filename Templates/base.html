@@ -36,6 +36,7 @@
         var lnkd = '{{ lnkd }}';
         var raas_flag = false;
         var del_auth_url = "{% url 'login_idp' %}";
+        var hosted_login_url = "{% url 'okta_hosted_login' %}";
     </script>
 
     {% block head_js %}{% endblock head_js %}
@@ -66,7 +67,7 @@
                   <ul class="nav navbar-nav">
                       {% if 'profile' not in request.session %}
                       <li><a href="{% url 'login_css' %}">Widget Custom css</a></li>
-                      <li><a href="{% url 'customized_okta_hosted' %}">"Okta Hosted" Login</a></li>
+                      <li><a href="{% url 'okta_hosted_login' %}">"Okta Hosted" Login</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget Login</a></li>
                       <li><a href="{% url 'login_idp' %}">Del Auth</a></li>
                       <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>

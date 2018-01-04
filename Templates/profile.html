@@ -44,6 +44,8 @@
 
 {% load static %}
 {% block page_js %}
-<script src="{% static 'js/profile.js' %}" type="text/javascript"></script>
+<script>
+    document.getElementById('profile_pretty').innerHTML = prettyPrint(profile);
+</script>
 <script src="{% static 'js/app-links.js' %}" type="text/javascript"></script>
 {% endblock %}

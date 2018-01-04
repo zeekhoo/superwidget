@@ -1,6 +1,8 @@
+var base_url = 'https://' + org;
+
 function showMyAppLinks(userId) {
     if (userId != null && userId != '') {
-        url = "https://zeekhoo.okta.com/api/v1/users/" + userId + "/appLinks";
+        url = base_url + "/api/v1/users/" + userId + "/appLinks";
         var xhttp = new XMLHttpRequest();
         xhttp.open("GET", url, true);
         xhttp.withCredentials = true;

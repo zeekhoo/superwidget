@@ -14,6 +14,10 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function prettyPrint(ugly) {
+    var obj = JSON.parse(ugly);
+    return JSON.stringify(obj, undefined, 4);
+}
 
 function get_profile(access_token) {
 
@@ -30,7 +34,6 @@ function get_profile(access_token) {
     }
 }
 
-
 function openInNewTab(url) {
   var win = window.open(url, '_blank');
   win.focus();
@@ -39,12 +42,15 @@ function openInNewTab(url) {
 function link_to_widget_js() {
     var js_location = '/static/js/oidc_css.js';
 
-    var url = del_auth_url.split('/')[1];
+    var delAuth = del_auth_url.split('/')[1];
+    var hostedPage = hosted_login_url.split('/')[1];
 
     var pathArray = window.location.pathname.split('/');
     if (pathArray[1]) {
-        if (pathArray[1] === url) {
+        if (pathArray[1] === delAuth) {
             js_location = '/static/js/oidc_idp.js'
+        } else if (pathArray[1] === hostedPage) {
+            js_location = '/static/js/default-okta-signin-pg.js'
         }
     }
     openInNewTab(js_location);

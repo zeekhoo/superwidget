@@ -19,7 +19,7 @@ from .views import not_authenticated
 from .views import view_home, view_tokens
 from .views import view_login, view_logout, view_profile
 from .views import oauth2_post, oauth2_callback, registration_view, registration_success
-from .views import view_login_css, customized_okta_hosted, view_login_raas, view_login_idp
+from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp
 from .views import view_login_baybridge, view_login_brooklynbridge
 from .views import view_login_custom
 from .views import view_app_b
@@ -44,7 +44,7 @@ urlpatterns = [
 
     # alternate login pages
     url(r'^login-css$', view_login_css, name='login_css'),
-    url(r'^for-okta-hosted$', customized_okta_hosted, name='customized_okta_hosted'),
+    url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
     url(r'^login-raas$', view_login_raas, name='login_raas'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
     url(r'^app_b$', view_app_b, name='app_b'),
