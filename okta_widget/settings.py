@@ -26,7 +26,7 @@ SECRET_KEY = '(7g9#++b(_&6#(la7we*xrx6&z=d#g7)oe7+lyrq&vsv6$b33#'
 DEBUG = True
 
 OKTA_ORG = os.environ.get('OKTA_ORG')
-ISSUER = os.environ.get('AUTH_SERVER_ID')
+AUTH_SERVER_ID = os.environ.get('AUTH_SERVER_ID')
 CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 GOOGLE_IDP = os.environ.get('GOOGLE_IDP_ID')
@@ -34,6 +34,7 @@ FB_IDP = os.environ.get('FB_IDP_ID')
 LNKD_IDP = os.environ.get('LNKD_IDP_ID')
 SAML_IDP = os.environ.get('SAML_IDP_ID')
 API_KEY = os.environ.get('API_KEY')
+CUSTOM_LOGIN_URL = os.environ.get('CUSTOM_LOGIN_URL')
 
 ALLOWED_HOSTS = []
 

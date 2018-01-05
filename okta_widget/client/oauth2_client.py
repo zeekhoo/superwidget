@@ -1,6 +1,7 @@
 import requests
 import json
 import base64
+from django.conf import settings
 
 
 class OAuth2Client(object):
@@ -33,17 +34,23 @@ class OAuth2Client(object):
         return tokens
 
     def profile(self, token):
-        iss = _tokenIssuer(token)
+        AUTH_SERVER_ID = settings.AUTH_SERVER_ID
+        OKTA_ORG = settings.OKTA_ORG
+        iss = 'https://{0}/oauth2/{1}'.format(OKTA_ORG, AUTH_SERVER_ID)
+
+        #iss = _tokenIssuer(token)
         if iss:
             url = iss + '/v1/userinfo'
         else:
             url = self.base_url + '/oauth2/v1/userinfo'
+        print('userinfo url={}'.format(url))
+
         headers = {
             'Authorization': 'Bearer ' + token
         }
-        print('userinfo url={}'.format(url))
         try:
             response = requests.post(url, headers=headers)
+            print('response = {}'.format(response))
             profile = response.json()
             return profile
         except Exception as e:

@@ -8,12 +8,24 @@ function showMyAppLinks(userId) {
         xhttp.withCredentials = true;
         xhttp.send();
         xhttp.onreadystatechange = function() {
-            var linksJson = JSON.parse(xhttp.responseText);
-            drawTable(linksJson);
+            var res = xhttp.responseText;
+            if (res) {
+                var linksJson = JSON.parse(res);
+                if (linksJson) {
+                    document.getElementById("my_links").style.display = 'block';
+                    var apps = new Vue({
+                        delimiters: ['[[', ']]'],
+                        el: '#vueapp',
+                        data: {
+                            appLinks: linksJson
+                        }
+                    });
+    //                drawTable(linksJson);
+                }
+            }
         }
     }
 }
-
 
 function drawTable(tableData) {
     var i;

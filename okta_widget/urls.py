@@ -24,6 +24,7 @@ from .views import view_login_baybridge, view_login_brooklynbridge
 from .views import view_login_custom
 from .views import view_app_b
 from .views import auth_broker, sessions_broker
+from .views import hellovue
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
@@ -66,6 +67,7 @@ urlpatterns = [
 
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
 
+    url(r'^hellovue/$', hellovue, name='hellovue'),
 ]
 
 # urlpatterns += staticfiles_urlpatterns()

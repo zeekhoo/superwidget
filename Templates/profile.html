@@ -30,10 +30,18 @@
                   <button class="btn btn-primary btn-xs" onclick="showMyAppLinks(sub)">Click to view</button>
               </div>
               <div class="panel-body">
-                <table class = "table table-striped table-hover">
-                    <tbody id="my_links">
-                    </tbody>
-                </table>
+                  <div id="vueapp">
+                    <table class = "table table-striped table-hover">
+                        <tbody id="my_links" style="display:none;">
+                            <tr v-for="link in appLinks">
+                                <td><a v-bind:href=link.linkUrl target="_blank">
+                                    <img v-bind:src=link.logoUrl class="img-rounded">
+                                    <label>[[ link.label ]]</label>
+                                </a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  </div>
               </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-var url = 'https://'  + org;  //eg https://zeekhoo.okta.com
+var url = 'https://'  + org;  //eg https://login.alwaysaasure.com
 
 var oktaSignIn = new OktaSignIn({
     baseUrl: url

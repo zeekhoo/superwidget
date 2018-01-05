@@ -1,6 +1,6 @@
-var baseUrl = 'https://' + org;            //e.g. 'https://zeekhoo.okta.com'
-var issuer = baseUrl + '/oauth2/' + iss;   //e.g. 'https://zeekhoo.okta.com/oauth2/ausxkcyonq9Ht1uvi1t6'
-var client_id = aud;                       //e.g. 'zXkxpyie6BCcutIWnk3B'
+var base_url = 'https://' + org;             //e.g. 'https://login.alwaysaasure.com';
+var issuer = base_url + '/oauth2/' + iss;    //e.g. 'https://login.alwaysaasure.com/oauth2/default';
+var client_id = aud;                         //e.g. '0oadbg08aaYtrMlRC0h7'
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
 var idp_id = saml_idp;
 var goo_id = goog;
@@ -39,7 +39,7 @@ if (idp_id != 'None') {
 }
 
 var oktaSignIn = new OktaSignIn({
-    baseUrl: baseUrl,
+    baseUrl: base_url,
     clientId: client_id,
     redirectUri: redirect_uri,
     authParams: {

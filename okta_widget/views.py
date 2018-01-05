@@ -14,9 +14,9 @@ import base64
 
 
 API_KEY = settings.API_KEY
-
 OKTA_ORG = settings.OKTA_ORG
-ISSUER = settings.ISSUER
+AUTH_SERVER_ID = settings.AUTH_SERVER_ID
+CUSTOM_LOGIN_URL = settings.CUSTOM_LOGIN_URL
 CLIENT_ID = settings.CLIENT_ID
 CLIENT_SECRET = settings.CLIENT_SECRET
 GOOGLE_IDP = settings.GOOGLE_IDP
@@ -24,14 +24,19 @@ FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
 
+ORG = OKTA_ORG
+if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
+    ORG = CUSTOM_LOGIN_URL
+ISSUER = AUTH_SERVER_ID
+
 c = {
-    "org": OKTA_ORG,
+    "org": ORG,
     "iss": ISSUER,
     "aud": CLIENT_ID,
     "google": GOOGLE_IDP,
     "fb": FB_IDP,
     "lnkd": LNKD_IDP,
-    "saml_idp": SAML_IDP,
+    "saml_idp": SAML_IDP
 }
 
 
@@ -60,7 +65,7 @@ def not_authenticated(request):
 def view_profile(request):
     if 'profile' in request.session:
         p = {'profile': request.session['profile'],
-             'org': OKTA_ORG
+             'org': ORG
              }
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
@@ -102,6 +107,10 @@ def view_login_baybridge(request):
 
 def view_login_brooklynbridge(request):
     return render(request, 'z-login-brooklynbridge.html');
+
+
+def hellovue(request):
+    return render(request, 'z-hellovue.html');
 
 
 def view_logout(request):
@@ -166,7 +175,7 @@ def oauth2_post(request):
             print('auth code = {}'.format(code))
 
             client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
-            tokens = client.token(code, 'http://localhost:8000/oauth2/postback', ISSUER)
+            tokens = client.token(code, 'http://localhost:8000/oauth2/postback', AUTH_SERVER_ID)
             if tokens['access_token']:
                 access_token = tokens['access_token']
             if tokens['id_token']:
@@ -182,6 +191,7 @@ def oauth2_post(request):
         print('access_token = {}'.format(access_token))
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
+        print('profile = {}'.format(profile))
         request.session['profile'] = json.dumps(profile)
         request.session['given_name'] = profile['given_name']
         request.session['user_id'] = profile['sub']
