@@ -11,7 +11,7 @@
 <div class="login-pg-raas">
 	<div class="row">
 		<div class="container-fluid">
-			<div class="col-md-4">
+			<div id="widget-b3">
 				<div id="okta-login-container"></div>
 				<div id="link-to-form" class="link-to-form">
 					<p><a href="/register">Click here to see a Form Example</a></p>
@@ -19,7 +19,7 @@
 			</div>
 			<div class="col-md-8">
 				<div id="code-preview" class="code-preview">
-					<pre id="js-area" class="prettyprint"></pre>
+					<pre id="js-area" class="prettyprint lang-js"></pre>
 				</div>
 			</div>
 		</div>
@@ -39,6 +39,8 @@
 </script>
 <script src="{% static 'js/oidc_css.js' %}" type="text/javascript"></script>
 <script>
+getJs('{% static 'js/oidc_css.js' %}', 'js-area');
+
 oktaSignIn.on('pageRendered', function(data) {
 	console.log('page=' + data.page);
 	console.log('url=' + window.location);

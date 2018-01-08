@@ -39,48 +39,31 @@ function openInNewTab(url) {
   win.focus();
 }
 
-function link_to_widget_js() {
-    var codeHref = document.getElementById('code-href');
-    if (codeHref) {
-        if (codeHref.innerHTML == 'Hide widget code...') {
-            codeHref.innerHTML = 'Show widget code...';
-
-            var codePreview = document.getElementById('code-preview');
-            if (codePreview) {
-                codePreview.style.display = 'none';
-            }
-            return;
-        }
-    }
-
-
-    var js_location = '/static/js/oidc_css.js';
-
-    var profilePage = profile_page.split('/')[1];
-    var tokensPage = tokens_page.split('/')[1];
-    var delAuth = del_auth_url.split('/')[1];
-    var hostedPage = hosted_login_url.split('/')[1];
-    var customPage = authjs_page.split('/')[1];
-
-    var pathArray = window.location.pathname.split('/');
-    if (pathArray[1]) {
-        if (pathArray[1] === delAuth) {
-            js_location = '/static/js/oidc_idp.js'
-        } else if (pathArray[1] === hostedPage) {
-            js_location = '/static/js/default-okta-signin-pg.js'
-        } else if (pathArray[1] === customPage) {
-            js_location = '/static/js/custom_ui.js'
-        }
-        console.log('profile page: ' + profilePage);
-        console.log('tokens page: ' + tokensPage);
-        console.log('page = ' + pathArray[1]);
-        if (pathArray[1] === profilePage || pathArray[1] === tokensPage) {
-            openInNewTab(js_location);
-            return;
-        }
-    }
-    getJs(js_location, 'js-area');
-}
+//function link_to_widget_js(target) {
+//    var js_location = '/static/js/oidc_css.js';
+//
+//    var profilePage = profile_page.split('/')[1];
+//    var tokensPage = tokens_page.split('/')[1];
+//    var delAuth = del_auth_url.split('/')[1];
+//    var hostedPage = hosted_login_url.split('/')[1];
+//    var customPage = authjs_page.split('/')[1];
+//
+//    var pathArray = window.location.pathname.split('/');
+//    if (pathArray[1]) {
+//        if (pathArray[1] === delAuth) {
+//            js_location = '/static/js/oidc_idp.js'
+//        } else if (pathArray[1] === hostedPage) {
+//            js_location = '/static/js/default-okta-signin-pg.js'
+//        } else if (pathArray[1] === customPage) {
+//            js_location = '/static/js/custom_ui.js'
+//        }
+//        if (pathArray[1] === profilePage || pathArray[1] === tokensPage) {
+//            openInNewTab(js_location);
+//            return;
+//        }
+//    }
+//    getJs(js_location, target);
+//}
 
 
 function getJs(location, target) {
@@ -91,16 +74,31 @@ function getJs(location, target) {
     xhttp.onreadystatechange = function() {
         var area = document.getElementById(target);
         if (area) {
-            area.innerHTML = xhttp.responseText;
+            var codeToPrettify = xhttp.responseText;
+            area.innerHTML = codeToPrettify;
+        }
+    }
+}
 
-            var codePreview = document.getElementById('code-preview');
-            if (codePreview) {
-                codePreview.style.display = 'block';
+function toggleJsView(buttonId) {
+    var showOrHide = document.getElementById(buttonId);
+    var area = document.getElementById('code-preview');
+    var b3 = document.getElementById('widget-b3');
 
-                var codeHref = document.getElementById('code-href');
-                if (codeHref) {
-                    codeHref.innerHTML = 'Hide widget code...';
-                }
+    if (showOrHide && area) {
+        if (showOrHide.innerHTML.startsWith('Show')) {
+            area.style.display = 'block';
+            showOrHide.innerHTML = showOrHide.innerHTML.replace('Show', 'Hide');
+
+            if (b3) {
+                b3.setAttribute('class', 'col-md-4');
+            }
+        } else {
+            area.style.display = 'none';
+            showOrHide.innerHTML = showOrHide.innerHTML.replace('Hide', 'Show');
+
+            if (b3) {
+                b3.setAttribute('class', '  ');
             }
         }
     }

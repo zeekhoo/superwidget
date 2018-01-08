@@ -16,7 +16,8 @@
 			</div>
 			<div class="col-md-8">
 				<div id="code-preview" class="code-preview">
-					<pre id="js-area" class="prettyprint"></pre>
+					<pre id="js-area" class="prettyprint lang-js">
+					</pre>
 				</div>
 			</div>
 		</div>
@@ -26,5 +27,6 @@
 
 {% block page_js %}
 <script src="{% static 'js/oidc_css.js' %}" type="text/javascript"></script>
+<script>getJs('{% static 'js/oidc_css.js' %}', 'js-area');</script>
 {% endblock %}
 
