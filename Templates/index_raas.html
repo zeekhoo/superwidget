@@ -11,10 +11,16 @@
 <div class="login-pg-raas">
 	<div class="row">
 		<div class="container-fluid">
-			{% csrf_token %}
-			<div id="okta-login-container"></div>
-			<div id="link-to-form" class="link-to-form">
-				<p><a href="/register">Click here to see a Form Example</a></p>
+			<div class="col-md-4">
+				<div id="okta-login-container"></div>
+				<div id="link-to-form" class="link-to-form">
+					<p><a href="/register">Click here to see a Form Example</a></p>
+				</div>
+			</div>
+			<div class="col-md-8">
+				<div id="code-preview" class="code-preview">
+					<pre id="js-area" class="prettyprint"></pre>
+				</div>
 			</div>
 		</div>
 	</div>

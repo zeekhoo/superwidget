@@ -26,6 +26,7 @@
     <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
 
       <script src="https://unpkg.com/vue"></script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 
     <script>
         var iss = '{{ iss }}';
@@ -36,6 +37,9 @@
         var fb = '{{ fb }}';
         var lnkd = '{{ lnkd }}';
         var raas_flag = false;
+        var profile_page = "{% url 'profile' %}";
+        var tokens_page = "{% url 'tokens' %}";
+        var authjs_page = "{% url 'login_custom' %}";
         var del_auth_url = "{% url 'login_idp' %}";
         var hosted_login_url = "{% url 'okta_hosted_login' %}";
     </script>
@@ -79,7 +83,7 @@
                   </ul>
                   <div id="show-code">
                       <ul class="nav navbar-nav navbar-right">
-                          <li style="font-size:11px;"><a href="#" onclick="link_to_widget_js()">Show me the widget code...</a></li>
+                          <li style="font-size:11px;"><a id="code-href" href="#" onclick="link_to_widget_js()">Show widget code...</a></li>
                       </ul>
                   </div>
               </div>
@@ -93,7 +97,7 @@
                           Sign In</button>
                   </form>
                   <ul class="nav navbar-nav navbar-right">
-                      <li style="font-size:11px;"><a href="/static/js/custom_ui.js" target="_blank">Show login Code...</a></li>
+                      <li style="font-size:11px;"><a id="code-href2" href="#" onclick="link_to_widget_js()">Show login Code...</a></li>
                   </ul>
 
               </div>

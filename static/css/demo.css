@@ -52,3 +52,8 @@
     position: center;
     width: 400px;
 }
+
+.code-preview {
+    padding-top: 50px;
+    display: none;
+}
