@@ -106,7 +106,9 @@
 
 #okta-sign-in.auth-container .okta-sign-in-header {
   /* -- Main Background and Border Colors -- */
-  border-bottom-color: #ddd;
+  /*border-bottom-color: #ddd;*/
+  border-bottom-color: transparent;
+
 }
 
 #okta-sign-in.auth-container .okta-sign-in-beacon-border {

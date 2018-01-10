@@ -2,37 +2,42 @@
     padding-top: 50px; /*padding for navbar to prevent overlap*/
 }
 
-.login-pg {
+/*--Default Page--*/
+.login-pg-base {
 /*    background: url(https://c1.staticflickr.com/3/2900/33896083626_b2b2cd188a_h.jpg) no-repeat center center; /*salesforce tower*/
-    background: url(https://i.pinimg.com/originals/e6/2e/3e/e62e3e39c68bfcdf741ecaf9275b2eae.jpg) no-repeat center center; /*baybridge*/
+    background: url(https://i.pinimg.com/originals/e6/2e/3e/e62e3e39c68bfcdf741ecaf9275b2eae.jpg) no-repeat center center; /*baybridge gold*/
 /*    background: url(https://c1.staticflickr.com/7/6142/6007952202_5eaea2c7c5_b.jpg) no-repeat center center; /*indianapolis*/
-/*    background: url(https://c1.staticflickr.com/3/2879/9119750759_eed1e8dc7b_b.jpg) no-repeat center center; /*baybridge*/
+/*    background: url(https://c1.staticflickr.com/3/2879/9119750759_eed1e8dc7b_b.jpg) no-repeat center center; /*baybridge bw*/
 /*    background: url(http://dmrpresents.com/wp-content/uploads/2016/10/header2.jpg) no-repeat center center;*/
-    background-size: cover;
-    position: relative;
-    padding-top: 0px;
-    padding-bottom: 220px;
 }
 
+/*--Del Auth Page--*/
 .login-pg-idp {
-    background: url(https://c1.staticflickr.com/3/2879/9119750759_eed1e8dc7b_b.jpg) no-repeat center center;
+    background: url(https://c1.staticflickr.com/3/2879/9119750759_eed1e8dc7b_b.jpg) no-repeat center center;  /*baybridge bw*/
+}
+
+/*--RaaS Page--*/
+.login-pg-raas {
+    background: url(https://c1.staticflickr.com/3/2456/3951912182_b2dce2d317_b.jpg) no-repeat center center;  /*golden gate*/
+}
+
+/*--Profile Page--*/
+.profile-view {
+}
+
+/*--Main Page--*/
+.login-pg {
     background-size: cover;
     position: relative;
     padding-top: 0px;
     padding-bottom: 220px;
 }
 
-.login-pg-raas {
-    background: url(https://c1.staticflickr.com/3/2456/3951912182_b2dce2d317_b.jpg) no-repeat center center;
-    background-size: cover;
-    position: relative;
-    padding-top: 0px;
-    padding-bottom: 220px;
-}
 
 .hidden {
     display: none;
 }
+
 
 .navbar-login-alt {
     display: none;
@@ -54,6 +59,14 @@
 }
 
 .code-preview {
-    padding-top: 50px;
+    padding-top: 20px;
     display: none;
+}
+
+
+/*--Make the modal popup wider--*/
+@media (min-width: 992px) {
+  .modal-lg {
+    width: 1200px;
+  }
 }

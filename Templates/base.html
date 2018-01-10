@@ -62,7 +62,7 @@
                       <li><a href="{% url 'login_idp' %}">Del Auth</a></li>
                       <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>
                       {% else %}
-                      <li><a href="{% url 'tokens' %}">Show Tokens</a></li>
+                      <!--<li><a href="{% url 'tokens' %}">Show Tokens</a></li>-->
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
                   </ul>
@@ -101,9 +101,9 @@
           </div>
       </div>
 
-      <div class="bg-fill">
-          {% block content %}
-          {% endblock content %}
+      <div class="bg-fill" id="demo-main-container">
+      {% block content %}
+      {% endblock content %}
       </div>
   </body>
 
@@ -112,14 +112,10 @@
     var iss = '{{ iss }}';
     var org = '{{ org }}';
     var aud = '{{ aud }}';
-    var raas_flag = false;
 
     var profile_page = "{% url 'profile' %}";
     var tokens_page = "{% url 'tokens' %}";
 
-    <!--var authjs_page = "{% url 'login_custom' %}";-->
-    <!--var del_auth_url = "{% url 'login_idp' %}";-->
-    <!--var hosted_login_url = "{% url 'okta_hosted_login' %}";-->
   </script>
   <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
   <link href="{% static 'css/prettify.css' %}" rel="stylesheet">
