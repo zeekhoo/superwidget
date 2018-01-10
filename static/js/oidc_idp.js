@@ -8,15 +8,9 @@ var fb_id = fb;
 var lnkd_id = lnkd;
 
 var idps = [];
-if (goo_id != 'None') {
-    idps.push({type: 'GOOGLE', id: goo_id});
-}
-if (fb_id != 'None') {
-    idps.push({type: 'FACEBOOK', id: fb_id});
-}
-if (lnkd_id != 'None') {
-    idps.push({type: 'LINKEDIN', id: lnkd_id});
-}
+if (goo_id != 'None') {idps.push({type: 'GOOGLE', id: goo_id});}
+if (fb_id != 'None') {idps.push({type: 'FACEBOOK', id: fb_id});}
+if (lnkd_id != 'None') {idps.push({type: 'LINKEDIN', id: lnkd_id});}
 
 var btns = [];
 if (idp_id != 'None') {
@@ -56,44 +50,25 @@ var oktaSignIn = new OktaSignIn({
     customButtons: btns,
     features: {
         rememberMe: true,
-        autoPush: true,
         multiOptionalFactorEnroll: true,
         smsRecovery: true,
         callRecovery: false,
         selfServiceUnlock: true,
-        router: true,
     }
 });
 
 oktaSignIn.session.get(function (res) {
-  console.log(res);
-
-  if (res.status === 'ACTIVE') {
-    window.location.href='/tokens';
-  }
-  else {
-    console.log('no session. render the login widget');
     oktaSignIn.renderEl(
       {el: '#okta-login-container'},
       function (res) {
-        console.log(res);
-        if (res[0]){
-            oktaSignIn.tokenManager.add('id_token', res[0]);
-            console.log('id_token=', res[0].idToken);
-        }
-        if (res[1]){
-            oktaSignIn.tokenManager.add('access_token', res[1]);
-            console.log('access_token=', res[1].accessToken);
-        }
+        oktaSignIn.tokenManager.add('id_token', res[0]);
+        oktaSignIn.tokenManager.add('access_token', res[1]);
         if (res.status === 'SUCCESS') {
-            console.log('success!');
-            var token = oktaSignIn.tokenManager.get('access_token').accessToken;
-            get_profile(token);
+            get_profile(oktaSignIn.tokenManager.get('access_token').accessToken);
         }
       },
       function error(err) {
         console.log('Unexpected error authenticating user: %o', err);
       }
     );
-  }
 });

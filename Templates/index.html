@@ -3,7 +3,6 @@
 {% load static %}
 
 {% block head_js %}
-<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
 {% endblock %}
 
 
@@ -16,8 +15,9 @@
 			</div>
 			<div class="col-md-8">
 				<div id="code-preview" class="code-preview">
-					<pre id="js-area" class="prettyprint lang-js">
-					</pre>
+					<div id="vapp">
+						<pre id="js-area" class="prettyprint lang-js linenums"></pre>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block page_js %}
-<script src="{% static 'js/oidc_css.js' %}" type="text/javascript"></script>
-<script>getJs('{% static 'js/oidc_css.js' %}', 'js-area');</script>
+<script src="{% static 'js/oidc_base.js' %}" type="text/javascript"></script>
+<script>getJs('{% static 'js/oidc_base.js' %}', 'js-area');</script>
 {% endblock %}
 

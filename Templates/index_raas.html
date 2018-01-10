@@ -3,7 +3,6 @@
 {% load static %}
 
 {% block head_js %}
-<link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
 {% endblock %}
 
 
@@ -19,7 +18,7 @@
 			</div>
 			<div class="col-md-8">
 				<div id="code-preview" class="code-preview">
-					<pre id="js-area" class="prettyprint lang-js"></pre>
+					<pre id="js-area" class="prettyprint lang-js linenums"></pre>
 				</div>
 			</div>
 		</div>
@@ -28,22 +27,17 @@
 {% endblock %}
 
 {% block page_js %}
-<script type="text/javascript">
-	raas_flag = true;
-</script>
 <script>
 	var ele = document.getElementById("link-to-form");
 	if (ele) {
 		ele.style.display="none";
 	}
 </script>
-<script src="{% static 'js/oidc_css.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/oidc_raas.js' %}" type="text/javascript"></script>
 <script>
-getJs('{% static 'js/oidc_css.js' %}', 'js-area');
+getJs('{% static 'js/oidc_raas.js' %}', 'js-area');
 
 oktaSignIn.on('pageRendered', function(data) {
-	console.log('page=' + data.page);
-	console.log('url=' + window.location);
 	if (ele) {
 		if(data.page==='registration'){
 			ele.style.display="block";

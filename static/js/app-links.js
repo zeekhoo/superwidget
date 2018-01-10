@@ -20,7 +20,7 @@ function showMyAppLinks(userId) {
                             appLinks: linksJson
                         }
                     });
-    //                drawTable(linksJson);
+                    //drawTable(linksJson);
                 }
             }
         }

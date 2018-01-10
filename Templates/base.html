@@ -22,28 +22,12 @@
     <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
 
     <link href="{% static 'css/demo.css' %}" rel="stylesheet">
+
     <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/js/okta-sign-in.min.js" type="text/javascript"></script>
     <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
 
       <script src="https://unpkg.com/vue"></script>
-      <!--<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>-->
-
-    <script>
-        var iss = '{{ iss }}';
-        var org = '{{ org }}';
-        var aud = '{{ aud }}';
-        var saml_idp = '{{ saml_idp }}';
-        var goog = '{{ google }}';
-        var fb = '{{ fb }}';
-        var lnkd = '{{ lnkd }}';
-        var raas_flag = false;
-
-        <!--var profile_page = "{% url 'profile' %}";-->
-        <!--var tokens_page = "{% url 'tokens' %}";-->
-        <!--var authjs_page = "{% url 'login_custom' %}";-->
-        <!--var del_auth_url = "{% url 'login_idp' %}";-->
-        <!--var hosted_login_url = "{% url 'okta_hosted_login' %}";-->
-    </script>
 
     {% block head_js %}{% endblock head_js %}
 
@@ -58,7 +42,7 @@
           <div class="container-fluid">
               <div class="navbar-header">
                   {% if 'profile' not in request.session %}
-                  <a class="navbar-brand" href="{% url 'login' %}">Widget Login</a>
+                  <a class="navbar-brand" href="{% url 'login' %}">Home</a>
                   {% else %}
                   <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.given_name }}!</a>
                   {% endif %}
@@ -84,7 +68,15 @@
                   </ul>
                   <div id="show-code">
                       <ul class="nav navbar-nav navbar-right">
-                          <li style="font-size:11px;"><a id="code-href" href="#" onclick="toggleJsView(this.id)">Show widget code...</a></li>
+                          <li style="font-size:11px;">
+                              <a id="code-href" href="#" onclick="toggleJsView(this.id, '{{ request.session.grant_type }}')">
+                                  {% if 'profile' not in request.session or request.session.grant_type == 'implicit' %}
+                                  Show widget code
+                                  {% else %}
+                                  Show login code
+                                  {% endif %}...
+                              </a>
+                          </li>
                       </ul>
                   </div>
               </div>
@@ -98,7 +90,11 @@
                           Sign In</button>
                   </form>
                   <ul class="nav navbar-nav navbar-right">
-                      <li style="font-size:11px;"><a id="code-href2" href="#" onclick="toggleJsView(this.id)">Show login Code...</a></li>
+                      <li style="font-size:11px;">
+                          <a id="code-href2" href="#" onclick="toggleJsView(this.id, '{{ request.session.grant_type }}')">
+                          Show login code...
+                          </a>
+                      </li>
                   </ul>
 
               </div>
@@ -109,10 +105,25 @@
           {% block content %}
           {% endblock content %}
       </div>
-
   </body>
 
+  <script>
+    //load these environment variables into vars for the other scripts to reference
+    var iss = '{{ iss }}';
+    var org = '{{ org }}';
+    var aud = '{{ aud }}';
+    var raas_flag = false;
+
+    var profile_page = "{% url 'profile' %}";
+    var tokens_page = "{% url 'tokens' %}";
+
+    <!--var authjs_page = "{% url 'login_custom' %}";-->
+    <!--var del_auth_url = "{% url 'login_idp' %}";-->
+    <!--var hosted_login_url = "{% url 'okta_hosted_login' %}";-->
+  </script>
   <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+  <link href="{% static 'css/prettify.css' %}" rel="stylesheet">
+
   {% block page_js %}
   {% endblock page_js %}
 </html>

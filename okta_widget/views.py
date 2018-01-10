@@ -168,11 +168,15 @@ def oauth2_post(request):
     print('in oauth2_postback')
     access_token = None
     id_token = None
+    state = None
+    grant_type = 'implicit'
+
     if request.method == 'POST':
         print('POST request: {}'.format(request.POST))
         if 'code' in request.POST:
             code = request.POST['code']
             print('auth code = {}'.format(code))
+            grant_type = 'authorization_code'
 
             client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
             tokens = client.token(code, 'http://localhost:8000/oauth2/postback', AUTH_SERVER_ID)
@@ -186,6 +190,13 @@ def oauth2_post(request):
 
         if 'id_token' in request.POST:
             id_token = request.POST['id_token']
+
+        if 'state' in request.POST:
+            state = request.POST['state']
+
+    print('state: {}'.format(state))
+    request.session['grant_type'] = grant_type
+
 
     if access_token:
         print('access_token = {}'.format(access_token))

@@ -3,7 +3,6 @@ var issuer = base_url + '/oauth2/' + iss;  //e.g. 'https://login.alwaysaasure.co
 var client_id = aud;                       //e.g. '0oadbg08aaYtrMlRC0h7';
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
 
-
 function do_login(un, pw) {
     var config = {
         url: base_url,

@@ -5,27 +5,12 @@ var redirect_uri = 'http://localhost:8000/oauth2/postback';
 
 var oktaSignIn = new OktaSignIn({
     baseUrl: base_url,
-    logo: 'https://developer.okta.com/sites/all/themes/developer/media/logo.svg',
-    features: {
-        rememberMe: true,
-        multiOptionalFactorEnroll: true,
-        smsRecovery: true,
-        callRecovery: false,
-        selfServiceUnlock: true,
-    },
-    //language and localization settings
-    language: 'en',
-    i18n: {
-        'en': {
-            'primaryauth.username.placeholder': 'Signin with your Email',
-            'primaryauth.submit': 'Access My Account',
-            'needhelp': 'Click for more Options',
-            'password.forgot.email.or.username.placeholder': 'Enter your email, then click below',
-        }
-    },
-    //OpenIDConnect, OAuth2 settings
     clientId: client_id,
     redirectUri: redirect_uri,
+    features: {
+        router: true,
+        registration: true,
+    },
     authParams: {
         issuer: issuer,
         responseType: ['id_token', 'token'],
@@ -36,7 +21,6 @@ var oktaSignIn = new OktaSignIn({
         ],
     },
 });
-
 oktaSignIn.session.get(function (res) {
     oktaSignIn.renderEl(
         {el: '#okta-login-container'},
