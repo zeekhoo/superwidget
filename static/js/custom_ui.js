@@ -2,6 +2,8 @@ var base_url = 'https://' + org;           //e.g. 'https://login.alwaysaasure.co
 var issuer = base_url + '/oauth2/' + iss;  //e.g. 'https://login.alwaysaasure.com/oauth2/default';
 var client_id = aud;                       //e.g. '0oadbg08aaYtrMlRC0h7';
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
+var scp = ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'];
+scp.push.apply(scp, more);
 
 function do_login(un, pw) {
     var config = {
@@ -28,13 +30,7 @@ function do_login(un, pw) {
                 responseType: 'code',
                 responseMode: 'form_post',
                 sessionToken: transaction.sessionToken,
-                scopes: [
-                    'openid', 'profile', 'email', 'address', 'phone',
-                    'com.zeek.p1.resource1.admin',
-                    'com.zeek.p1.resource1.user'
-                ],
-                //state state param to client_id so that the server knows which app we are hitting...
-                state: client_id,
+                scopes: scp,
             });
         } else {
             throw 'We cannot handle the ' + transaction.status + ' status';

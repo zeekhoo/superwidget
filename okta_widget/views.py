@@ -23,16 +23,22 @@ GOOGLE_IDP = settings.GOOGLE_IDP
 FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
+CUSTOM_SCOPES = settings.CUSTOM_SCOPES
 
 ORG = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
     ORG = CUSTOM_LOGIN_URL
 ISSUER = AUTH_SERVER_ID
 
+scopes = None
+if CUSTOM_SCOPES:
+    scopes = CUSTOM_SCOPES
+
 c = {
     "org": ORG,
     "iss": ISSUER,
     "aud": CLIENT_ID,
+    "custom_scopes": scopes,
     "google": GOOGLE_IDP,
     "fb": FB_IDP,
     "lnkd": LNKD_IDP,

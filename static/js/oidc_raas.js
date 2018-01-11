@@ -2,6 +2,8 @@ var base_url = 'https://' + org;
 var issuer = base_url + '/oauth2/' + iss;
 var client_id = aud;
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
+var scp = ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'];
+scp.push.apply(scp, more);
 
 var oktaSignIn = new OktaSignIn({
     baseUrl: base_url,
@@ -14,11 +16,7 @@ var oktaSignIn = new OktaSignIn({
     authParams: {
         issuer: issuer,
         responseType: ['id_token', 'token'],
-        scopes: [
-            'openid', 'profile', 'email', 'address', 'phone', 'offline_access',
-            'com.zeek.p1.resource1.admin',
-            'com.zeek.p1.resource1.user'
-        ],
+        scopes: scp,
     },
 });
 oktaSignIn.session.get(function (res) {

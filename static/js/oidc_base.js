@@ -5,6 +5,8 @@ var base_url = 'https://' + org;            //e.g. 'https://login.alwaysaasure.c
 var issuer = base_url + '/oauth2/' + iss;   //e.g. 'https://login.alwaysaasure.com/oauth2/default';
 var client_id = aud;                        //e.g. '0oadbg08aaYtrMlRC0h7';
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
+var scp = ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'];
+scp.push.apply(scp, more);
 
 var oktaSignIn = new OktaSignIn({
     baseUrl: base_url,
@@ -13,11 +15,7 @@ var oktaSignIn = new OktaSignIn({
     authParams: {
         issuer: issuer,
         responseType: ['id_token', 'token'],
-        scopes: [
-            'openid', 'profile', 'email', 'address', 'phone', 'offline_access',
-            'com.zeek.p1.resource1.admin',
-            'com.zeek.p1.resource1.user'
-        ],
+        scopes: scp,
     },
 });
 oktaSignIn.session.get(function (res) {

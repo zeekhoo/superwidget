@@ -112,10 +112,12 @@
     var iss = '{{ iss }}';
     var org = '{{ org }}';
     var aud = '{{ aud }}';
+    var custom_scopes = '{{ custom_scopes }}';
 
-    var profile_page = "{% url 'profile' %}";
-    var tokens_page = "{% url 'tokens' %}";
-
+    var more = [];
+    if (custom_scopes != 'None') {
+        more = custom_scopes.split(",");
+    }
   </script>
   <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
   <link href="{% static 'css/prettify.css' %}" rel="stylesheet">

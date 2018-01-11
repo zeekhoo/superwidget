@@ -2,6 +2,9 @@ var base_url = 'https://' + org;             //e.g. 'https://login.alwaysaasure.
 var issuer = base_url + '/oauth2/' + iss;    //e.g. 'https://login.alwaysaasure.com/oauth2/default';
 var client_id = aud;                         //e.g. '0oadbg08aaYtrMlRC0h7'
 var redirect_uri = 'http://localhost:8000/oauth2/postback';
+var scp = ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'];
+scp.push.apply(scp, more);
+
 var idp_id = saml_idp;
 var goo_id = goog;
 var fb_id = fb;
@@ -40,11 +43,7 @@ var oktaSignIn = new OktaSignIn({
         issuer: issuer,
         display: 'popup',
         responseType: ['id_token', 'token'],
-        scopes: [
-            'openid', 'profile', 'email', 'address', 'phone',
-            'com.zeek.p1.resource1.admin',
-            'com.zeek.p1.resource1.user'
-        ],
+        scopes: scp,
     },
     idps: idps,
     customButtons: btns,
