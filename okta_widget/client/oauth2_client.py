@@ -11,8 +11,9 @@ class OAuth2Client(object):
         self.client_secret = client_secret
         self.basic = None
         if client_id is not None and client_secret is not None:
-            basic = base64.b64encode(client_id + ':' + client_secret)
-            self.basic = basic
+            enc = client_id + ':' + client_secret
+            basic = base64.b64encode(enc.encode('ascii'))
+            self.basic = str(basic, 'utf-8')
 
     def token(self, code, redirect_uri, server_id=None):
         if server_id:

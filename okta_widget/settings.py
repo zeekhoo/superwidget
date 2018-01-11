@@ -69,7 +69,7 @@ ROOT_URLCONF = 'okta_widget.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': ['Templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,4 +140,3 @@ CORS_URLS_REGEX = r'^/oauth/.*$'
 CORS_ORIGIN_ALLOW_ALL = False
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = "/var/www/zeekhoo.com/static/"

@@ -197,7 +197,6 @@ def oauth2_post(request):
     print('state: {}'.format(state))
     request.session['grant_type'] = grant_type
 
-
     if access_token:
         print('access_token = {}'.format(access_token))
         client = OAuth2Client('https://' + OKTA_ORG)
@@ -214,7 +213,7 @@ def oauth2_post(request):
                 parts = id_token.split('.')
                 payload = parts[1]
                 payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
-                decoded = base64.b64decode(payload)
+                decoded = str(base64.b64decode(payload), 'utf-8')
                 print('decoded = {}'.format(decoded))
                 request.session['profile'] = decoded
             except Exception as e:
