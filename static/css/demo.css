@@ -1,7 +1,3 @@
-.bg-fill {
-    padding-top: 50px; /*padding for navbar to prevent overlap*/
-}
-
 /*--Default Page--*/
 .login-pg-base {
 /*    background: url(https://c1.staticflickr.com/3/2900/33896083626_b2b2cd188a_h.jpg) no-repeat center center; /*salesforce tower*/
@@ -29,10 +25,13 @@
 .login-pg {
     background-size: cover;
     position: relative;
-    padding-top: 0px;
+    padding-top: 20px;
     padding-bottom: 220px;
 }
 
+.bg-fill {
+    padding-top: 50px; /*padding for navbar to prevent overlap*/
+}
 
 .hidden {
     display: none;
@@ -59,7 +58,7 @@
 }
 
 .code-preview {
-    padding-top: 20px;
+    padding-top: 0px;
     display: none;
 }
 
