@@ -12,5 +12,29 @@
 {% endblock %}
 
 {% block page_js %}
-<script src="{% static 'js/logout.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+var oktaSignIn = new OktaSignIn({
+    baseUrl: 'https://{{ org }}'
+});
+oktaSignIn.session.get(function (res) {
+    if (res.status === 'ACTIVE') {
+        //clear tokens from local storage
+        oktaSignIn.tokenManager.clear();
+
+        oktaSignIn.session.close(function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            } else {
+                console.log('logged out successfully');
+                console.log('redirecting to page='+ '{{ page }}');
+                window.location.href = '{{ page }}';
+                return;
+            }
+        });
+    } else {
+        window.location.href = '/';
+    }
+})
+</script>
 {% endblock %}

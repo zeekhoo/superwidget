@@ -15,7 +15,11 @@
 			</div>
 			<div class="col-md-8">
 				<div id="code-preview" class="code-preview">
-					<pre id="js-area" class="prettyprint lang-js linenums"></pre>
+					<!--<pre id="js-area" class="prettyprint lang-js linenums"></pre>-->
+					<form class="form-horizontal" name="RegistrationForm" action="{% url 'login' %}" method="post">
+						<button type="submit" class="btn btn-primary btn-xs">Update</button>
+						<textarea id="myText" name="myText"></textarea>
+					</form>
 				</div>
 			</div>
 		</div>
@@ -24,7 +28,8 @@
 {% endblock %}
 
 {% block page_js %}
-<script src="{% static 'js/oidc_base.js' %}" type="text/javascript"></script>
-<script>getJs('{% static 'js/oidc_base.js' %}', 'js-area');</script>
+<script id="theScript">
+{{ js|safe }}
+</script>
 {% endblock %}
 

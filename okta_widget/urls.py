@@ -22,12 +22,10 @@ from .views import oauth2_post, oauth2_callback, registration_view, registration
 from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp
 from .views import view_login_baybridge, view_login_brooklynbridge
 from .views import view_login_custom
-from .views import view_app_b
 from .views import auth_broker, sessions_broker
 from .views import hellovue
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.conf import settings
-from django.conf.urls.static import static
+# from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+# from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -48,7 +46,6 @@ urlpatterns = [
     url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
     url(r'^login-raas$', view_login_raas, name='login_raas'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
-    url(r'^app_b$', view_app_b, name='app_b'),
     url(r'^login-form$', view_login_custom, name='login_custom'),
 
     url(r'^login-baybridge$', view_login_baybridge, name='login_baybridge'),

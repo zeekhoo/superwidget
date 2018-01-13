@@ -3,6 +3,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 
+class TextForm(forms.Form):
+    myText = forms.CharField()
+
+
 class RegistrationForm(forms.Form):
     firstName = forms.CharField(max_length=100, required=True)
     lastName = forms.CharField(max_length=100, required=True)

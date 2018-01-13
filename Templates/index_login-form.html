@@ -29,7 +29,10 @@
 				<div class="col-md-8">
 					<div id="code-preview" class="code-preview">
 						<br><br>
-						<pre id="js-area" class="prettyprint lang-js linenums"></pre>
+						<form class="form-horizontal" name="RegistrationForm" action="{% url 'login_custom' %}" method="post">
+							<button type="submit" class="btn btn-primary btn-xs">Update</button>
+							<textarea id="myText" name="myText"></textarea>
+						</form>
 					</div>
 				</div>
 			</div>
@@ -42,16 +45,17 @@
 
 {% block page_js %}
 <script>
-	var loginBar = document.getElementById('navbar-login-alt');
-	if (loginBar) {
-		loginBar.style.display = 'block';
-	}
-	var defaultWidgetCodeLink = document.getElementById('show-code');
-	if (defaultWidgetCodeLink) {
-		defaultWidgetCodeLink.style.display = 'none';
-	}
+var loginBar = document.getElementById('navbar-login-alt');
+if (loginBar) {
+	loginBar.style.display = 'block';
+}
+var defaultWidgetCodeLink = document.getElementById('show-code');
+if (defaultWidgetCodeLink) {
+	defaultWidgetCodeLink.style.display = 'none';
+}
 </script>
-<script src="{% static 'js/custom_ui.js' %}" type="text/javascript"></script>
-<script>getJs('{% static 'js/custom_ui.js' %}', 'js-area');</script>
+<script id="theScript">
+{{ js|safe }}
+</script>
 {% endblock %}
 

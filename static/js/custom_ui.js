@@ -1,18 +1,10 @@
-var base_url = 'https://' + org;           //e.g. 'https://login.alwaysaasure.com';
-var issuer = base_url + '/oauth2/' + iss;  //e.g. 'https://login.alwaysaasure.com/oauth2/default';
-var client_id = aud;                       //e.g. '0oadbg08aaYtrMlRC0h7';
-var redirect_uri = 'http://localhost:8000/oauth2/postback';
-var scp = ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'];
-scp.push.apply(scp, more);
-
 function do_login(un, pw) {
-    var config = {
-        url: base_url,
-        clientId: client_id,
-        redirectUri: redirect_uri,
-        issuer: issuer,
-    };
-    var authClient = new OktaAuth(config);
+    var authClient = new OktaAuth({
+        url: 'https://[[org]]',
+        clientId: '[[aud]]',
+        redirectUri: '[[redirect]]',
+        issuer: 'https://[[org]]/oauth2/[[iss]]',
+    });
 
     authClient.signIn({
         username: un,
@@ -30,7 +22,7 @@ function do_login(un, pw) {
                 responseType: 'code',
                 responseMode: 'form_post',
                 sessionToken: transaction.sessionToken,
-                scopes: scp,
+                scopes: [[scopes]],
             });
         } else {
             throw 'We cannot handle the ' + transaction.status + ' status';

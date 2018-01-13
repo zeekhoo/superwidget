@@ -7,15 +7,17 @@ from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient, SessionsClient
 from .client.users_client import UsersClient
 import json
-from .forms import RegistrationForm
+from .forms import RegistrationForm, TextForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 import base64
+from django.contrib.staticfiles.templatetags.staticfiles import static
+import requests
 
 
 API_KEY = settings.API_KEY
 OKTA_ORG = settings.OKTA_ORG
-AUTH_SERVER_ID = settings.AUTH_SERVER_ID
+ISSUER = settings.AUTH_SERVER_ID
 CUSTOM_LOGIN_URL = settings.CUSTOM_LOGIN_URL
 CLIENT_ID = settings.CLIENT_ID
 CLIENT_SECRET = settings.CLIENT_SECRET
@@ -23,27 +25,25 @@ GOOGLE_IDP = settings.GOOGLE_IDP
 FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
-CUSTOM_SCOPES = settings.CUSTOM_SCOPES
 
-ORG = OKTA_ORG
+REDIRECT_URI = 'http://localhost:8000/oauth2/postback'
+
+BASE_URL = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
-    ORG = CUSTOM_LOGIN_URL
-ISSUER = AUTH_SERVER_ID
+    BASE_URL = CUSTOM_LOGIN_URL
 
-scopes = None
+CUSTOM_SCOPES = settings.CUSTOM_SCOPES
+optional_scopes = None
 if CUSTOM_SCOPES:
-    scopes = CUSTOM_SCOPES
+    optional_scopes = CUSTOM_SCOPES
 
 c = {
-    "org": ORG,
+    "org": BASE_URL,
     "iss": ISSUER,
-    "aud": CLIENT_ID,
-    "custom_scopes": scopes,
-    "google": GOOGLE_IDP,
-    "fb": FB_IDP,
-    "lnkd": LNKD_IDP,
-    "saml_idp": SAML_IDP
+    "aud": CLIENT_ID
 }
+
+url_map = {}
 
 
 def view_home(request):
@@ -60,7 +60,6 @@ def view_home(request):
         return HttpResponseRedirect(reverse('profile'))
     else:
         print('no profile in request')
-
     return view_login(request)
 
 
@@ -70,12 +69,14 @@ def not_authenticated(request):
 
 def view_profile(request):
     if 'profile' in request.session:
+        page = request.session['page']
+
         p = {'profile': request.session['profile'],
-             'org': ORG
+             'org': BASE_URL,
+             "js": _do_format(request, url_map[page], page)
              }
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
-
     return render(request, 'profile.html', p)
 
 
@@ -83,27 +84,133 @@ def view_tokens(request):
     return render(request, 'tokens.html', c)
 
 
+@csrf_exempt
 def view_login(request):
+    page = 'login'
+    request.session['page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/oidc_base.js', page)})
     return render(request, 'index.html', c)
 
 
+def _do_refresh(request, key):
+    form = TextForm(request.POST)
+    if form.is_valid():
+        text = form.cleaned_data['myText']
+        request.session[key] = text
+        return HttpResponseRedirect(request.build_absolute_uri())
+    return HttpResponseRedirect('/')
+
+
+def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIENT_ID,
+               idps='[]', btns='[]'):
+    url_map.update({key: url})
+
+    list_scopes = ['openid', 'profile']
+    if optional_scopes:
+        list_scopes.extend(optional_scopes.split(','))
+    scps = ''.join("'" + s + "', " for s in list_scopes)
+    scps = '[' + scps[:-2] + ']'
+
+    if key in request.session:
+        return request.session[key]
+    else:
+        response = requests.get(request.build_absolute_uri(static(url)))
+        text = str(response.content, 'utf-8')\
+            .replace("{", "{{").replace("}", "}}")\
+            .replace("[[", "{").replace("]]", "}")\
+            .format(org=org_url,
+                    iss=issuer,
+                    aud=audience,
+                    redirect=REDIRECT_URI,
+                    scopes=scps,
+                    idps=idps,
+                    btns=btns)
+        request.session[key] = text
+        return text
+
+
+@csrf_exempt
 def view_login_css(request):
+    page = 'login_css'
+    request.session['page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/oidc_css.js', page)})
     return render(request, 'index_css.html', c)
 
 
+@csrf_exempt
 def okta_hosted_login(request):
+    page = 'okta_hosted_login'
+    request.session['page'] = page
+    c.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     return render(request, 'customized-okta-hosted.html', c)
 
 
+@csrf_exempt
 def view_login_custom(request):
+    page = 'login_custom'
+    request.session['page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/custom_ui.js', page)})
     return render(request, 'index_login-form.html', c);
 
 
+@csrf_exempt
 def view_login_raas(request):
+    page = 'login_raas'
+    request.session['page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/oidc_raas.js', page)})
     return render(request, 'index_raas.html', c)
 
 
+@csrf_exempt
 def view_login_idp(request):
+    idps = '['
+    if GOOGLE_IDP:
+        if GOOGLE_IDP != 'None':
+            idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(GOOGLE_IDP)
+        if FB_IDP != 'None':
+            idps += "\n      {{type: 'FACEBOOK', id: '{}'}},".format(FB_IDP)
+        if LNKD_IDP != 'None':
+            idps += "\n      {{type: 'LINKEDIN', id: '{}'}},".format(LNKD_IDP)
+    idps += ']'
+
+    btns = '['
+    if SAML_IDP:
+        if SAML_IDP != 'None':
+            btns += "{title: 'Login SAML Idp',\n" \
+                    + "        className: 'btn-customAuth',\n" \
+                    + "        click: function() {\n" \
+                    + "          var link =  '{issuer}/v1/authorize'\n".format(issuer='https://' + OKTA_ORG + '/oauth2/' + ISSUER) \
+                    + "          + '?response_type=id_token+token'\n" \
+                    + "          + '&response_mode=form_post'\n" \
+                    + "          + '&client_id={client_id}'\n".format(client_id=CLIENT_ID) \
+                    + "          + '&scope=openid+email+profile'\n" \
+                    + "          + '&redirect_uri={redirect}'\n".format(redirect=REDIRECT_URI) \
+                    + "          + '&state=foo'\n" \
+                    + "          + '&nonce=foo'\n" \
+                    + "          + '&idp={idp_id}'\n".format(idp_id=SAML_IDP) \
+                    + "          window.location.href = link;\n" \
+                    + "        }\n" \
+                    + "    }"
+    btns += ']'
+
+    page = 'login_idp'
+    request.session['page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
     return render(request, 'login_idp.html', c)
 
 
@@ -122,6 +229,7 @@ def hellovue(request):
 def view_logout(request):
     if 'profile' in request.session:
         del request.session['profile']
+    c.update({"page": reverse(request.session['page'])})
     return render(request, 'logged_out.html', c)
 
 
@@ -171,21 +279,18 @@ def oauth2_callback(request):
 
 @csrf_exempt
 def oauth2_post(request):
-    print('in oauth2_postback')
+    print('in /oauth2/postback')
     access_token = None
     id_token = None
     state = None
-    grant_type = 'implicit'
 
     if request.method == 'POST':
         print('POST request: {}'.format(request.POST))
         if 'code' in request.POST:
             code = request.POST['code']
             print('auth code = {}'.format(code))
-            grant_type = 'authorization_code'
-
             client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
-            tokens = client.token(code, 'http://localhost:8000/oauth2/postback', AUTH_SERVER_ID)
+            tokens = client.token(code, REDIRECT_URI, ISSUER)
             if tokens['access_token']:
                 access_token = tokens['access_token']
             if tokens['id_token']:
@@ -201,7 +306,6 @@ def oauth2_post(request):
             state = request.POST['state']
 
     print('state: {}'.format(state))
-    request.session['grant_type'] = grant_type
 
     if access_token:
         print('access_token = {}'.format(access_token))

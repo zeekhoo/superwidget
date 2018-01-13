@@ -19,14 +19,17 @@ function prettyPrint(ugly) {
     return JSON.stringify(obj, undefined, 4);
 }
 
-function get_profile(access_token) {
+function get_profile(token_type, token) {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", '/oauth2/postback');
     //xhr.setRequestHeader('X-CSRFToken', csrftoken); /*too lazy...used csrf_exempt*/
 
     var formData = new FormData();
-    formData.append("access_token", access_token);
+    if (token_type === 'accessToken')
+        formData.append('access_token', token.accessToken);
+    else
+        formData.append('id_token', token.idToken);
     xhr.send(formData);
 
     xhr.onreadystatechange = function() {
@@ -65,20 +68,7 @@ function link_to_widget_js() {
 }
 
 
-function getJs(location, target) {
-    var url = location;
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", url, true);
-    xhttp.send();
-    xhttp.onreadystatechange = function() {
-        var res = xhttp.responseText;
-        if (res.length > 1) {
-            document.getElementById(target).innerHTML = res;
-        }
-    }
-}
-
-function toggleJsView(buttonId, grantType) {
+function toggleJsView(buttonId) {
     var showOrHide = document.getElementById(buttonId);
     var area = document.getElementById('code-preview');
     var bs3 = document.getElementById('widget-b3');
@@ -90,6 +80,11 @@ function toggleJsView(buttonId, grantType) {
             if (bs3) {
                 bs3.setAttribute('class', 'col-md-4');
             }
+            var myCode = document.getElementById("theScript").innerHTML;
+            myCodeMirror.getDoc().setValue(myCode);
+            if (buttonId === 'code-modal') {
+                myCodeMirror.setSize(null,300);
+            }
         } else {
             area.style.display = 'none';
             showOrHide.innerHTML = showOrHide.innerHTML.replace('Hide', 'Show');
@@ -97,5 +92,27 @@ function toggleJsView(buttonId, grantType) {
                 bs3.setAttribute('class', '');
             }
         }
+    }
+}
+
+
+function handleOAuthResponse(res, oktaSignIn) {
+    if (res[0]) {
+        if (res[0].idToken)
+            oktaSignIn.tokenManager.add('id_token', res[0]);
+        else if (res[0].accessToken)
+            oktaSignIn.tokenManager.add('access_token', res[0]);
+    }
+    if (res[1]) {
+        if (res[1].idToken)
+            oktaSignIn.tokenManager.add('id_token', res[1]);
+        else if (res[1].accessToken)
+            oktaSignIn.tokenManager.add('access_token', res[1]);
+    }
+    if (res.status === 'SUCCESS') {
+        if (oktaSignIn.tokenManager.get('access_token'))
+            get_profile('access_token', oktaSignIn.tokenManager.get('access_token').accessToken);
+        else if (oktaSignIn.tokenManager.get('id_token'))
+            get_profile('id_token', oktaSignIn.tokenManager.get('id_token').idToken);
     }
 }

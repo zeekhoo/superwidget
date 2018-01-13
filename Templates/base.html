@@ -60,22 +60,19 @@
                       <li><a href="{% url 'okta_hosted_login' %}">"Okta Hosted" Login</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget Login</a></li>
                       <li><a href="{% url 'login_idp' %}">Del Auth</a></li>
-                      <li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>
+                      <!--<li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>-->
                       {% else %}
-                      <!--<li><a href="{% url 'tokens' %}">Show Tokens</a></li>-->
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
                   </ul>
                   <div id="show-code">
                       <ul class="nav navbar-nav navbar-right">
                           <li style="font-size:11px;">
-                              <a id="code-href" href="#" onclick="toggleJsView(this.id, '{{ request.session.grant_type }}')">
-                                  {% if 'profile' not in request.session or request.session.grant_type == 'implicit' %}
-                                  Show widget code
-                                  {% else %}
-                                  Show login code
-                                  {% endif %}...
+                              {% if 'profile' not in request.session %}
+                              <a id="code-href" href="#" onclick="toggleJsView(this.id)">
+                                  Show widget code...
                               </a>
+                              {% endif %}
                           </li>
                       </ul>
                   </div>
@@ -91,8 +88,8 @@
                   </form>
                   <ul class="nav navbar-nav navbar-right">
                       <li style="font-size:11px;">
-                          <a id="code-href2" href="#" onclick="toggleJsView(this.id, '{{ request.session.grant_type }}')">
-                          Show login code...
+                          <a id="code-href2" href="#" onclick="toggleJsView(this.id)">
+                              Show login code...
                           </a>
                       </li>
                   </ul>
@@ -107,21 +104,23 @@
       </div>
   </body>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/theme/cobalt.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/mode/javascript/javascript.min.js"></script>
   <script>
-    //load these environment variables into vars for the other scripts to reference
-    var iss = '{{ iss }}';
     var org = '{{ org }}';
-    var aud = '{{ aud }}';
-    var custom_scopes = '{{ custom_scopes }}';
 
-    var more = [];
-    if (custom_scopes != 'None') {
-        more = custom_scopes.split(",");
+    var myTextArea = document.getElementById('myText');
+    if (myTextArea) {
+        var myCodeMirror = CodeMirror.fromTextArea(myTextArea);
+        myCodeMirror.setSize(null,650);
+        myCodeMirror.setOption('theme', 'cobalt');
+        myCodeMirror.setOption('lineNumbers', true);
     }
   </script>
-  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
-  <link href="{% static 'css/prettify.css' %}" rel="stylesheet">
-
+  <!--<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>-->
+  <!--<link href="{% static 'css/prettify.css' %}" rel="stylesheet">-->
   {% block page_js %}
   {% endblock page_js %}
 </html>

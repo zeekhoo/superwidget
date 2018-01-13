@@ -541,8 +541,8 @@
 
 #okta-sign-in.auth-container .button-primary {
   /* -- Buttons' Colors -- */
-  color: #ffffff;
-  background: none;
+  color: #5e5e5e;
+/*  background: none;*/
   border-radius: 9px;
 /*  width: 65%;*/
 /*  background-color: #007dc1;
