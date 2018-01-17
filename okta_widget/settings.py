@@ -35,7 +35,7 @@ LNKD_IDP = os.environ.get('LNKD_IDP_ID')
 SAML_IDP = os.environ.get('SAML_IDP_ID')
 API_KEY = os.environ.get('API_KEY')
 CUSTOM_LOGIN_URL = os.environ.get('CUSTOM_LOGIN_URL')
-CUSTOM_SCOPES = os.environ.get('CUSTOM_SCOPES')
+DEFAULT_SCOPES = os.environ.get('DEFAULT_SCOPES')
 
 
 ALLOWED_HOSTS = []

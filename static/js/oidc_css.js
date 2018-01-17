@@ -2,23 +2,27 @@ var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
     logo: 'https://developer.okta.com/sites/all/themes/developer/media/logo.svg',
     features: {
-        rememberMe: true,
-        multiOptionalFactorEnroll: true,
-        smsRecovery: true,
-        callRecovery: false,
-        selfServiceUnlock: true,
+        router: true,
+        rememberMe: false,
+        //-----------------MORE OPTIONS:-----------------
+        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
+        //-----------------------------------------------
     },
-    //language and localization settings
+
+    //------------language and localization settings------------
     language: 'en',
     i18n: {
         'en': {
-            'primaryauth.submit': 'Sign In',
+            'primaryauth.title': 'Sign In',
             'primaryauth.username.placeholder': 'Username',
+            'primaryauth.password.placeholder': 'Password',
             'needhelp': 'Need Help?',
             'password.forgot.email.or.username.placeholder': 'Enter your email, then click below',
+            'primaryauth.submit': 'Sign In',
         }
     },
-    //OpenIDConnect, OAuth2 settings
+
+    //------------OpenIDConnect, OAuth2 settings----------------
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
     authParams: {

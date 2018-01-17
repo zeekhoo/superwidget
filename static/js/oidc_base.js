@@ -6,7 +6,7 @@ var oktaSignIn = new OktaSignIn({
         router: true,
         rememberMe: false,
         //-----------------MORE OPTIONS:-----------------
-        //selfServiceUnlock | multiOptionalFactorEnroll | smsRecovery | callRecovery | selfServiceUnlock
+        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
         //-----------------------------------------------
     },
     authParams: {

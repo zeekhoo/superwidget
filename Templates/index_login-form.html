@@ -30,7 +30,10 @@
 					<div id="code-preview" class="code-preview">
 						<br><br>
 						<form class="form-horizontal" name="RegistrationForm" action="{% url 'login_custom' %}" method="post">
-							<button type="submit" class="btn btn-primary btn-xs">Update</button>
+							<div class="btn-toolbar" role="toolbar" aria-label="...">
+								<button type="submit" class="btn btn-primary btn-xs" name="Update">Update & Reload</button>
+								<button type="submit" class="btn btn-primary btn-xs" name="Default">Reset</button>
+							</div>
 							<textarea id="myText" name="myText"></textarea>
 						</form>
 					</div>

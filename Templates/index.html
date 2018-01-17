@@ -17,7 +17,10 @@
 				<div id="code-preview" class="code-preview">
 					<!--<pre id="js-area" class="prettyprint lang-js linenums"></pre>-->
 					<form class="form-horizontal" name="RegistrationForm" action="{% url 'login' %}" method="post">
-						<button type="submit" class="btn btn-primary btn-xs">Update</button>
+						<div class="btn-toolbar" role="toolbar" aria-label="...">
+							<button type="submit" class="btn btn-primary btn-xs" name="Update">Update & Reload</button>
+							<button type="submit" class="btn btn-primary btn-xs" name="Default">Reset</button>
+						</div>
 						<textarea id="myText" name="myText"></textarea>
 					</form>
 				</div>

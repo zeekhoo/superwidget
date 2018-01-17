@@ -32,10 +32,10 @@ BASE_URL = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
     BASE_URL = CUSTOM_LOGIN_URL
 
-CUSTOM_SCOPES = settings.CUSTOM_SCOPES
-optional_scopes = None
-if CUSTOM_SCOPES:
-    optional_scopes = CUSTOM_SCOPES
+DEFAULT_SCOPES = settings.DEFAULT_SCOPES
+scopes = None
+if DEFAULT_SCOPES:
+    scopes = DEFAULT_SCOPES
 
 c = {
     "org": BASE_URL,
@@ -96,6 +96,11 @@ def view_login(request):
 
 
 def _do_refresh(request, key):
+    if 'Update' not in request.POST:
+        if key in request.session:
+            del request.session[key]
+        return HttpResponseRedirect(request.build_absolute_uri())
+
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
@@ -109,8 +114,8 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
     url_map.update({key: url})
 
     list_scopes = ['openid', 'profile']
-    if optional_scopes:
-        list_scopes.extend(optional_scopes.split(','))
+    if scopes:
+        list_scopes = scopes.split(',')
     scps = ''.join("'" + s + "', " for s in list_scopes)
     scps = '[' + scps[:-2] + ']'
 
@@ -283,27 +288,32 @@ def oauth2_post(request):
     access_token = None
     id_token = None
     state = None
-
+    code = None
     if request.method == 'POST':
         print('POST request: {}'.format(request.POST))
         if 'code' in request.POST:
             code = request.POST['code']
-            print('auth code = {}'.format(code))
-            client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
-            tokens = client.token(code, REDIRECT_URI, ISSUER)
-            if tokens['access_token']:
-                access_token = tokens['access_token']
-            if tokens['id_token']:
-                id_token = tokens['id_token']
-
         if 'access_token' in request.POST:
             access_token = request.POST['access_token']
-
         if 'id_token' in request.POST:
             id_token = request.POST['id_token']
-
         if 'state' in request.POST:
             state = request.POST['state']
+    elif request.method == 'GET':
+        print('GET request: {}'.format(request.GET))
+        if 'code' in request.GET:
+            code = request.GET['code']
+        if 'state' in request.GET:
+            state = request.GET['state']
+
+    if code:
+        print('auth code = {}'.format(code))
+        client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
+        tokens = client.token(code, REDIRECT_URI, ISSUER)
+        if tokens['access_token']:
+            access_token = tokens['access_token']
+        if tokens['id_token']:
+            id_token = tokens['id_token']
 
     print('state: {}'.format(state))
 
@@ -318,14 +328,17 @@ def oauth2_post(request):
 
     if id_token:
         print('id_token = {}'.format(id_token))
-        if 'profile' not in request:
+        if 'profile' not in request.session:
             try:
                 parts = id_token.split('.')
                 payload = parts[1]
                 payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
                 decoded = str(base64.b64decode(payload), 'utf-8')
                 print('decoded = {}'.format(decoded))
+                profile = json.loads(decoded)
                 request.session['profile'] = decoded
+                request.session['given_name'] = profile['given_name']
+                request.session['user_id'] = profile['sub']
             except Exception as e:
                 print('exception: {}'.format(e))
         else:

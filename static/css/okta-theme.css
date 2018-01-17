@@ -542,6 +542,8 @@
 #okta-sign-in.auth-container .button-primary {
   /* -- Buttons' Colors -- */
   color: #5e5e5e;
+  opacity: .75;
+  height: 50%;
 /*  background: none;*/
   border-radius: 9px;
 /*  width: 65%;*/
@@ -736,8 +738,9 @@
   /* -- Input Fields -- */
   background-color: #fff;
   border-color: #bbb;
-  opacity: .8;
+  opacity: .5;
   border-radius: 9px;
+  height: 80%;
 }
 
 #okta-sign-in.auth-container .okta-form-input-field:hover {
