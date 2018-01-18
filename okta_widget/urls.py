@@ -56,7 +56,7 @@ urlpatterns = [
     url(r'^broker/api/v1/authn$', auth_broker, name='okta_auth'),
 
     # auth code postback
-    url(r'^oauth2/postback', oauth2_post, name='oauth2_post'),
+    url(r'^oauth2/callback', oauth2_post, name='oauth2_post'),
     url(r'^oauth/callback', oauth2_callback, name='oauth2_callback'),
 
     url(r'^register/', registration_view, name='register_user'),

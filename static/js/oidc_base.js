@@ -1,18 +1,35 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
+    logo: 'https://developer.okta.com/sites/all/themes/developer/media/logo.svg',
+    //------------OpenIDConnect, OAuth2 settings----------------
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
-    features: {
-        router: true,
-        rememberMe: false,
-        //-----------------MORE OPTIONS:-----------------
-        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
-        //-----------------------------------------------
-    },
     authParams: {
         issuer: 'https://[[org]]/oauth2/[[iss]]',
         responseType: ['id_token', 'token'],
         scopes: [[scopes]],
+    },
+    features: {
+        router: true,
+        rememberMe: false,
+        selfServiceUnlock: false,
+        //-----------------MORE OPTIONS:-----------------
+        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
+        //-----------------------------------------------
+    },
+
+    //------------language and localization settings------------
+    language: 'en',
+    i18n: {
+        'en': {
+            'primaryauth.title': 'Sign In',
+            'primaryauth.submit': 'Sign In',
+             //-------------MORE EXAMPLES: --------------------------------------------------
+             //primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp
+             //
+             //Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
+             //------------------------------------------------------------------------------
+        }
     },
 });
 

@@ -2,6 +2,7 @@
   /* -- Fonts and Text Colors -- */
   font-family: "montserrat", Arial, Helvetica, sans-serif;
   color: #F9F4F3;
+  width: 200px;
 }
 
 #okta-sign-in.auth-container h2,

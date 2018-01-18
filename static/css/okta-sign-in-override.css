@@ -17,3 +17,16 @@
 #okta-sign-in .o-form .o-form-input .input-icon{
     opacity: 1;
 }
+
+#okta-sign-in.no-beacon .auth-header {
+    padding-bottom: 0px;
+
+}
+
+#okta-sign-in.no-beacon .auth-content {
+    padding-top: 0px;
+}
+
+#okta-sign-in .registration-container .content {
+    padding: 0px 0px;
+}

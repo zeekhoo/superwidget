@@ -26,7 +26,7 @@ FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
 
-REDIRECT_URI = 'http://localhost:8000/oauth2/postback'
+REDIRECT_URI = 'http://localhost:8000/oauth2/callback'
 
 BASE_URL = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
@@ -70,6 +70,8 @@ def not_authenticated(request):
 def view_profile(request):
     if 'profile' in request.session:
         page = request.session['page']
+        if page == 'login_css':
+            page = 'login'
 
         p = {'profile': request.session['profile'],
              'org': BASE_URL,
@@ -113,7 +115,7 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                idps='[]', btns='[]'):
     url_map.update({key: url})
 
-    list_scopes = ['openid', 'profile']
+    list_scopes = ['openid', 'profile', 'email']
     if scopes:
         list_scopes = scopes.split(',')
     scps = ''.join("'" + s + "', " for s in list_scopes)
@@ -140,11 +142,11 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
 @csrf_exempt
 def view_login_css(request):
     page = 'login_css'
-    request.session['page'] = page
+    request.session['page'] = 'login_css'
     if request.method == 'POST':
-        return _do_refresh(request, page)
+        return _do_refresh(request, 'login')
     else:
-        c.update({"js": _do_format(request, '/js/oidc_css.js', page)})
+        c.update({"js": _do_format(request, '/js/oidc_base.js', 'login')})
     return render(request, 'index_css.html', c)
 
 
@@ -284,7 +286,7 @@ def oauth2_callback(request):
 
 @csrf_exempt
 def oauth2_post(request):
-    print('in /oauth2/postback')
+    print('in /oauth2/callback')
     access_token = None
     id_token = None
     state = None
