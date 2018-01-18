@@ -22,7 +22,7 @@ function prettyPrint(ugly) {
 function get_profile(token_type, token) {
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", '/oauth2/postback');
+    xhr.open("POST", '/oauth2/callback');
     //xhr.setRequestHeader('X-CSRFToken', csrftoken); /*too lazy...used csrf_exempt*/
 
     var formData = new FormData();
@@ -81,7 +81,7 @@ function toggleJsView(buttonId) {
                 bs3.setAttribute('class', 'col-md-4');
             }
             var myCode = document.getElementById("theScript").innerHTML;
-            myCodeMirror.getDoc().setValue(myCode);
+            myCodeMirror.getDoc().setValue(myCode.trim());
             if (buttonId === 'code-modal') {
                 myCodeMirror.setSize(null,300);
             }

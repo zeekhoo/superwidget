@@ -1,6 +1,6 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
-    logo: 'https://developer.okta.com/sites/all/themes/developer/media/logo.svg',
+    logo: '',
     //------------OpenIDConnect, OAuth2 settings----------------
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
@@ -14,7 +14,7 @@ var oktaSignIn = new OktaSignIn({
         rememberMe: false,
         selfServiceUnlock: false,
         //-----------------MORE OPTIONS:-----------------
-        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
+        //[multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
         //-----------------------------------------------
     },
 
@@ -25,7 +25,7 @@ var oktaSignIn = new OktaSignIn({
             'primaryauth.title': 'Sign In',
             'primaryauth.submit': 'Sign In',
              //-------------MORE EXAMPLES: --------------------------------------------------
-             //primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp
+             //[primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]
              //
              //Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
              //------------------------------------------------------------------------------
