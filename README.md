@@ -72,7 +72,7 @@ You can also run locally:
 5. Edit the ".env" file and provide values to your Okta API-Products configuration values. 
 6. An example of a completed .env file looks like the following
    (Note: keys and secrets below are made-up values):
-    ```
+    ````
     export AUTH_SERVER_ID=default
     export OKTA_ORG=atko.okta.com
     export CLIENT_ID=0oa4ox4jzjHj9vWgR1t7
@@ -88,10 +88,10 @@ You can also run locally:
     export BACKGROUND_IMAGE_CSS=/static/img/okta-brand/background/SFBayBridge.jpg
     export BACKGROUND_IMAGE_AUTHJS=/static/img/okta-brand/background/focus.jpg
     export BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg   
+    ````
+7. Source the .env file
     ```
-7. Source env.list
-    ```
-    source env.list
+    source .env
     ```
 8. Make migrations
     ```
