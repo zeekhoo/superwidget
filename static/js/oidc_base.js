@@ -1,6 +1,7 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
-    logo: '',
+    logo: '',    //e.g. /static/img/logo_widgico.png
+
     //------------OpenIDConnect, OAuth2 settings----------------
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
@@ -9,26 +10,23 @@ var oktaSignIn = new OktaSignIn({
         responseType: ['id_token', 'token'],
         scopes: [[scopes]],
     },
+    //-----------------MORE OPTIONS:-----------------
+    //[multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
+    //-----------------------------------------------
     features: {
         router: true,
         rememberMe: false,
         selfServiceUnlock: false,
-        //-----------------MORE OPTIONS:-----------------
-        //[multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
-        //-----------------------------------------------
     },
-
-    //------------language and localization settings------------
+    //------------LANGUAGE and LOCALIZATION settings-----------------------------------------------------------------------------
+    //Example tags: [primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]
+    //Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
+    //---------------------------------------------------------------------------------------------------------------------------
     language: 'en',
     i18n: {
         'en': {
             'primaryauth.title': 'Sign In',
             'primaryauth.submit': 'Sign In',
-             //-------------MORE EXAMPLES: --------------------------------------------------
-             //[primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]
-             //
-             //Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
-             //------------------------------------------------------------------------------
         }
     },
 });

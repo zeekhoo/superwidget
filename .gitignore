@@ -9,8 +9,7 @@ node_modules
 static/css/okta-sign-in.min.css
 static/js/okta*
 static/js/z*
-static/font
-static/img
-static/labels
+static/okta*
 .env_dev
 .env_preview
+env.conf

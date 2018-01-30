@@ -21,10 +21,17 @@ ISSUER = settings.AUTH_SERVER_ID
 CUSTOM_LOGIN_URL = settings.CUSTOM_LOGIN_URL
 CLIENT_ID = settings.CLIENT_ID
 CLIENT_SECRET = settings.CLIENT_SECRET
+
 GOOGLE_IDP = settings.GOOGLE_IDP
 FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
+
+DEFAULT_BACKGROUND = '/static/img/okta-brand/background/SFBayBridge.jpg'
+BACKGROUND_IMAGE = settings.BACKGROUND_IMAGE_DEFAULT
+BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
+BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
+BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
 
 REDIRECT_URI = 'http://localhost:8000/oauth2/callback'
 
@@ -40,7 +47,11 @@ if DEFAULT_SCOPES:
 c = {
     "org": BASE_URL,
     "iss": ISSUER,
-    "aud": CLIENT_ID
+    "aud": CLIENT_ID,
+    "background": BACKGROUND_IMAGE if BACKGROUND_IMAGE is not None else DEFAULT_BACKGROUND,
+    "background_css": BACKGROUND_IMAGE_CSS if BACKGROUND_IMAGE_CSS is not None else DEFAULT_BACKGROUND,
+    "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
+    "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND
 }
 
 url_map = {}
@@ -218,7 +229,7 @@ def view_login_idp(request):
         return _do_refresh(request, page)
     else:
         c.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
-    return render(request, 'login_idp.html', c)
+    return render(request, 'index_idp.html', c)
 
 
 def view_login_baybridge(request):
