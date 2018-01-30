@@ -2,7 +2,7 @@
 
 #### This project is built on Django and it runs on Python 3.4.
 
-### Run in Docker
+## Run in Docker
 There is a Docker container so you can readily run the app with `Docker run`. 
 But first you need to provide the container with environment variables. 
 
@@ -21,17 +21,12 @@ But first you need to provide the container with environment variables.
     CLIENT_ID=0oa4ox4jzjHj9vWgR1t7
     CLIENT_SECRET=Ar-zht2498sdfxaerjwmsjd9s!je49rw8#a
     API_KEY=00xcfd2308490aeuxcvbEarsddffffdgjfhgf012xz
-    
     DEFAULT_SCOPES=openid,email,profile,com.zeek.p1.resource1.admin,com.zeek.p1.resource1.user
-    
     CUSTOM_LOGIN_URL=login.atko.com
-    
     GOOGLE_IDP_ID=0oa1bnct4t7RQEwao1t7
     FB_IDP_ID=0oaxmxaszOUXlhDAu1t6
     LNKD_IDP_ID=0oatmj8l3QhUvJ3lQ1t6
-    
     SAML_IDP_ID=0oayqdoj63vdxXHtI1t6
-    
     BACKGROUND_IMAGE=/static/img/okta-brand/background/SFBayBridge.jpg
     BACKGROUND_IMAGE_CSS=/static/img/okta-brand/background/SFBayBridge.jpg
     BACKGROUND_IMAGE_AUTHJS=/static/img/okta-brand/background/focus.jpg
@@ -54,7 +49,7 @@ But first you need to provide the container with environment variables.
     Also note: The Dockerfile exposes the project on port 8000, so map your port to 8000. 
     And be sure to inject the env.list into your container with the --env-file option as shown. 
 
-### Local setup
+## Local setup
 You can also run locally:
 
 1. Clone this repository. Then 'cd' into its directory.
@@ -82,18 +77,13 @@ You can also run locally:
     export OKTA_ORG=atko.okta.com
     export CLIENT_ID=0oa4ox4jzjHj9vWgR1t7
     export CLIENT_SECRET=Ar-zht2498sdfxaerjwmsjd9s!je49rw8#a
-    export API_KEY=00xcfd2308490aeuxcvbEarsddffffdgjfhgf012xz
-    
+    export API_KEY=00xcfd2308490aeuxcvbEarsddffffdgjfhgf012xz    
     export DEFAULT_SCOPES=openid,email,profile,com.zeek.p1.resource1.admin,com.zeek.p1.resource1.user
-    
-    export CUSTOM_LOGIN_URL=login.atko.com
-    
+    export CUSTOM_LOGIN_URL=login.atko.com    
     export GOOGLE_IDP_ID=0oa1bnct4t7RQEwao1t7
     export FB_IDP_ID=0oaxmxaszOUXlhDAu1t6
     export LNKD_IDP_ID=0oatmj8l3QhUvJ3lQ1t6
-    
     export SAML_IDP_ID=0oayqdoj63vdxXHtI1t6
-    
     export BACKGROUND_IMAGE=/static/img/okta-brand/background/SFBayBridge.jpg
     export BACKGROUND_IMAGE_CSS=/static/img/okta-brand/background/SFBayBridge.jpg
     export BACKGROUND_IMAGE_AUTHJS=/static/img/okta-brand/background/focus.jpg
