@@ -1,8 +1,24 @@
 # Okta-API-Demo
 
-#### This project is built on Django and it runs on Python 3.4.
+This sample project provides an easy to deploy demo app which 
+demonstrates out-of-the-box features of Okta API Products.
+It showcases the Signin Widget, but also contains one sample each for
+log-in using 2 other integration methods: 1) by redirecting to Okta's signin page and 2)
+purely using API (AuthJS example). This application provides the presenter the ability to demonstrate:
 
-## Run in Docker
+1. Authentication and Authorization:
+2. Inbound Federation (SAML)
+3. Social Auth
+4. MFA
+5. Universal Directory
+6. Centralized Identity Mangement
+7. API Access Management
+
+
+#### This project is built with Django and runs on Python 3.4.
+You can either run the django app locally by cloning this repo or even more conveniently, use an available Docker container.
+
+## 1. Run in Docker
 There is a Docker container so you can readily run the app with `Docker run`. 
 But first you need to provide the container with environment variables. 
 
@@ -49,7 +65,7 @@ But first you need to provide the container with environment variables.
     Also note: The Dockerfile exposes the project on port 8000, so map your port to 8000. 
     And be sure to inject the env.list into your container with the --env-file option as shown. 
 
-## Local setup
+## 2. Local setup
 You can also run locally:
 
 1. Clone this repository. Then 'cd' into its directory.
