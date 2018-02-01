@@ -49,12 +49,14 @@ But first you need to provide the container with environment variables.
     BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg    
     ```
 
-3. In your Okta org, you must add CORS and a redirect_uri for your application. 
+3. In Okta, configure your App to support **Implicit** flow.
+
+4. In your Okta org, you must add CORS and a redirect_uri for your application. 
     Please add the following to your Okta org:
     * Add redirect_uri = `http://localhost:8000/oauth2/callback` to your OpenID Connect app
     * Add a CORS entry for ``http://localhost:8000``
 
-4. Run
+5. Run
 
     Run the command
     ```

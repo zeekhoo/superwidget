@@ -27,7 +27,7 @@ FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
 
-DEFAULT_BACKGROUND = '/static/img/okta-brand/background/SFBayBridge.jpg'
+DEFAULT_BACKGROUND = '/static/img/okta-brand/background/SFbayBridge.jpg'
 BACKGROUND_IMAGE = settings.BACKGROUND_IMAGE_DEFAULT
 BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
 BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
