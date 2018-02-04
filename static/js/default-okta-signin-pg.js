@@ -7,7 +7,6 @@ var config = {
 var authClient = new OktaAuth(config);
 
 authClient.token.getWithRedirect({
-    responseType: ['token'],
-    responseMode: 'form_post',
+    responseType: ['code'],
     scopes: [[scopes]]
 });

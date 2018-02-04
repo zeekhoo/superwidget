@@ -55,19 +55,24 @@ c = {
 }
 
 url_map = {}
+pages_js = {}
 
 
 def view_home(request):
+    for key in list(request.session.keys()):
+        print('h:session key: {}'.format(key))
+
     if 'profile' in request.session:
-        profile = json.loads(request.session['profile'])
-        if 'preferred_username' in profile:
-            try:
-                u = User.objects.get(username=profile['preferred_username'])
-                if u is not None:
-                    print('user = {}'.format(u))
-                    login(request, u)
-            except Exception as e:
-                print('exception: {}'.format(e))
+        # profile = json.loads(request.session['profile'])
+        # print('profile={}'.format(profile))
+        # if 'preferred_username' in profile:
+        #     try:
+        #         u = User.objects.get(username=profile['preferred_username'])
+        #         if u is not None:
+        #             print('user = {}'.format(u))
+        #             login(request, u)
+        #     except Exception as e:
+        #         print('exception: {}'.format(e))
         return HttpResponseRedirect(reverse('profile'))
     else:
         print('no profile in request')
@@ -80,10 +85,9 @@ def not_authenticated(request):
 
 def view_profile(request):
     if 'profile' in request.session:
-        page = request.session['page']
+        page = pages_js['entry_page']
         if page == 'login_css':
             page = 'login'
-
         p = {'profile': request.session['profile'],
              'org': BASE_URL,
              "js": _do_format(request, url_map[page], page)
@@ -100,7 +104,7 @@ def view_tokens(request):
 @csrf_exempt
 def view_login(request):
     page = 'login'
-    request.session['page'] = page
+    pages_js['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
@@ -110,14 +114,14 @@ def view_login(request):
 
 def _do_refresh(request, key):
     if 'Update' not in request.POST:
-        if key in request.session:
-            del request.session[key]
+        if key in pages_js:
+            del pages_js[key]
         return HttpResponseRedirect(request.build_absolute_uri())
 
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
-        request.session[key] = text
+        pages_js[key] = text
         return HttpResponseRedirect(request.build_absolute_uri())
     return HttpResponseRedirect('/')
 
@@ -132,8 +136,9 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
     scps = ''.join("'" + s + "', " for s in list_scopes)
     scps = '[' + scps[:-2] + ']'
 
-    if key in request.session:
-        return request.session[key]
+    if key in pages_js:  # request.session:
+        #return request.session[key]
+        return pages_js[key]
     else:
         response = requests.get(request.build_absolute_uri(static(url)))
         text = str(response.content, 'utf-8')\
@@ -146,14 +151,15 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     scopes=scps,
                     idps=idps,
                     btns=btns)
-        request.session[key] = text
+        # request.session[key] = text
+        pages_js[key] = text
         return text
 
 
 @csrf_exempt
 def view_login_css(request):
     page = 'login_css'
-    request.session['page'] = 'login_css'
+    pages_js['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, 'login')
     else:
@@ -162,17 +168,9 @@ def view_login_css(request):
 
 
 @csrf_exempt
-def okta_hosted_login(request):
-    page = 'okta_hosted_login'
-    request.session['page'] = page
-    c.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
-    return render(request, 'customized-okta-hosted.html', c)
-
-
-@csrf_exempt
 def view_login_custom(request):
     page = 'login_custom'
-    request.session['page'] = page
+    pages_js['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
@@ -181,9 +179,17 @@ def view_login_custom(request):
 
 
 @csrf_exempt
+def okta_hosted_login(request):
+    page = 'okta_hosted_login'
+    pages_js['entry_page'] = page
+    c.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
+    return render(request, 'customized-okta-hosted.html', c)
+
+
+@csrf_exempt
 def view_login_raas(request):
     page = 'login_raas'
-    request.session['page'] = page
+    pages_js['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
@@ -210,8 +216,7 @@ def view_login_idp(request):
                     + "        className: 'btn-customAuth',\n" \
                     + "        click: function() {\n" \
                     + "          var link =  '{issuer}/v1/authorize'\n".format(issuer='https://' + OKTA_ORG + '/oauth2/' + ISSUER) \
-                    + "          + '?response_type=id_token+token'\n" \
-                    + "          + '&response_mode=form_post'\n" \
+                    + "          + '?response_type=code'\n" \
                     + "          + '&client_id={client_id}'\n".format(client_id=CLIENT_ID) \
                     + "          + '&scope=openid+email+profile'\n" \
                     + "          + '&redirect_uri={redirect}'\n".format(redirect=REDIRECT_URI) \
@@ -224,7 +229,7 @@ def view_login_idp(request):
     btns += ']'
 
     page = 'login_idp'
-    request.session['page'] = page
+    pages_js['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
@@ -247,7 +252,14 @@ def hellovue(request):
 def view_logout(request):
     if 'profile' in request.session:
         del request.session['profile']
-    c.update({"page": reverse(request.session['page'])})
+    page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
+    print('logout back to page {}'.format(page))
+    print('url = {}'.format(reverse(page)))
+    c.update({"page": reverse(page)})
+
+    for key in list(request.session.keys()):
+        print('deleting {}'.format(key))
+        del request.session[key]
     return render(request, 'logged_out.html', c)
 
 

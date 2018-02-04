@@ -20,7 +20,6 @@ function do_login(un, pw) {
             // Uses response_mode=form_post: This will POST authorization_code and state to the redirectUri
             authClient.token.getWithRedirect({
                 responseType: 'code',
-                responseMode: 'form_post',
                 sessionToken: transaction.sessionToken,
                 scopes: [[scopes]],
             });
