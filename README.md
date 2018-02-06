@@ -49,7 +49,7 @@ But first you need to provide the container with environment variables.
     BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg    
     ```
 
-3. In Okta, configure your App to support **Implicit** flow.
+3. In Okta, configure your App to support both **authorization_code** and **Implicit** flow.
 
 4. In your Okta org, you must add CORS and a redirect_uri for your application. 
     Please add the following to your Okta org:
