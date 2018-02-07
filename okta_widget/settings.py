@@ -42,7 +42,7 @@ BACKGROUND_IMAGE_AUTHJS = os.environ.get('BACKGROUND_IMAGE_AUTHJS')
 BACKGROUND_IMAGE_IDP = os.environ.get('BACKGROUND_IMAGE_IDP')
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
