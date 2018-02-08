@@ -11,7 +11,7 @@ purely using API (AuthJS example). This application provides the presenter the a
 3. Social Auth
 4. MFA
 5. Universal Directory
-6. Centralized Identity Mangement
+6. Centralized Identity Management
 7. API Access Management
 
 
@@ -38,6 +38,7 @@ But first you need to provide the container with environment variables.
     CLIENT_SECRET=Ar-zht2498sdfxaerjwmsjd9s!je49rw8#a
     API_KEY=00xcfd2308490aeuxcvbEarsddffffdgjfhgf012xz
     DEFAULT_SCOPES=openid,email,profile,com.zeek.p1.resource1.admin,com.zeek.p1.resource1.user
+    REDIRECT_URI=http://localhost:8000/oauth2/callback
     CUSTOM_LOGIN_URL=login.atko.com
     GOOGLE_IDP_ID=0oa1bnct4t7RQEwao1t7
     FB_IDP_ID=0oaxmxaszOUXlhDAu1t6
@@ -97,6 +98,7 @@ You can also run locally:
     export CLIENT_SECRET=Ar-zht2498sdfxaerjwmsjd9s!je49rw8#a
     export API_KEY=00xcfd2308490aeuxcvbEarsddffffdgjfhgf012xz    
     export DEFAULT_SCOPES=openid,email,profile,com.zeek.p1.resource1.admin,com.zeek.p1.resource1.user
+    export REDIRECT_URI=http://localhost:8000/oauth2/callback
     export CUSTOM_LOGIN_URL=login.atko.com    
     export GOOGLE_IDP_ID=0oa1bnct4t7RQEwao1t7
     export FB_IDP_ID=0oaxmxaszOUXlhDAu1t6

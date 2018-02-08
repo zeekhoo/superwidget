@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from .views import not_authenticated
-from .views import view_home, view_tokens
+from .views import view_home, view_tokens, view_admin
 from .views import view_login, view_logout, view_profile
 from .views import oauth2_post, oauth2_callback, registration_view, registration_success
 from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp
@@ -29,7 +29,7 @@ from .views import hellovue
 
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', view_admin, name='admin'),
 
     # home
     url(r'^$', view_home, name='home'),

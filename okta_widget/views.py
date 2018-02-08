@@ -90,12 +90,19 @@ def not_authenticated(request):
 
 def view_profile(request):
     if 'profile' in request.session:
-        page = pages_js['entry_page']
-        if page == 'login_css':
+        if 'entry_page' in pages_js:
+            page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
+        else:
             page = 'login'
+
+        if page in url_map:
+            url_js = url_map[page]
+        else:
+            url_js = '/js/oidc_base.js'
+
         p = {'profile': request.session['profile'],
              'org': BASE_URL,
-             "js": _do_format(request, url_map[page], page)
+             "js": _do_format(request, url_js, page)
              }
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
@@ -152,18 +159,10 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
     if key in pages_js:
         return pages_js[key]
     else:
-        print('static(url)={}'.format(static(url)))
-        print('request.build_absolute_uri(static(url))={}'.format(request.build_absolute_uri(static(url))))
-        print('request.get_host()={}'.format(request.get_host()))
-
-        url_root = _request_url_root(request)
-
         s = requests.session()
-        a = requests.adapters.HTTPAdapter(max_retries=5)
+        a = requests.adapters.HTTPAdapter(max_retries=3)
         s.mount('http://', a)
-        url = url_root + static(url)
-        print('GET url={}'.format(url))
-        response = s.get(url)
+        response = s.get(_request_url_root(request) + static(url))
         text = str(response.content, 'utf-8')\
             .replace("{", "{{").replace("}", "}}")\
             .replace("[[", "{").replace("]]", "}")\
@@ -259,6 +258,10 @@ def view_login_idp(request):
     return render(request, 'index_idp.html', c)
 
 
+def view_admin(request):
+    return render(request, 'admin.html', {'meta': request.META})
+
+
 def view_login_baybridge(request):
     return render(request, 'z-login-baybridge.html');
 
@@ -274,7 +277,11 @@ def hellovue(request):
 def view_logout(request):
     if 'profile' in request.session:
         del request.session['profile']
-    page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
+
+    if 'entry_page' in pages_js:
+        page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
+    else:
+        page = 'login'
     print('logout back to page {}'.format(page))
     print('url = {}'.format(reverse(page)))
     c.update({"page": reverse(page)})
@@ -366,6 +373,7 @@ def oauth2_post(request):
 
     if access_token:
         print('access_token = {}'.format(access_token))
+
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
         print('profile = {}'.format(profile))
@@ -373,15 +381,16 @@ def oauth2_post(request):
         request.session['given_name'] = profile['given_name']
         request.session['user_id'] = profile['sub']
 
+        payload = json.loads(_decode_payload(access_token))
+        if 'groups' in payload:
+            if 'Admin' in payload['groups']:
+                request.session['admin'] = True
+
     if id_token:
         print('id_token = {}'.format(id_token))
         if 'profile' not in request.session:
             try:
-                parts = id_token.split('.')
-                payload = parts[1]
-                payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
-                decoded = str(base64.b64decode(payload), 'utf-8')
-                print('decoded = {}'.format(decoded))
+                decoded = _decode_payload(id_token)
                 profile = json.loads(decoded)
                 request.session['profile'] = decoded
                 request.session['given_name'] = profile['given_name']
@@ -392,6 +401,15 @@ def oauth2_post(request):
             print('profile = {}'.format(request.session['profile']))
 
     return HttpResponseRedirect(reverse('home'))
+
+
+def _decode_payload(token):
+    parts = token.split('.')
+    payload = parts[1]
+    payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
+    decoded = str(base64.b64decode(payload), 'utf-8')
+    print('decoded = {}'.format(decoded))
+    return decoded
 
 
 @csrf_exempt
