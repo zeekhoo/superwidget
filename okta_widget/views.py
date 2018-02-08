@@ -33,7 +33,12 @@ BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
 BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
 BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
 
-REDIRECT_URI = 'http://localhost:8000/oauth2/callback'
+DEFAULT_PORT = '8000'
+REDIRECT_URI = 'http://localhost:8000'
+SETTINGS_REDIRECT_URI = settings.REDIRECT_URI
+if SETTINGS_REDIRECT_URI is not None:
+    REDIRECT_URI = SETTINGS_REDIRECT_URI
+
 
 BASE_URL = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
@@ -116,14 +121,22 @@ def _do_refresh(request, key):
     if 'Update' not in request.POST:
         if key in pages_js:
             del pages_js[key]
-        return HttpResponseRedirect(request.build_absolute_uri())
+        return HttpResponseRedirect(reverse(key))
 
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
         pages_js[key] = text
-        return HttpResponseRedirect(request.build_absolute_uri())
+        return HttpResponseRedirect(reverse(key))
     return HttpResponseRedirect('/')
+
+
+def _request_url_root(request):
+    scheme = request.scheme
+    host = request.get_host().split(':')[0]
+    meta = request.META
+    port = meta['SERVER_PORT'] if 'SERVER_PORT' in meta else DEFAULT_PORT
+    return scheme + '://' + host + ':' + port
 
 
 def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIENT_ID,
@@ -136,11 +149,21 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
     scps = ''.join("'" + s + "', " for s in list_scopes)
     scps = '[' + scps[:-2] + ']'
 
-    if key in pages_js:  # request.session:
-        #return request.session[key]
+    if key in pages_js:
         return pages_js[key]
     else:
-        response = requests.get(request.build_absolute_uri(static(url)))
+        print('static(url)={}'.format(static(url)))
+        print('request.build_absolute_uri(static(url))={}'.format(request.build_absolute_uri(static(url))))
+        print('request.get_host()={}'.format(request.get_host()))
+
+        url_root = _request_url_root(request)
+
+        s = requests.session()
+        a = requests.adapters.HTTPAdapter(max_retries=5)
+        s.mount('http://', a)
+        url = url_root + static(url)
+        print('GET url={}'.format(url))
+        response = s.get(url)
         text = str(response.content, 'utf-8')\
             .replace("{", "{{").replace("}", "}}")\
             .replace("[[", "{").replace("]]", "}")\
@@ -151,7 +174,6 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     scopes=scps,
                     idps=idps,
                     btns=btns)
-        # request.session[key] = text
         pages_js[key] = text
         return text
 

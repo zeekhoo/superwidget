@@ -1,0 +1,5 @@
+**/env.conf
+**/.env*
+**/.git
+**/.gitignore
+**/venv

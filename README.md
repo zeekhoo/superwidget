@@ -32,7 +32,7 @@ But first you need to provide the container with environment variables.
    Example completed in env.list looks like the following
    (Note: keys and secrets below are made-up values):
     ```
-    AUTH_SERVER_ID=default
+    AUTH_SERVER_ID=aus8sghq3euRD33KN0h7
     OKTA_ORG=atko.okta.com
     CLIENT_ID=0oa4ox4jzjHj9vWgR1t7
     CLIENT_SECRET=Ar-zht2498sdfxaerjwmsjd9s!je49rw8#a
@@ -60,7 +60,7 @@ But first you need to provide the container with environment variables.
 
     Run the command
     ```
-    docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:v1.2
+    docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:v1.3
     ```
     Notes: This project has a Dockerfile which you can use to build your own images. Or, you can
     simply run okta-api-demo from the public repo [https://hub.docker.com/r/zzkhoo/okta-api-demo/tags/] as shown above. 
