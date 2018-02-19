@@ -64,9 +64,6 @@ pages_js = {}
 
 
 def view_home(request):
-    for key in list(request.session.keys()):
-        print('h:session key: {}'.format(key))
-
     if 'profile' in request.session:
         # profile = json.loads(request.session['profile'])
         # print('profile={}'.format(profile))
