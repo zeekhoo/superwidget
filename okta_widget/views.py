@@ -121,17 +121,24 @@ def view_login(request):
     return render(request, 'index.html', c)
 
 
-def _do_refresh(request, key):
+def _do_refresh(request, key, redirect=None):
+    if redirect:
+        reverse_to = redirect
+    else:
+        reverse_to = key
+
     if 'Update' not in request.POST:
         if key in pages_js:
             del pages_js[key]
-        return HttpResponseRedirect(reverse(key))
+            print('javascript {} reset'.format(key))
+        return HttpResponseRedirect(reverse(reverse_to))
 
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
         pages_js[key] = text
-        return HttpResponseRedirect(reverse(key))
+        print('javascript {} updated'.format(key))
+        return HttpResponseRedirect(reverse(reverse_to))
     return HttpResponseRedirect('/')
 
 
@@ -179,7 +186,7 @@ def view_login_css(request):
     page = 'login_css'
     pages_js['entry_page'] = page
     if request.method == 'POST':
-        return _do_refresh(request, 'login')
+        return _do_refresh(request, 'login', page)
     else:
         c.update({"js": _do_format(request, '/js/oidc_base.js', 'login')})
     return render(request, 'index_css.html', c)
