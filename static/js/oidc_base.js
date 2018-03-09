@@ -16,7 +16,6 @@ var oktaSignIn = new OktaSignIn({
         //smsRecovery: true,
         //callRecovery: true,
     },
-//    logo: 'https://mp.medimpact.com/brandcontentprovider/default/images/logo.gif',
     logo: '/static/img/gear_half.png',
     language: 'en',
     i18n: {
