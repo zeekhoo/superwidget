@@ -50,7 +50,8 @@ But first you need to provide the container with environment variables.
     BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg    
     ```
 
-3. In Okta, configure your App to support both **authorization_code** and **Implicit** flow.
+3. In Okta, configure your App to support both **authorization_code** and **Implicit** flow. 
+    Be sure to check both boxes ***"Allow ID Token with Implicit grant type"*** and ***"Allow Access Token with implicit grant type"***
 
 4. In your Okta org, you must add CORS and a redirect_uri for your application. 
     Please add the following to your Okta org:
@@ -68,6 +69,22 @@ But first you need to provide the container with environment variables.
     Also note: The Dockerfile exposes the project on port 8000, so map your port to 8000. 
     And be sure to inject the env.list into your container with the --env-file option as shown. 
 
+### Demoing Idp Discovery
+This app can also demo IdP discovery. To do this:
+1. Add the settting IDP_DISCO_PAGE in env.list. Set it to the relative path of your App's EMBED_LINK: Example
+    ```
+    AUTH_SERVER_ID=....
+    OKTA_ORG=...
+    ...
+    IDP_DISCO_PAGE=/home/oidc_client/0oa4ox4jzjHj9vWgR1t7/alntwmdyyUB5fs8d50g4
+    ```
+    
+2. In Okta, configure your OIDC App's settings with the following:
+
+    Login Initiated by = Either Okta or App
+
+    Initiate login URI = http://localhost:8000/login-disco
+    
 ## 2. Local setup
 You can also run locally:
 

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block head_js %}
+{% endblock %}
+
+
+{% block content %}
+<div class="login-pg login-pg-idp" style="background-image: url({{ background_idp }}); background-repeat: no-repeat; background-size: 100%; background-position: center center;">
+	<div class="row">
+		<div class="container-fluid">
+			<div class="col-md-4">
+				<div id="okta-login-container"></div>
+			</div>
+			<div class="col-md-8">
+				<div id="code-preview" class="code-preview">
+					<form class="form-horizontal" name="RegistrationForm" action="{% url 'login_idp' %}" method="post">
+						<div class="btn-toolbar" role="toolbar" aria-label="...">
+							<button type="submit" class="btn btn-primary btn-xs" name="Update">Update & Reload</button>
+							<button type="submit" class="btn btn-primary btn-xs" name="Default">Reset</button>
+						</div>
+						<textarea id="myText" name="myText"></textarea>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script id="theScript">
+{{ js|safe }}
+</script>
+{% endblock %}
+

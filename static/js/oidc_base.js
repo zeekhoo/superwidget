@@ -27,7 +27,6 @@ var oktaSignIn = new OktaSignIn({
         }
     },
 });
-
 oktaSignIn.renderEl(
     {el: '#okta-login-container'},
     function (res) {

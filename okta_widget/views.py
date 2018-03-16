@@ -49,6 +49,8 @@ scopes = None
 if DEFAULT_SCOPES:
     scopes = DEFAULT_SCOPES
 
+IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
+
 c = {
     "org": BASE_URL,
     "iss": ISSUER,
@@ -56,7 +58,8 @@ c = {
     "background": BACKGROUND_IMAGE if BACKGROUND_IMAGE is not None else DEFAULT_BACKGROUND,
     "background_css": BACKGROUND_IMAGE_CSS if BACKGROUND_IMAGE_CSS is not None else DEFAULT_BACKGROUND,
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
-    "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND
+    "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
+    "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None'
 }
 
 url_map = {}
@@ -151,7 +154,7 @@ def _request_url_root(request):
 
 
 def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIENT_ID,
-               idps='[]', btns='[]'):
+               idps='[]', btns='[]', embed_link=None):
     url_map.update({key: url})
 
     list_scopes = ['openid', 'profile', 'email']
@@ -176,7 +179,8 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     redirect=REDIRECT_URI,
                     scopes=scps,
                     idps=idps,
-                    btns=btns)
+                    btns=btns,
+                    idp_disco=embed_link)
         pages_js[key] = text
         return text
 
@@ -260,6 +264,17 @@ def view_login_idp(request):
     else:
         c.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
     return render(request, 'index_idp.html', c)
+
+
+@csrf_exempt
+def view_login_disco(request):
+    page = 'login_idp_disco'
+    pages_js['entry_page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=IDP_DISCO_PAGE)})
+    return render(request, 'index_idp_disco.html', c)
 
 
 def view_admin(request):

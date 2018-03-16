@@ -19,7 +19,7 @@ from .views import not_authenticated
 from .views import view_home, view_tokens, view_admin
 from .views import view_login, view_logout, view_profile
 from .views import oauth2_post, oauth2_callback, registration_view, registration_success
-from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp
+from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp, view_login_disco
 from .views import view_login_baybridge, view_login_brooklynbridge
 from .views import view_login_custom
 from .views import auth_broker, sessions_broker
@@ -46,10 +46,10 @@ urlpatterns = [
     url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
     url(r'^login-raas$', view_login_raas, name='login_raas'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
+    url(r'^login-disco$', view_login_disco, name='login_idp_disco'),
     url(r'^login-form$', view_login_custom, name='login_custom'),
 
     #
-
     url(r'^login-baybridge$', view_login_baybridge, name='login_baybridge'),
     url(r'^login-brooklynbridge$', view_login_brooklynbridge, name='login_brooklynbridge'),
 

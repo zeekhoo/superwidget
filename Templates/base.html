@@ -23,9 +23,10 @@
 
     <link href="{% static 'css/demo.css' %}" rel="stylesheet">
 
-    <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/js/okta-sign-in.min.js" type="text/javascript"></script>
-    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
-    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.5.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+    <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.7.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.7.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
+    <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.7.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+    <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.13.0/okta-auth-js.min.js" type="text/javascript"></script>
 
       <script src="https://unpkg.com/vue"></script>
 
@@ -60,6 +61,9 @@
                       <li><a href="{% url 'okta_hosted_login' %}">OnClick > Redirect</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget</a></li>
                       <li><a href="{% url 'login_idp' %}">Social/IdP Login</a></li>
+                      {% if idp_disco_page != 'None' %}
+                      <li><a href="{% url 'login_idp_disco' %}">IdP Discovery</a></li>
+                      {% endif %}
                       <!--<li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>-->
                       {% else %}
                       {% if 'admin' in request.session %}
