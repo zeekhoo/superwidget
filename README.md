@@ -28,7 +28,8 @@ But first you need to provide the container with environment variables.
     so simply copy it and edit it:
     * Edit "env.list" file and provide values to your Okta API-Products configuration values. 
         Note: comments begin with an "#". Be sure to read the comments.
-    * Not all the variables in the "env.list" are required. For example, Social Idp and External SAML Idp settings are optional.
+    * You don't need to update all the variables in "env.list", **only the first 5**. And these are clearly marked out in the template env.list file
+    
    Example completed in env.list looks like the following
    (Note: keys and secrets below are made-up values):
     ```
@@ -50,8 +51,7 @@ But first you need to provide the container with environment variables.
     BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg    
     ```
 
-3. In Okta, configure your App to support both **authorization_code** and **Implicit** flow. 
-    Be sure to check both boxes ***"Allow ID Token with Implicit grant type"*** and ***"Allow Access Token with implicit grant type"***
+3. In Okta, configure your App to support both **authorization_code** and **Implicit** flow. Also, be sure to check both boxes ***"Allow ID Token with Implicit grant type"*** and ***"Allow Access Token with implicit grant type"***
 
 4. In your Okta org, you must add CORS and a redirect_uri for your application. 
     Please add the following to your Okta org:
@@ -62,7 +62,7 @@ But first you need to provide the container with environment variables.
 
     Run the command
     ```
-    docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:v1.4
+    docker run -it -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:latest
     ```
     Notes: This project has a Dockerfile which you can use to build your own images. Or, you can
     simply run okta-api-demo from the public repo [https://hub.docker.com/r/zzkhoo/okta-api-demo/tags/] as shown above. 
@@ -70,7 +70,7 @@ But first you need to provide the container with environment variables.
     And be sure to inject the env.list into your container with the --env-file option as shown. 
 
 ### Demoing Idp Discovery
-This app can also demo IdP discovery. To do this:
+This app can demo IdP discovery, but there are some configuration steps to take care of. To demo IdP Discovery:
 1. Add the settting IDP_DISCO_PAGE in env.list. Set it to the relative path of your App's EMBED_LINK: Example
     ```
     AUTH_SERVER_ID=....
@@ -81,9 +81,11 @@ This app can also demo IdP discovery. To do this:
     
 2. In Okta, configure your OIDC App's settings with the following:
 
-    Login Initiated by = Either Okta or App
+    Login Initiated by = `Either Okta or App`
 
-    Initiate login URI = http://localhost:8000/login-disco
+    Initiate login URI = `http://localhost:8000/login-disco`
+    
+3. Now you should see an "Idp Discovery" tab in the demo app. 
     
 ## 2. Local setup
 You can also run locally:
