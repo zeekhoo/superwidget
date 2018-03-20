@@ -62,7 +62,7 @@ But first you need to provide the container with environment variables.
 
     Run the command
     ```
-    docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:v1.3
+    docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:v1.4
     ```
     Notes: This project has a Dockerfile which you can use to build your own images. Or, you can
     simply run okta-api-demo from the public repo [https://hub.docker.com/r/zzkhoo/okta-api-demo/tags/] as shown above. 
