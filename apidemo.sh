@@ -3,8 +3,10 @@
 # ./apidemo.sh start
 # ./apidemo.sh stop
 # ./apidemo.sh status
+# ./apidemo.sh cleanup
 
 SERVER_CONTAINER="zzkhoo/okta-api-demo:latest"
+DATA_CONTAINER="postgresql-data"
 PWD=$(pwd)
 STATIC_PATH="$PWD/static"
 DOCKER_STATIC_PATH="/okta_api_demo/static"
@@ -35,6 +37,10 @@ case "$1" in
         getStatus
         ;;
 
+     cleanup)
+	echo "Cleaning up all inactive and stopped Docker containers"
+	docker ps -aq --no-trunc | xargs docker rm
+	;;
     stop)
         CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
         if [[ -n $CONTAINER_ID ]] ; then
@@ -49,9 +55,10 @@ case "$1" in
         ;;
 
     *)
-        echo "Usage: `basename $0`  {start|stop|status}"
+        echo "Usage: `basename $0`  {start|stop|status|cleanup}"
         exit 1
         ;;
 esac
 
 exit 0
+
