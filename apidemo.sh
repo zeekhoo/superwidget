@@ -5,29 +5,27 @@
 # ./apidemo.sh status
 
 SERVER_CONTAINER="zzkhoo/okta-api-demo:latest"
+PWD=$(pwd)
+STATIC_PATH="$PWD/static"
+DOCKER_STATIC_PATH="/okta_api_demo/static"
 
 function getStatus(){
     CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
     if [[ -z $CONTAINER_ID ]] ; then
         echo 'Not running.'
-        return 1
     else
         echo "Running in container: $CONTAINER_ID"
-        return 0
     fi
 }
 
 case "$1" in
     start)
-
     	CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
     	if [[ -z $CONTAINER_ID ]] ; then
 		echo "Starting Docker API Demo"
-        	docker run -p 8000:8000 --env-file=env.list -t zzkhoo/okta-api-demo:latest
-        	return 1
+        	docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -t zzkhoo/okta-api-demo:latest
     	else
         	echo "Running in container: $CONTAINER_ID"
-        	return 0
     	fi
 
         getStatus
