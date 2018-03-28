@@ -12,39 +12,39 @@ CONTAINER_ID=$(docker ps -a | grep Created | grep $SERVER_CONTAINER | awk '{prin
     	fi
 
 function getStatus(){
-    CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
-    if [[ -z $CONTAINER_ID ]] ; then
-        echo 'Not running.'
-    else
-        echo "API Demo is currently running with container ID: $CONTAINER_ID"
-    fi
+	CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
+	if [[ -z $CONTAINER_ID ]] ; then
+        	echo 'Not running.'
+    	else
+        	echo "API Demo is currently running with container ID: $CONTAINER_ID"
+    	fi
 }
 
 case "$1" in
-    start)
-    	CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
-    	if [[ -z $CONTAINER_ID ]] ; then
-    		echo "----- Starting Docker API Demo as a background process. Docker will continue to run until you stop it. -----"
-        	docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -d $SERVER_CONTAINER
-        	getStatus
-    	else
-        	getStatus
-    	fi
+	start)
+    		CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
+    		if [[ -z $CONTAINER_ID ]] ; then
+    			echo "----- Starting Docker API Demo as a background process. Docker will continue to run until you stop it. -----"
+        		docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -d $SERVER_CONTAINER
+        		getStatus
+    		else
+        		getStatus
+    		fi
         ;;
         
 	interactive)
-    	CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
-    	if [[ -z $CONTAINER_ID ]] ; then
-    		echo "----- Starting Docker API Demo in interactive mode, hitting ctrl-c will stop the Docker process. -----"
-        	docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -it $SERVER_CONTAINER
-        	getStatus
-    	else
-        	getStatus
-    	fi
+    		CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
+    		if [[ -z $CONTAINER_ID ]] ; then
+    			echo "----- Starting Docker API Demo in interactive mode, hitting ctrl-c will stop the Docker process. -----"
+        		docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -it $SERVER_CONTAINER
+        		getStatus
+    		else
+        		getStatus
+    		fi
         ;;
         
 	status)
-        getStatus
+        	getStatus
         ;;
 
 	cleanup)
@@ -53,26 +53,27 @@ case "$1" in
 		;;
 		
 	stop)
-        CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
-        if [[ -n $CONTAINER_ID ]] ; then
-            SRV=$(docker stop $CONTAINER_ID)
-            if [ $? -eq 0 ] ; then
-                echo 'Stopped.'
-            fi
-        else
-            echo 'Not Running.'
-            exit 1
-        fi
+        	CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
+        	if [[ -n $CONTAINER_ID ]] ; then
+            		SRV=$(docker stop $CONTAINER_ID)
+            		if [ $? -eq 0 ] ; then
+                		echo "Stopped the API Demo container"
+			else
+				echo "There was an error when stopping the API Demo container"
+            		fi
+        	else
+        		echo "API Demo container is not running."
+        		exit 1
+        	fi
         ;;
-
-    *)
-        echo "Usage: ./`basename $0`  {start|stop|status}"
-        echo "./`basename $0` start		-- Starts the API container as a background process that will run until stopped"
+	
+	*)
+        	echo "Usage: ./`basename $0`  {start|stop|status}"
+        	echo "./`basename $0` start		-- Starts the API container as a background process that will run until stopped"
 		echo "./`basename $0` stop 		-- Stops the API Demo container"
 		echo "./`basename $0` status		-- Shows if the API Demo is currently running"
 		echo "./`basename $0` cleanup		-- Cleans up any old, non-running Docker containers"
 		echo "./`basename $0` interactive		-- Runs Docker in interactive mode which terminates when the script is terminated"
-        exit 1
         ;;
 esac
 
