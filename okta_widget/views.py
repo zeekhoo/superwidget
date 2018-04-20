@@ -109,7 +109,8 @@ def not_authenticated(request):
 def view_profile(request):
     if 'profile' in request.session:
         if 'entry_page' in pages_js:
-            page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
+            # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
+            page = pages_js['entry_page']
         else:
             page = 'login'
 
@@ -212,9 +213,9 @@ def view_login_css(request):
     page = 'login_css'
     pages_js['entry_page'] = page
     if request.method == 'POST':
-        return _do_refresh(request, 'login', page)
+        return _do_refresh(request, page, page)
     else:
-        c.update({"js": _do_format(request, '/js/oidc_base.js', 'login')})
+        c.update({"js": _do_format(request, '/js/oidc_css.js', page)})
     return render(request, 'index_css.html', c)
 
 

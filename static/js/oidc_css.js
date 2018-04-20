@@ -1,28 +1,5 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
-    logo: 'https://developer.okta.com/sites/all/themes/developer/media/logo.svg',
-    features: {
-        router: true,
-        rememberMe: false,
-        //-----------------MORE OPTIONS:-----------------
-        //[selfServiceUnlock, multiOptionalFactorEnroll, smsRecovery, callRecovery, selfServiceUnlock, hideSignOutLinkInMFA, registration]
-        //-----------------------------------------------
-    },
-
-    //------------language and localization settings------------
-    language: 'en',
-    i18n: {
-        'en': {
-            'primaryauth.title': 'Sign In',
-            'primaryauth.username.placeholder': 'Username',
-            'primaryauth.password.placeholder': 'Password',
-            'needhelp': 'Need Help?',
-            'password.forgot.email.or.username.placeholder': 'Enter your email, then click below',
-            'primaryauth.submit': 'Sign In',
-        }
-    },
-
-    //------------OpenIDConnect, OAuth2 settings----------------
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
     authParams: {
@@ -30,8 +7,25 @@ var oktaSignIn = new OktaSignIn({
         responseType: ['id_token', 'token'],
         scopes: [[scopes]],
     },
+    features: {
+        router: true,
+        registration: false,
+        rememberMe: true,
+        //multiOptionalFactorEnroll: true,
+        //selfServiceUnlock: true,
+        //smsRecovery: true,
+    	//callRecovery: true,
+    },
+    logo: '/static/img/gear_half.png', //more:[logo_widgico.png, gear_logo.png, gear_half.png]
+    language: 'en', //more: [fr, de, es, ja, zh-CN] Full list here: https://github.com/okta/okta-signin-widget#language-and-text
+    i18n: {
+        'en': {
+            'primaryauth.title': 'Sign In',
+            'primaryauth.submit': 'Sign In',
+            //Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
+        }
+    },
 });
-
 oktaSignIn.renderEl(
     {el: '#okta-login-container'},
     function (res) {
@@ -49,3 +43,4 @@ oktaSignIn.renderEl(
         }
     }
 );
+
