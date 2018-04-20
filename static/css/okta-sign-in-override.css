@@ -30,3 +30,29 @@
 #okta-sign-in .registration-container .content {
     padding: 0px 0px;
 }
+
+#okta-sign-in .button.link-button {
+    height: 40px;
+    width: 100px;
+    line-height: 36px;
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+#okta-sign-in .mfa-verify-passcode .auth-passcode .o-form-input {
+    width: 110px;
+    line-height: 36px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+#okta-sign-in .dropdown.more-actions .option a {
+    padding: 5px 5px 5px 15px;
+}
+
+#okta-sign-in .factors-dropdown-wrap .dropdown.more-actions .options-wrap {
+    left: -200px;
+    width: 290px;
+    border-radius: 10px;
+}
