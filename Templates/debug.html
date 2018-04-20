@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block head_js %}
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <p></p>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">META</div>
+            <div class="panel-body">
+                <h3>Admins get to see http request metadata...</h3>
+                <textarea class="form-control" id="id_token" readonly rows="30" cols="100%">{{ meta }}</textarea>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+{% endblock %}
+

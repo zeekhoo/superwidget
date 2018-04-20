@@ -3,7 +3,7 @@ function do_login(un, pw) {
         url: 'https://[[org]]',
         clientId: '[[aud]]',
         redirectUri: '[[redirect]]',
-        issuer: 'https://[[org]]/oauth2/[[iss]]',
+        issuer: 'https://[[org]]/oauth2/[[iss]]'
     });
 
     authClient.signIn({

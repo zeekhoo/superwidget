@@ -25,6 +25,10 @@ SECRET_KEY = '(7g9#++b(_&6#(la7we*xrx6&z=d#g7)oe7+lyrq&vsv6$b33#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ALLOWED_HOSTS = ['*']
+
+
+DEFAULT_PORT = os.environ.get('DEFAULT_PORT')
 OKTA_ORG = os.environ.get('OKTA_ORG')
 AUTH_SERVER_ID = os.environ.get('AUTH_SERVER_ID')
 CLIENT_ID = os.environ.get('CLIENT_ID')
@@ -43,9 +47,11 @@ BACKGROUND_IMAGE_IDP = os.environ.get('BACKGROUND_IMAGE_IDP')
 REDIRECT_URI = os.environ.get('REDIRECT_URI')
 IDP_DISCO_PAGE = os.environ.get('IDP_DISCO_PAGE')
 
-
-ALLOWED_HOSTS = ['*']
-
+IMPERSONATION_ORG = os.environ.get('IMPERSONATION_ORG')
+IMPERSONATION_ORG_AUTH_SERVER_ID = os.environ.get('IMPERSONATION_ORG_AUTH_SERVER_ID')
+IMPERSONATION_ORG_OIDC_CLIENT_ID = os.environ.get('IMPERSONATION_ORG_OIDC_CLIENT_ID')
+IMPERSONATION_ORG_REDIRECT_IDP_ID = os.environ.get('IMPERSONATION_ORG_REDIRECT_IDP_ID')
+IMPERSONATION_SAML_APP_ID = os.environ.get('IMPERSONATION_SAML_APP_ID')
 
 # Application definition
 

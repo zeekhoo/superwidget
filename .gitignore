@@ -12,4 +12,5 @@ static/js/z*
 static/okta*
 .env_dev
 .env_preview
+.env_testing
 env.conf

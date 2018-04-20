@@ -28,7 +28,8 @@ But first you need to provide the container with environment variables.
     so simply copy it and edit it:
     * Edit "env.list" file and provide values to your Okta API-Products configuration values. 
         Note: comments begin with an "#". Be sure to read the comments.
-    * You don't need to update all the variables in "env.list", **only the first 5**. And these are clearly marked out in the template env.list file
+    * You don't need to update all the variables in "env.list", **only the first 5** (And these are clearly marked out in the template env.list file). 
+    You can edit the other environment variables to suit the custom needs of your demo, but for out-of-the-box setup, the default values should work fine.
     
    Example completed in env.list looks like the following
    (Note: keys and secrets below are made-up values):

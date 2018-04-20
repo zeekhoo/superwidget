@@ -35,10 +35,7 @@ class OAuth2Client(object):
         return tokens
 
     def profile(self, token):
-        AUTH_SERVER_ID = settings.AUTH_SERVER_ID
-        OKTA_ORG = settings.OKTA_ORG
-        iss = 'https://{0}/oauth2/{1}'.format(OKTA_ORG, AUTH_SERVER_ID)
-
+        iss = 'https://{0}/oauth2/{1}'.format(settings.OKTA_ORG, settings.AUTH_SERVER_ID)
         #iss = _tokenIssuer(token)
         if iss:
             url = iss + '/v1/userinfo'
@@ -46,16 +43,28 @@ class OAuth2Client(object):
             url = self.base_url + '/oauth2/v1/userinfo'
         print('userinfo url={}'.format(url))
 
-        headers = {
-            'Authorization': 'Bearer ' + token
-        }
+        headers = {'Authorization': 'Bearer ' + token}
+        profile = {}
         try:
             response = requests.post(url, headers=headers)
             print('response = {}'.format(response))
-            profile = response.json()
-            return profile
+            if response.status_code == 200:
+                profile = response.json()
         except Exception as e:
             print('exception: {}'.format(e))
+
+        # IMPERSONATION Hack: Get the profile from the "Other" issuer
+        if profile == {} and settings.IMPERSONATION_ORG and settings.IMPERSONATION_ORG != 'None'\
+                and settings.IMPERSONATION_ORG_AUTH_SERVER_ID and settings.IMPERSONATION_ORG_AUTH_SERVER_ID != 'None':
+            url = 'https://{0}/oauth2/{1}/v1/userinfo'.format(settings.IMPERSONATION_ORG, settings.IMPERSONATION_ORG_AUTH_SERVER_ID)
+            print('userinfo url={}'.format(url))
+            try:
+                response = requests.post(url, headers=headers)
+                profile = response.json()
+            except Exception as e2:
+                print('exception2: {}'.format(e2))
+
+        return profile
 
 
 def _tokenIssuer(token):

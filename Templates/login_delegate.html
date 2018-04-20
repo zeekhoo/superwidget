@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head_js %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+</div>
+{% endblock %}
+
+{% load static %}
+{% block page_js %}
+<script id="theScript">{{ js|safe }}</script>
+{% endblock %}

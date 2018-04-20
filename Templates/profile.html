@@ -5,6 +5,8 @@
 <script>
     var profile = '{{ profile|safe }}';
     var sub = '{{ request.session.user_id }}';
+    var srv_id_token = '{{ request.session.id_token|safe }}';
+    var srv_access_token = '{{ request.session.access_token|safe }}';
 </script>
 {% endblock %}
 

@@ -3,17 +3,17 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-from .client.oauth2_client import OAuth2Client
-from .client.auth_proxy import AuthClient, SessionsClient
-from .client.users_client import UsersClient
+from okta_widget.client.oauth2_client import OAuth2Client
+from okta_widget.client.auth_proxy import AuthClient, SessionsClient
+from okta_widget.client.users_client import UsersClient
+from okta_widget.client.apps_client import AppsClient
 import json
-from .forms import RegistrationForm, TextForm
+from okta_widget.forms import RegistrationForm, TextForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 import base64
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
-
 
 API_KEY = settings.API_KEY
 OKTA_ORG = settings.OKTA_ORG
@@ -34,22 +34,39 @@ BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
 BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
 
 DEFAULT_PORT = '8000'
-REDIRECT_URI = 'http://localhost:8000/oauth2/callback'
-SETTINGS_REDIRECT_URI = settings.REDIRECT_URI
-if SETTINGS_REDIRECT_URI is not None:
-    REDIRECT_URI = SETTINGS_REDIRECT_URI
+if settings.DEFAULT_PORT and settings.DEFAULT_PORT != 'None':
+    DEFAULT_PORT = settings.DEFAULT_PORT
 
+REDIRECT_URI = 'http://localhost:{}/oauth2/callback'.format(DEFAULT_PORT)
+
+if settings.REDIRECT_URI and settings.REDIRECT_URI != 'None':
+    REDIRECT_URI = settings.REDIRECT_URI
 
 BASE_URL = OKTA_ORG
 if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
     BASE_URL = CUSTOM_LOGIN_URL
 
-DEFAULT_SCOPES = settings.DEFAULT_SCOPES
 scopes = None
-if DEFAULT_SCOPES:
-    scopes = DEFAULT_SCOPES
+if settings.DEFAULT_SCOPES and settings.DEFAULT_SCOPES != 'None':
+    scopes = settings.DEFAULT_SCOPES
 
+# Option: IDP Discovery setting
 IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
+
+# Option: Do Impersonation hack
+IMPERSONATION_ORG = settings.IMPERSONATION_ORG
+IMPERSONATION_ORG_AUTH_SERVER_ID = settings.IMPERSONATION_ORG_AUTH_SERVER_ID
+IMPERSONATION_ORG_OIDC_CLIENT_ID = settings.IMPERSONATION_ORG_OIDC_CLIENT_ID
+IMPERSONATION_ORG_REDIRECT_IDP_ID = settings.IMPERSONATION_ORG_REDIRECT_IDP_ID
+IMPERSONATION_SAML_APP_ID = settings.IMPERSONATION_SAML_APP_ID
+if IMPERSONATION_ORG and IMPERSONATION_ORG != 'None' \
+        and IMPERSONATION_ORG_AUTH_SERVER_ID and IMPERSONATION_ORG_AUTH_SERVER_ID != 'None' \
+        and IMPERSONATION_ORG_OIDC_CLIENT_ID and IMPERSONATION_ORG_OIDC_CLIENT_ID != 'None' \
+        and IMPERSONATION_ORG_REDIRECT_IDP_ID and IMPERSONATION_ORG_REDIRECT_IDP_ID != 'None' \
+        and IMPERSONATION_SAML_APP_ID and IMPERSONATION_SAML_APP_ID != 'None':
+    allow_impersonation = True
+else:
+    allow_impersonation = False
 
 c = {
     "org": BASE_URL,
@@ -59,7 +76,8 @@ c = {
     "background_css": BACKGROUND_IMAGE_CSS if BACKGROUND_IMAGE_CSS is not None else DEFAULT_BACKGROUND,
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
     "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
-    "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None'
+    "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
+    "allow_impersonation": allow_impersonation
 }
 
 url_map = {}
@@ -170,9 +188,9 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
         a = requests.adapters.HTTPAdapter(max_retries=3)
         s.mount('http://', a)
         response = s.get(_request_url_root(request) + static(url))
-        text = str(response.content, 'utf-8')\
-            .replace("{", "{{").replace("}", "}}")\
-            .replace("[[", "{").replace("]]", "}")\
+        text = str(response.content, 'utf-8') \
+            .replace("{", "{{").replace("}", "}}") \
+            .replace("[[", "{").replace("]]", "}") \
             .format(org=org_url,
                     iss=issuer,
                     aud=audience,
@@ -180,7 +198,11 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     scopes=scps,
                     idps=idps,
                     btns=btns,
-                    idp_disco=embed_link)
+                    idp_disco=embed_link,
+                    impersonation_org=IMPERSONATION_ORG,
+                    impersonation_org_auth_server_id=IMPERSONATION_ORG_AUTH_SERVER_ID,
+                    impersonation_org_oidc_client_id=IMPERSONATION_ORG_OIDC_CLIENT_ID,
+                    impersonation_org_redirect_idp_id=IMPERSONATION_ORG_REDIRECT_IDP_ID)
         pages_js[key] = text
         return text
 
@@ -244,7 +266,8 @@ def view_login_idp(request):
             btns += "{title: 'Login SAML Idp',\n" \
                     + "        className: 'btn-customAuth',\n" \
                     + "        click: function() {\n" \
-                    + "          var link =  '{issuer}/v1/authorize'\n".format(issuer='https://' + OKTA_ORG + '/oauth2/' + ISSUER) \
+                    + "          var link =  '{issuer}/v1/authorize'\n".format(
+                issuer='https://' + OKTA_ORG + '/oauth2/' + ISSUER) \
                     + "          + '?response_type=code'\n" \
                     + "          + '&client_id={client_id}'\n".format(client_id=CLIENT_ID) \
                     + "          + '&scope=openid+email+profile'\n" \
@@ -266,6 +289,7 @@ def view_login_idp(request):
     return render(request, 'index_idp.html', c)
 
 
+# Demo: IdP discovery
 @csrf_exempt
 def view_login_disco(request):
     page = 'login_idp_disco'
@@ -278,19 +302,26 @@ def view_login_disco(request):
 
 
 def view_admin(request):
-    return render(request, 'admin.html', {'meta': request.META})
+    c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
+
+    return render(request, 'admin.html', c)
 
 
-def view_login_baybridge(request):
-    return render(request, 'z-login-baybridge.html');
+def list_users(request):
+    get = request.GET
+    startsWith = None
+    if 'startsWith' in get:
+        startsWith = get['startsWith']
+    client = UsersClient('https://' + OKTA_ORG, API_KEY)
+    users = client.list_users(15, startsWith)
+    response = HttpResponse()
+    response.status_code = 200
+    response.content = users
+    return response
 
 
-def view_login_brooklynbridge(request):
-    return render(request, 'z-login-brooklynbridge.html');
-
-
-def hellovue(request):
-    return render(request, 'z-hellovue.html');
+def view_debug(request):
+    return render(request, 'debug.html', {'meta': request.META})
 
 
 def view_logout(request):
@@ -311,6 +342,7 @@ def view_logout(request):
     return render(request, 'logged_out.html', c)
 
 
+# Sample custom registration form
 def registration_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -357,10 +389,8 @@ def oauth2_callback(request):
 
 @csrf_exempt
 def oauth2_post(request):
-    print('in /oauth2/callback')
     access_token = None
     id_token = None
-    state = None
     code = None
     if request.method == 'POST':
         print('POST request: {}'.format(request.POST))
@@ -380,7 +410,6 @@ def oauth2_post(request):
             state = request.GET['state']
 
     if code:
-        print('auth code = {}'.format(code))
         client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
         tokens = client.token(code, REDIRECT_URI, ISSUER)
         if tokens['access_token']:
@@ -388,10 +417,10 @@ def oauth2_post(request):
         if tokens['id_token']:
             id_token = tokens['id_token']
 
-    print('state: {}'.format(state))
-
     if access_token:
+        # In the real world, you should validate the access_token. But this demo app is going to skip that part.
         print('access_token = {}'.format(access_token))
+        request.session['access_token'] = access_token
 
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
@@ -406,7 +435,10 @@ def oauth2_post(request):
                 request.session['admin'] = True
 
     if id_token:
+        # In the real world, you should validate the id_token. But this demo app is going to skip that part.
         print('id_token = {}'.format(id_token))
+        request.session['id_token'] = id_token
+
         if 'profile' not in request.session:
             try:
                 decoded = _decode_payload(id_token)
@@ -427,54 +459,112 @@ def _decode_payload(token):
     payload = parts[1]
     payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
     decoded = str(base64.b64decode(payload), 'utf-8')
-    print('decoded = {}'.format(decoded))
     return decoded
 
 
+# IMPERSONATION Demo
+def login_delegate(request):
+    if 'profile' in request.session:
+        del request.session['profile']
+    for key in list(request.session.keys()):
+        del request.session[key]
+
+    c.update({"js": _do_format(request, '/js/login-delegate.js', 'login_delegate')})
+    return render(request, 'login_delegate.html', c)
+
+
+# IMPERSONATION Demo
 @csrf_exempt
-def auth_broker(request):
-    print(request)
-    cookies = request.COOKIES
-    print('cookie: {}'.format(cookies))
+def setNameId(request):
+    post = request.POST
+    print(post)
 
     response = HttpResponse()
-    response.status_code = 200
+    if 'nameid' in post:
+        nameid = post['nameid']
 
-    if request.method == 'POST':
-        body = json.loads(request.body)
-        username = body['username']
-        password = body['password']
-        auth = AuthClient('https://' + OKTA_ORG)
-        res = auth.authn(username, password)
-        print('status={}'.format(res.status_code))
-        response.status_code = res.status_code
-
-        content = json.dumps(res.json())
-        print('response={}'.format(content))
-        response.content=content
-
-        return response
-
+        # get the access token
+        if 'HTTP_AUTHORIZATION' in request.META:
+            auth_header = request.META['HTTP_AUTHORIZATION']
+            if auth_header:
+                if auth_header.split(' ')[0] == 'Bearer':
+                    access_token = auth_header.split(' ')[1]
+                    # ### validate the access_token here ###
+                    client = AppsClient('https://' + OKTA_ORG, API_KEY)
+                    response.status_code = client.set_name_id(IMPERSONATION_SAML_APP_ID, request.session['user_id'], nameid)
     return response
 
 
-def sessions_broker(request):
-    print(request)
+@csrf_exempt
+def process_creds(request):
+    print('#####################################PROCESS CREDS#####################################')
+    print(request.POST)
+    print('#####################################PROCESS CREDS#####################################')
+
     response = HttpResponse()
+    response.content = 'OK!'
     response.status_code = 200
-
-    cookies = request.COOKIES
-    print('cookie: {}'.format(cookies))
-
-    auth = SessionsClient('https://' + OKTA_ORG)
-    res = auth.me()
-    response.status_code = res.status_code
-    content = json.dumps(res.json())
-    print('response={}'.format(content))
-    response.content=content
-
     return response
 
 
-def view_app_b(request):
-    return render(request, 'app_b.html')
+# def view_login_baybridge(request):
+#     return render(request, 'z-login-baybridge.html');
+
+# def view_login_brooklynbridge(request):
+#     return render(request, 'z-login-brooklynbridge.html');
+
+# def hellovue(request):
+#     return render(request, 'z-hellovue.html');
+
+
+# def proxy_callback(request):
+#     if 'profile' in request.session:
+#         del request.session['profile']
+#     for key in list(request.session.keys()):
+#         del request.session[key]
+#     return render(request, 'z-proxy-callback.html')
+
+
+# @csrf_exempt
+# def auth_broker(request):
+#     print(request)
+#     cookies = request.COOKIES
+#     print('cookie: {}'.format(cookies))
+#
+#     response = HttpResponse()
+#     response.status_code = 200
+#
+#     if request.method == 'POST':
+#         body = json.loads(request.body)
+#         username = body['username']
+#         password = body['password']
+#         auth = AuthClient('https://' + OKTA_ORG)
+#         res = auth.authn(username, password)
+#         print('status={}'.format(res.status_code))
+#         response.status_code = res.status_code
+#
+#         content = json.dumps(res.json())
+#         print('response={}'.format(content))
+#         response.content = content
+#
+#         return response
+#
+#     return response
+#
+#
+# def sessions_broker(request):
+#     print(request)
+#     response = HttpResponse()
+#     response.status_code = 200
+#
+#     cookies = request.COOKIES
+#     print('cookie: {}'.format(cookies))
+#
+#     auth = SessionsClient('https://' + OKTA_ORG)
+#     res = auth.me()
+#     response.status_code = res.status_code
+#     content = json.dumps(res.json())
+#     print('response={}'.format(content))
+#     response.content = content
+#
+#     return response

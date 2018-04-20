@@ -1,5 +1,7 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://[[org]]',
+    clientId: '[[aud]]',
+    redirectUri: '[[redirect]]',
     idpDiscovery: {
         requestContext: '/'
     },
@@ -10,23 +12,7 @@ var oktaSignIn = new OktaSignIn({
 
 oktaSignIn.session.get(function(res) {
     if (res.status==='ACTIVE') {
-        var authClient = new OktaAuth({
-            url: 'https://[[org]]',
-            clientId: '[[aud]]',
-            redirectUri: '[[redirect]]',
-            issuer: 'https://[[org]]/oauth2/[[iss]]'
-        });
-
-        authClient.token.getWithoutPrompt({
-            responseType: ['id_token', 'token'],
-            scopes: [[scopes]],
-        })
-        .then(function(tokens){
-            showApp(tokens);
-        })
-        .then(function(err){
-            console.log(err);
-        })
+        doGetWithoutPrompt();
     } else {
         oktaSignIn.renderEl(
             {el: '#okta-login-container'},
@@ -34,15 +20,34 @@ oktaSignIn.session.get(function(res) {
                 if (res.status === 'IDP_DISCOVERY') {
                     res.idpDiscovery.redirectToIdp('[[idp_disco]]');
                     return;
-                }
-                if (res.status === 'SUCCESS') {
-                    showApp(res);
+                } else {
+                    doGetWithoutPrompt();
                 }
             }
         );
     }
 });
 
+function doGetWithoutPrompt() {
+    var authClient = new OktaAuth({
+        url: 'https://[[org]]',
+        clientId: '[[aud]]',
+        redirectUri: '[[redirect]]',
+        issuer: 'https://[[org]]/oauth2/[[iss]]'
+    });
+
+    authClient.token.getWithoutPrompt({
+        responseType: ['id_token', 'token'],
+        scopes: [[scopes]],
+    })
+    .then(function(tokens){
+        showApp(tokens);
+    })
+    .then(function(err){
+        console.log(err);
+    })
+
+}
 
 function showApp(res) {
     var key = '';
