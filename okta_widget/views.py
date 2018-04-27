@@ -169,7 +169,11 @@ def _request_url_root(request):
     host = request.get_host().split(':')[0]
     meta = request.META
     port = meta['SERVER_PORT'] if 'SERVER_PORT' in meta else DEFAULT_PORT
-    return scheme + '://' + host + ':' + port
+
+    values = ['']*2
+    values[0] = (scheme + '://' + host + ':' + port)
+    values[1] = (scheme + '://' + host)
+    return values
 
 
 def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIENT_ID,
@@ -186,9 +190,13 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
         return pages_js[key]
     else:
         s = requests.session()
-        a = requests.adapters.HTTPAdapter(max_retries=3)
+        a = requests.adapters.HTTPAdapter(max_retries=2)
         s.mount('http://', a)
-        response = s.get(_request_url_root(request) + static(url))
+        try:
+            response = s.get(_request_url_root(request)[0] + static(url))
+        except Exception as e:
+            response = s.get(_request_url_root(request)[1] + static(url))
+
         text = str(response.content, 'utf-8') \
             .replace("{", "{{").replace("}", "}}") \
             .replace("[[", "{").replace("]]", "}") \
@@ -426,9 +434,12 @@ def oauth2_post(request):
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
         print('profile = {}'.format(profile))
-        request.session['profile'] = json.dumps(profile)
-        request.session['given_name'] = profile['given_name']
-        request.session['user_id'] = profile['sub']
+        try:
+            request.session['profile'] = json.dumps(profile)
+            request.session['given_name'] = profile['given_name']
+            request.session['user_id'] = profile['sub']
+        except Exception as e:
+            print('exception: {}'.format(e))
 
         payload = json.loads(_decode_payload(access_token))
         if 'groups' in payload:
