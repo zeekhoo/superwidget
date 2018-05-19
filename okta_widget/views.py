@@ -27,6 +27,8 @@ FB_IDP = settings.FB_IDP
 LNKD_IDP = settings.LNKD_IDP
 SAML_IDP = settings.SAML_IDP
 
+BASE_TITLE = settings.BASE_TITLE if settings.BASE_TITLE is not None else 'API Products Demo'
+BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None else '/static/img/okta-brand/logo/okta32x32.png'
 DEFAULT_BACKGROUND = '/static/img/okta-brand/background/SFbayBridge.jpg'
 BACKGROUND_IMAGE = settings.BACKGROUND_IMAGE_DEFAULT
 BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
@@ -72,6 +74,8 @@ c = {
     "org": BASE_URL,
     "iss": ISSUER,
     "aud": CLIENT_ID,
+    "base_title": BASE_TITLE,
+    "base_icon": BASE_ICON,
     "background": BACKGROUND_IMAGE if BACKGROUND_IMAGE is not None else DEFAULT_BACKGROUND,
     "background_css": BACKGROUND_IMAGE_CSS if BACKGROUND_IMAGE_CSS is not None else DEFAULT_BACKGROUND,
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
@@ -123,9 +127,11 @@ def view_profile(request):
              'org': BASE_URL,
              "js": _do_format(request, url_js, page)
              }
+
+        c.update(p)
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
-    return render(request, 'profile.html', p)
+    return render(request, 'profile.html', c)
 
 
 def view_tokens(request):
