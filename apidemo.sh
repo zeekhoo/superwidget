@@ -25,7 +25,8 @@ case "$1" in
     		CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
     		if [[ -z $CONTAINER_ID ]] ; then
     			echo "----- Starting Docker API Demo as a background process. Docker will continue to run until you stop it. -----"
-        		docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -d $SERVER_CONTAINER
+        		docker pull $SERVER_CONTAINER
+			docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -d $SERVER_CONTAINER
         		getStatus
     		else
         		getStatus
@@ -36,7 +37,8 @@ case "$1" in
     		CONTAINER_ID=$(docker ps -a | grep -v Exit | grep $SERVER_CONTAINER | awk '{print $1}')
     		if [[ -z $CONTAINER_ID ]] ; then
     			echo "----- Starting Docker API Demo in interactive mode, hitting ctrl-c will stop the Docker process. -----"
-        		docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -it $SERVER_CONTAINER
+        		docker pull $SERVER_CONTAINER
+			docker run -p 8000:8000 --env-file=env.list -v $STATIC_PATH:$DOCKER_STATIC_PATH -it $SERVER_CONTAINER
         		getStatus
     		else
         		getStatus
