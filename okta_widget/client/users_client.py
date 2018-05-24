@@ -23,3 +23,13 @@ class UsersClient(object):
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
+
+    def list_users_scoped(self, limit=25, department="", search=None):
+        url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
+        url += '&search=status eq "ACTIVE" and profile.department eq "{0}"'.format(department)
+        if search is not None:
+            url += ' and profile.login sw "{0}"'.format(search)
+
+        print('url={}'.format(url))
+        response = requests.get(url, headers=self.headers)
+        return response.content
