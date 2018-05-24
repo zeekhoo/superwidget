@@ -325,7 +325,7 @@ def view_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
-    c.update({"user_department": request.session['department']})
+    c.update({"user_department": request.session.get('department', '')})
     return render(request, 'admin.html', c)
 
 
@@ -339,7 +339,7 @@ def list_users(request):
     if 'admin' in request.session:
         users = client.list_users(15, startsWith)
     elif 'department_admin' in request.session:
-        users = client.list_users_scoped(15, request.session['department'], startsWith)
+        users = client.list_users_scoped(15, request.session.get('department', ''), startsWith)
     else:
         return not_authorized(request)
 
