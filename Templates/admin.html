@@ -19,7 +19,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-md-3">
-                        {% if 'admin' in request.session %}
+                        {% if 'admin' in request.session or 'department_admin' in request.session %}
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Starts with" id="sw">
                             <span class="input-group-btn">
@@ -29,6 +29,13 @@
                         {% endif %}
                     </div>
                 </div>
+                {% if 'department_admin' in request.session %}
+                <div class="row">
+                  <div class="col-md-12">
+                    Because of your Department Admin role, your view of users is limited to active users in the {{ user_department }} department.
+                  </div>
+                </div>
+                {% endif %}
             </div>
             <div class="panel-body">
               <div id="vueapp-users">
@@ -36,11 +43,13 @@
                     <tbody id="all_users" style="display:none;">
                         <th>login</th>
                         <th>email</th>
+                        <th>Department</th>
                         <th>Status</th>
                         <th></th>
                         <tr v-for="user in allUsers">
                             <td><label>[[ user.profile.login ]]</label></td>
                             <td><label>[[ user.profile.email ]]</label></td>
+                            <td><label>[[ user.profile.department ]]</label></td>
                             <td><label>[[ user.status ]]</label></td>
                             {% if allow_impersonation == True %}
                             <td><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id)">Impersonate-Delegate</button></td>

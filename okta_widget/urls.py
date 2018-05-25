@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from .views import not_authenticated
+from .views import not_authorized
 from .views import view_home, view_tokens, view_admin, view_debug
 from .views import list_users, setNameId, login_delegate
 from .views import process_creds
@@ -73,7 +74,7 @@ urlpatterns = [
     url(r'^success/$', registration_success, name='registration_success'),
 
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
-
+    url(r'^not-authorized/$', not_authorized, name='not_authorized'),
     # okta proxy
     # url(r'^broker/api/v1/sessions/me$', sessions_broker, name='okta_session'),
     # url(r'^broker/api/v1/authn$', auth_broker, name='okta_auth'),

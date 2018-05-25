@@ -81,7 +81,8 @@ c = {
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
     "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
     "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
-    "allow_impersonation": allow_impersonation
+    "allow_impersonation": allow_impersonation,
+    "user_department": None
 }
 
 url_map = {}
@@ -108,6 +109,9 @@ def view_home(request):
 
 def not_authenticated(request):
     return render(request, 'not_authenticated.html')
+
+def not_authorized(request):
+    return render(request, 'not_authorized.html')
 
 
 def view_profile(request):
@@ -317,8 +321,11 @@ def view_login_disco(request):
 
 
 def view_admin(request):
-    c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
+    if 'admin' not in request.session and 'department_admin' not in request.session:
+        return HttpResponseRedirect(reverse('not_authorized'))
 
+    c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
+    c.update({"user_department": request.session.get('department', '')})
     return render(request, 'admin.html', c)
 
 
@@ -328,7 +335,14 @@ def list_users(request):
     if 'startsWith' in get:
         startsWith = get['startsWith']
     client = UsersClient('https://' + OKTA_ORG, API_KEY)
-    users = client.list_users(15, startsWith)
+
+    if 'admin' in request.session:
+        users = client.list_users(15, startsWith)
+    elif 'department_admin' in request.session:
+        users = client.list_users_scoped(15, request.session.get('department', ''), startsWith)
+    else:
+        return not_authorized(request)
+
     response = HttpResponse()
     response.status_code = 200
     response.content = users
@@ -444,6 +458,7 @@ def oauth2_post(request):
             request.session['profile'] = json.dumps(profile)
             request.session['given_name'] = profile['given_name']
             request.session['user_id'] = profile['sub']
+            request.session['department'] = profile['Department']
         except Exception as e:
             print('exception: {}'.format(e))
 
@@ -451,6 +466,9 @@ def oauth2_post(request):
         if 'groups' in payload:
             if 'Admin' in payload['groups']:
                 request.session['admin'] = True
+
+            if 'Department Admin' in payload['groups']:
+                request.session['department_admin'] = True
 
     if id_token:
         # In the real world, you should validate the id_token. But this demo app is going to skip that part.
@@ -464,6 +482,7 @@ def oauth2_post(request):
                 request.session['profile'] = decoded
                 request.session['given_name'] = profile['given_name']
                 request.session['user_id'] = profile['sub']
+                request.session['department'] = profile['Department']
             except Exception as e:
                 print('exception: {}'.format(e))
         else:
