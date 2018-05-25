@@ -23,3 +23,7 @@ class UsersClient(object):
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
+
+    def set_password(self, user_id, user):
+        url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))

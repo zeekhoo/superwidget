@@ -20,8 +20,8 @@ from .views import view_home, view_tokens, view_admin, view_debug
 from .views import list_users, setNameId, login_delegate
 from .views import process_creds
 from .views import view_login, view_logout, view_profile
-from .views import oauth2_post, oauth2_callback, registration_view, registration_success
-from .views import view_login_css, okta_hosted_login, view_login_raas, view_login_idp, view_login_disco
+from .views import oauth2_post, oauth2_callback, registration_view, registration_view2, registration_success, activation_view
+from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco
 from .views import view_login_custom
 
 
@@ -59,7 +59,7 @@ urlpatterns = [
     # alternate login pages
     url(r'^login-css$', view_login_css, name='login_css'),
     url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
-    url(r'^login-raas$', view_login_raas, name='login_raas'),
+    # url(r'^login-raas$', view_login_raas, name='login_raas'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
     url(r'^login-disco$', view_login_disco, name='login_idp_disco'),
     url(r'^login-form$', view_login_custom, name='login_custom'),
@@ -70,7 +70,9 @@ urlpatterns = [
     url(r'^oauth/callback', oauth2_callback, name='oauth2_callback'),
 
     url(r'^register/', registration_view, name='register_user'),
+    url(r'^register2/', registration_view2, name='register_user2'),
     url(r'^success/$', registration_success, name='registration_success'),
+    url(r'^activate/(?P<slug>.*)/$', activation_view, name='activate_user'),
 
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
 

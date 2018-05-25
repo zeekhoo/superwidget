@@ -5,6 +5,10 @@ import json
 class AuthClient(object):
     def __init__(self, base_url):
         self.base_url = base_url
+        self.headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
 
     def authn(self, username, password):
         url = self.base_url + '/api/v1/authn'
@@ -13,25 +17,29 @@ class AuthClient(object):
             'password': password
         }
         data = json.dumps(payload)
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+        response = requests.post(url, data=data, headers=self.headers)
+        return response
+
+    def recovery(self, recoveryToken):
+        url = self.base_url + '/api/v1/authn/recovery/token'
+        payload = {
+            'recoveryToken': recoveryToken
         }
-        response = requests.post(url, data=data, headers=headers)
+        data = json.dumps(payload)
+        response = requests.post(url, data=data, headers=self.headers)
         return response
 
 
 class SessionsClient(object):
     def __init__(self, base_url):
         self.base_url = base_url
-
-    def me(self):
-        url = self.base_url + '/api/v1/sessions/me'
-        headers = {
+        self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }
-        response = requests.get(url, headers=headers)
 
+    def me(self):
+        url = self.base_url + '/api/v1/sessions/me'
+        response = requests.get(url, headers=self.headers)
         return response
 

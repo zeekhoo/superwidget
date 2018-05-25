@@ -63,14 +63,17 @@
                       <li><a href="{% url 'okta_hosted_login' %}">OnClick > Redirect</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget</a></li>
                       <li><a href="{% url 'login_idp' %}">Social/IdP Login</a></li>
+
                       {% if idp_disco_page != 'None' %}
                       <li><a href="{% url 'login_idp_disco' %}">IdP Discovery</a></li>
                       {% endif %}
-                      <!--<li><a href="{% url 'login_raas' %}">Self-service Reg</a></li>-->
+
                       {% else %}
+
                       {% if 'admin' in request.session %}
                       <a role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
                       {% endif %}
+
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
                   </ul>

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -8,7 +8,7 @@ from okta_widget.client.auth_proxy import AuthClient, SessionsClient
 from okta_widget.client.users_client import UsersClient
 from okta_widget.client.apps_client import AppsClient
 import json
-from okta_widget.forms import RegistrationForm, TextForm
+from okta_widget.forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 import base64
@@ -252,15 +252,15 @@ def okta_hosted_login(request):
     return render(request, 'customized-okta-hosted.html', c)
 
 
-@csrf_exempt
-def view_login_raas(request):
-    page = 'login_raas'
-    pages_js['entry_page'] = page
-    if request.method == 'POST':
-        return _do_refresh(request, page)
-    else:
-        c.update({"js": _do_format(request, '/js/oidc_raas.js', page)})
-    return render(request, 'index_raas.html', c)
+# @csrf_exempt
+# def view_login_raas(request):
+#     page = 'login_raas'
+#     pages_js['entry_page'] = page
+#     if request.method == 'POST':
+#         return _do_refresh(request, page)
+#     else:
+#         c.update({"js": _do_format(request, '/js/oidc_raas.js', page)})
+#     return render(request, 'index_raas.html', c)
 
 
 @csrf_exempt
@@ -378,7 +378,7 @@ def registration_view(request):
                 }
             }
             client = UsersClient('https://' + OKTA_ORG, API_KEY)
-            client.create_user(user=user, activate="true")
+            client.create_user(user=user, activate="false")
 
         try:
             print('create user {0} {1}'.format(fn, ln))
@@ -392,6 +392,78 @@ def registration_view(request):
         form = RegistrationForm()
 
     return render(request, 'register.html', {'form': form})
+
+
+def registration_view2(request):
+    if request.method == 'POST':
+        form = RegistrationForm2(request.POST)
+        if form.is_valid():
+            fn = form.cleaned_data['firstName']
+            ln = form.cleaned_data['lastName']
+            email = form.cleaned_data['email']
+            user = {
+                "profile": {
+                    "firstName": fn,
+                    "lastName": ln,
+                    "email": email,
+                    "login": email
+                }
+            }
+            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client.create_user(user=user, activate="false")
+        try:
+            print('create user {0} {1}'.format(fn, ln))
+            return HttpResponseRedirect(reverse('registration_success'))
+        except Exception as e:
+            print("Error: {}".format(e))
+            form.add_error(field=None, error=e)
+    else:
+        form = RegistrationForm2()
+    return render(request, 'register2.html', {'form': form})
+
+
+def activation_view(request, slug):
+    name = None
+    username = None
+    user_id = None
+    if slug:
+        auth = AuthClient('https://' + OKTA_ORG)
+        response = auth.recovery(slug)
+        if response.status_code == 200:
+            user = json.loads(response.content)['_embedded']['user']
+            name = user['profile']['firstName']
+            username = user['profile']['login']
+            user_id = user['id']
+        else:
+            return HttpResponseRedirect(reverse('not_authenticated'))
+
+    if request.method == 'POST':
+        if user_id is None:
+            return HttpResponseRedirect(reverse('not_authenticated'))
+
+        try:
+            form = ActivationForm(request.POST)
+            if form.is_valid():
+                pw = form.cleaned_data['password1']
+                user = {
+                    "credentials": {
+                        "password": {"value": pw}
+                    }
+                }
+                client = UsersClient('https://' + OKTA_ORG, API_KEY)
+                client.set_password(user_id=user_id, user=user)
+                res = auth.authn(username, pw)
+                if res.status_code == 200:
+                    session_token = json.loads(res.content)['sessionToken']
+                    return redirect('https://' + OKTA_ORG + IDP_DISCO_PAGE + '?sessionToken={}'.format(session_token))
+
+            return HttpResponseRedirect(reverse('registration_success'))
+        except Exception as e:
+            print("Error: {}".format(e))
+            form.add_error(field=None, error=e)
+    else:
+        form = ActivationForm()
+    return render(request, 'activate.html', {'form': form, 'slug': slug, 'firstName': name})
 
 
 def registration_success(request):
