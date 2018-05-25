@@ -69,8 +69,7 @@
                       {% endif %}
 
                       {% else %}
-
-                      {% if 'admin' in request.session %}
+                      {% if 'admin' in request.session or 'department_admin' in request.session %}
                       <a role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
                       {% endif %}
 
