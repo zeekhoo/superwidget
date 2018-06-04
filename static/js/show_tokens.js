@@ -9,7 +9,6 @@ oktaSignIn.session.get(function (res) {
   if (res.status === 'ACTIVE') {
     console.log('have session');
     console.log('user_id = ' + res.userId);
-
     var id_token = srv_id_token;
     if (oktaSignIn.tokenManager.get('idToken')) {
         id_token = oktaSignIn.tokenManager.get('idToken').idToken;
@@ -20,15 +19,18 @@ oktaSignIn.session.get(function (res) {
     }
     if (id_token != '') {
         var id_token_parts = id_token.split('.');
-        document.getElementById('id_token').innerHTML = id_token;
-        document.getElementById('id_token_header').innerHTML = prettyPrint(window.atob(id_token_parts[0]));
-        document.getElementById('id_token_decoded').innerHTML = prettyPrint(window.atob(id_token_parts[1]));
+        profileApp.idToken = JSON.parse(window.atob(id_token_parts[1]));
+        profileApp.idTokenRaw = id_token;
+        profileApp.idTokenHeader = prettyPrint(window.atob(id_token_parts[0]));
+        profileApp.idTokenBody = prettyPrint(window.atob(id_token_parts[1]));
     }
     if (access_token != '') {
         var access_token_parts = access_token.split('.');
-        document.getElementById('access_token').innerHTML = access_token;
-        document.getElementById('access_token_header').innerHTML = prettyPrint(window.atob(access_token_parts[0]));
-        document.getElementById('access_token_decoded').innerHTML = prettyPrint(window.atob(access_token_parts[1]));
+        profileApp.accessToken = JSON.parse(window.atob(access_token_parts[1]));
+        profileApp.permissions = determinePermissions(profileApp.accessToken.groups);
+        profileApp.accessTokenRaw = access_token;
+        profileApp.accessTokenHeader = prettyPrint(window.atob(access_token_parts[0]));
+        profileApp.accessTokenBody = prettyPrint(window.atob(access_token_parts[1]));
     }
   }
 });
@@ -39,5 +41,25 @@ function prettyPrint(ugly) {
     return JSON.stringify(obj, undefined, 4);
 }
 
-
-
+//This function will look at group membership, and build a list of permissions
+//that a user has based upon them.
+function determinePermissions(groups) {
+  var perms = [];
+  groups.forEach(function(grp){
+    if(grp == 'Admin') {
+      perms.push({
+        'Name': 'Administrator',
+        'Criteria': 'Due to membership in the Admin group',
+        'Desc': 'Can Report on ALL personnel'
+      })
+    }
+    else if(grp == 'Department Admin') {
+      perms.push({
+        'Name': 'Administrator',
+        'Criteria': 'Due to membership in the Department Admin group',
+        'Desc': 'Can report on active personnel in the same department'
+      })
+    }
+  });
+  return perms;
+}
