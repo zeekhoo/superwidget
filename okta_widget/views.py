@@ -74,6 +74,7 @@ c = {
     "org": BASE_URL,
     "iss": ISSUER,
     "aud": CLIENT_ID,
+    "redirect_uri": REDIRECT_URI,
     "base_title": BASE_TITLE,
     "base_icon": BASE_ICON,
     "background": BACKGROUND_IMAGE if BACKGROUND_IMAGE is not None else DEFAULT_BACKGROUND,
@@ -515,13 +516,14 @@ def oauth2_post(request):
         tokens = client.token(code, REDIRECT_URI, ISSUER)
         if tokens['access_token']:
             access_token = tokens['access_token']
+            request.session['access_token'] = access_token
         if tokens['id_token']:
             id_token = tokens['id_token']
+            request.session['id_token'] = id_token
 
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
         print('access_token = {}'.format(access_token))
-        request.session['access_token'] = access_token
 
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
@@ -545,7 +547,6 @@ def oauth2_post(request):
     if id_token:
         # In the real world, you should validate the id_token. But this demo app is going to skip that part.
         print('id_token = {}'.format(id_token))
-        request.session['id_token'] = id_token
 
         if 'profile' not in request.session:
             try:
