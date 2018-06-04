@@ -13,30 +13,9 @@ function showMyAppLinks(userId) {
                 var linksJson = JSON.parse(res);
                 if (linksJson) {
                     document.getElementById("my_links").style.display = 'block';
-                    var apps = new Vue({
-                        delimiters: ['[[', ']]'],
-                        el: '#vueapp',
-                        data: {
-                            appLinks: linksJson
-                        }
-                    });
-                    //drawTable(linksJson);
+                    profileapp.appLinks = linksJson;
                 }
             }
         }
     }
-}
-
-function drawTable(tableData) {
-    var i;
-    var draw = "";
-    for(i = 0; i < tableData.length; i++) {
-        draw += '<tr><td>' +
-        '<a href="' + tableData[i].linkUrl + '" target="_blank">' +
-        '<img src="' + tableData[i].logoUrl + '" class="img-rounded">' +
-        '<label>&nbsp;&nbsp;' + tableData[i].label + '</label>' +
-        '</a>' +
-        '</td></tr>';
-    }
-    document.getElementById("my_links").innerHTML = draw;
 }
