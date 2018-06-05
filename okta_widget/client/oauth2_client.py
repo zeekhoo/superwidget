@@ -46,7 +46,7 @@ class OAuth2Client(object):
         headers = {'Authorization': 'Bearer ' + token}
         profile = {}
         try:
-            response = requests.post(url, headers=headers)
+            response = requests.post(url, headers=headers, verify=False)
             print('response = {}'.format(response))
             if response.status_code == 200:
                 profile = response.json()
@@ -59,7 +59,7 @@ class OAuth2Client(object):
             url = 'https://{0}/oauth2/{1}/v1/userinfo'.format(settings.IMPERSONATION_ORG, settings.IMPERSONATION_ORG_AUTH_SERVER_ID)
             print('userinfo url={}'.format(url))
             try:
-                response = requests.post(url, headers=headers)
+                response = requests.post(url, headers=headers, verify=False)
                 profile = response.json()
             except Exception as e2:
                 print('exception2: {}'.format(e2))

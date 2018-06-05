@@ -120,7 +120,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/mode/javascript/javascript.min.js"></script>
   <script>
     var org = '{{ org }}';
+  </script>
 
+  {% block page_js %}
+  {% endblock page_js %}
+
+  <!--Code Mirror last, so as to not interfere with other scripts-->
+  <script>
     var myTextArea = document.getElementById('myText');
     if (myTextArea) {
         var myCodeMirror = CodeMirror.fromTextArea(myTextArea);
@@ -137,6 +143,4 @@
   </script>
   <!--<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>-->
   <!--<link href="{% static 'css/prettify.css' %}" rel="stylesheet">-->
-  {% block page_js %}
-  {% endblock page_js %}
 </html>

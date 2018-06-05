@@ -111,6 +111,7 @@ def view_home(request):
 def not_authenticated(request):
     return render(request, 'not_authenticated.html')
 
+
 def not_authorized(request):
     return render(request, 'not_authorized.html')
 
@@ -129,10 +130,8 @@ def view_profile(request):
             url_js = '/js/oidc_base.js'
 
         p = {'profile': request.session['profile'],
-             'org': BASE_URL,
              "js": _do_format(request, url_js, page)
              }
-
         c.update(p)
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
@@ -366,9 +365,15 @@ def view_logout(request):
     print('url = {}'.format(reverse(page)))
     c.update({"page": reverse(page)})
 
+    # Reset the base variables in case there was impersonation event
+    c.update({"org": OKTA_ORG})
+    c.update({"iss": ISSUER})
+    c.update({"aud": CLIENT_ID})
+
     for key in list(request.session.keys()):
         print('deleting {}'.format(key))
         del request.session[key]
+
     return render(request, 'logged_out.html', c)
 
 
@@ -502,8 +507,14 @@ def oauth2_post(request):
             access_token = request.POST['access_token']
         if 'id_token' in request.POST:
             id_token = request.POST['id_token']
-        if 'state' in request.POST:
-            state = request.POST['state']
+
+        # special impersonation logic overrides the org variables
+        if 'org' in request.POST:
+            if request.POST['org'] == IMPERSONATION_ORG:
+                c.update({'org': request.POST['org']})
+                c.update({'aud': IMPERSONATION_ORG_OIDC_CLIENT_ID})
+                c.update({'iss': IMPERSONATION_ORG_AUTH_SERVER_ID})
+
     elif request.method == 'GET':
         print('GET request: {}'.format(request.GET))
         if 'code' in request.GET:

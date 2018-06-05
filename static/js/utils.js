@@ -19,7 +19,7 @@ function prettyPrint(ugly) {
     return JSON.stringify(obj, undefined, 4);
 }
 
-function get_profile(token_type, token) {
+function get_profile(token_type, token, org) {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", '/oauth2/callback');
@@ -30,8 +30,11 @@ function get_profile(token_type, token) {
         formData.append('access_token', token.accessToken);
     else
         formData.append('id_token', token.idToken);
-    xhr.send(formData);
 
+    if (typeof org !== 'undefined') {
+        formData.append('org', org);
+    }
+    xhr.send(formData);
     xhr.onreadystatechange = function() {
         window.location.href = '/profile';
     }

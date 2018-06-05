@@ -21,15 +21,6 @@
       </div>
         <div class="row">
             <div class="col-md-1">
-              
-<!--              
-                <h2>
-                    <button type="button" class="btn btn-info btn-xs" data-toggle="modal" data-target="#tokensModal"
-                            onclick="showToken('{{ org }}', '{{ aud }}', '{{ iss }}', '{{ redirect_uri }}')">
-                        OAuth Details
-                    </button>
-                </h2>
--->
                 <div class="modal fade" id="tokensModal" tabindex="-1" role="dialog" aria-labelledby="tokensModalLabel" aria-hidden="true">
                   <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
@@ -38,10 +29,10 @@
                             <textarea id="myText" name="myText"></textarea>
                         </div>
 
-                          <button type="button" class="btn btn-xs btn-info" id="code-modal" onclick="toggleJsView(this.id)">Show that code again...</button>
-                          <!--<button type="button" class="btn btn-secondary" style="float: right" data-dismiss="modal">Close</button>-->
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn btn-xs btn-info" id="code-modal" onclick="toggleJsView(this.id)">Show that code again...</button>
+                        <!--<button type="button" class="btn btn-secondary" style="float: right" data-dismiss="modal">Close</button>-->
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
                         </button>
                       </div>
                       <div class="modal-body">
@@ -85,7 +76,10 @@
                   <div class="panel panel-default">
                     <div class="panel-heading">
                       [[ prfl.given_name ]]'s Profile
-                      <button type="button" class="btn btn-info btn-xs pull-right" data-toggle="modal" data-target="#tokensModal">Technical Details</button>
+                      <button type="button" class="btn btn-info btn-xs pull-right" data-toggle="modal" data-target="#tokensModal"
+                                onclick="showToken('{{ org }}', '{{ aud }}', '{{ iss }}', '{{ redirect_uri }}')">
+                          Technical Details
+                      </button>
                     </div>
                     <div class="panel-body">
                       <dl class="dl-horizontal">
@@ -164,59 +158,10 @@
 </div>
 {% endblock %}
 
-
 {% load static %}
 {% block page_js %}
-
+<script src="{% static 'js/profile_page.js' %}" type="text/javascript"></script>
 <script>
-    //document.getElementById('profile_pretty').innerHTML = prettyPrint(profile);
-
-    Vue.filter('tostring', function (value) {
-      if (!value)
-        return '';
-      else
-        return value.toString().replace(/,/g, ", ");
-    });
-
-    var data = [];
-    var profileApp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp',
-        data: {
-            idToken: false,
-            idTokenRaw: false,
-            idTokenHeader: false,
-            idTokenBody: false,
-            accessToken: false,
-            accessTokenRaw: false,
-            accessTokenBody: false,
-            accessTokenHeader: false,
-            appLinks: false,
-            prfl: JSON.parse(profile),
-            permissions: false,
-        },
-        computed: {
-          adminBadge: function () {
-            if(this.accessToken && this.accessToken.groups.includes("Admin")) {
-              return "Administrator";
-            }
-            else if(this.accessToken && this.accessToken.groups.includes("Department Admin")){
-              return "Departmental Administrator";
-            }
-            else {
-              return false;
-            }
-          }
-        }
-    });
-    var myTextArea = document.getElementById('myText');
-    if (myTextArea) {
-        var myCodeMirror = CodeMirror.fromTextArea(myTextArea);
-        myCodeMirror.setSize(null,650);
-        myCodeMirror.setOption('theme', 'cobalt');
-        myCodeMirror.setOption('lineNumbers', true);
-    }
+showToken('{{ org }}', '{{ aud }}', '{{ iss }}', '{{ redirect_uri }}')
 </script>
-<script src="{% static 'js/show_tokens.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/app-links.js' %}" type="text/javascript"></script>
 {% endblock %}
