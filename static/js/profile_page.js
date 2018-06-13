@@ -7,6 +7,20 @@ Vue.filter('tostring', function (value) {
     return value.toString().replace(/,/g, ", ");
 });
 
+Vue.filter('formatKey', function(value) {
+    if (!value)
+        return '';
+    else
+    {
+        var words = value.split('_');
+        var formatted = '';
+        for (i in words) {
+            formatted = formatted + words[i].charAt(0).toUpperCase() + words[i].slice(1) + ' ';
+        }
+        return formatted;
+    }
+});
+
 var data = [];
 var profileApp = new Vue({
     delimiters: ['[[', ']]'],
@@ -96,7 +110,7 @@ function determinePermissions(groups) {
         'Name': 'Administrator',
         'Criteria': 'Due to membership in the Admin group',
         'Desc': 'Can Report on ALL personnel'
-      })
+      });
     }
     else if(grp == 'Department Admin') {
       perms.push({
@@ -106,25 +120,35 @@ function determinePermissions(groups) {
       })
     }
   });
+  if (perms.length == 0) {
+      perms.push({
+        'Name': 'User',
+        'Criteria': 'Due to membership NOT in any Admin group',
+        'Desc': 'Not an admin'
+      });
+  }
+
   return perms;
 }
 
 function showMyAppLinks(userId) {
     if (userId != null && userId != '') {
-        url = url + "/api/v1/users/" + userId + "/appLinks";
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", url, true);
-        xhttp.withCredentials = true;
-        xhttp.send();
-        xhttp.onreadystatechange = function() {
-            var res = xhttp.responseText;
-            if (res) {
-                var linksJson = JSON.parse(res);
-                if (linksJson) {
-                    document.getElementById("my_links").style.display = 'block';
-                    profileApp.appLinks = linksJson;
+        $.ajax({
+            url: url + "/api/v1/users/" + userId + "/appLinks",
+            type: "GET",
+            dataType: 'json',
+            crossDomain: true,
+            xhrFields: {
+                withCredentials: true
+            },
+            statusCode: {
+                200: function(res) {
+                    if (res) {
+                        document.getElementById("my_links").style.display = 'block';
+                        profileApp.appLinks = res;
+                    }
                 }
             }
-        }
+        });
     }
 }

@@ -93,10 +93,13 @@
                         <dd>[[ idToken.email ]]</dd>
                         <dt>Full Name</dt>
                         <dd>[[ idToken.name ]]</dd>
-                        <dt>Department</dt>
-                        <dd>[[ idToken.Department ]]</dd>
-                        <dt>Is Trained</dt>
-                        <dd>[[ idToken.is_trained ]]</dd>
+
+                        <div v-for="(claim, key, index) in idToken"
+                             v-if="!['ver', 'iss', 'sub', 'aud', 'iat', 'exp', 'jti', 'amr', 'idp', 'nonce', 'auth_time', 'at_hash', 'locale', 'zoneinfo', 'updated_at', 'email_verified', 'groups', 'preferred_username', 'given_name', 'family_name', 'email', 'name', ''].includes(key)">
+                            <dt>[[ key | formatKey ]]</dt>
+                            <dd>[[ claim ]]</dd>
+                        </div>
+
                         <dt>Okta Group Membership</dt>
                         <dd>[[ accessToken.groups | tostring ]]</dd>
                       </dl>

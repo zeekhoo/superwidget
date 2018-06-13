@@ -20,24 +20,26 @@ function prettyPrint(ugly) {
 }
 
 function get_profile(token_type, token, org) {
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", '/oauth2/callback');
-    //xhr.setRequestHeader('X-CSRFToken', csrftoken); /*too lazy...used csrf_exempt*/
-
     var formData = new FormData();
     if (token_type === 'accessToken')
         formData.append('access_token', token.accessToken);
     else
         formData.append('id_token', token.idToken);
-
     if (typeof org !== 'undefined') {
         formData.append('org', org);
     }
-    xhr.send(formData);
-    xhr.onreadystatechange = function() {
-        window.location.href = '/profile';
-    }
+    $.ajax({
+        url: "/oauth2/callback",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        statusCode: {
+            200: function(res) {
+                window.location.href = '/profile';
+            }
+        }
+    });
 }
 
 function openInNewTab(url) {
