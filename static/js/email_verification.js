@@ -1,4 +1,3 @@
-
 var data = [];
 var verificationApp = new Vue({
     delimiters: ['[[', ']]'],
@@ -12,19 +11,8 @@ var verificationApp = new Vue({
     },
 });
 
-
 function toggleEmailField() {
     var state = verificationApp.state;
-
-    switch(state) {
-        case 'verify-email':
-            verificationApp.state = 'verify-token';
-            break;
-        case 'verify-token':
-            verificationApp.state = 'set-password';
-            break;
-    }
-
     var form = document.getElementById('emailActivationForm');
     if (form) {
         form.state.value = verificationApp.state;

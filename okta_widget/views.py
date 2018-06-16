@@ -522,13 +522,48 @@ def activation_wo_token_view(request):
             state = form.cleaned_data['state']
             email = form.cleaned_data['email']
             otp = form.cleaned_data['verificationCode']
-            # password1 = form.cleaned_data['password1']
-            # password2 = form.cleaned_data['password2']
+            password1 = form.cleaned_data['password1']
+            password2 = form.cleaned_data['password2']
 
             print('state={}'.format(state))
 
-            # if state == 'verify-email':
+            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            user = json.loads(client.get_user(email))
 
+            if state == 'verify-email':
+                state = 'verify-token'
+                print(user)
+                if user['status'] == 'PROVISIONED':
+                    enroll_status = client.enroll_email_factor(user['id'], email)
+                    print(enroll_status.status_code)
+                    #if enroll_status.status_code == 200:
+                    response = client.list_factors(user['id'])
+                    factors = json.loads(response)
+                    for factor in factors:
+                        if factor['factorType'] == 'email':
+                            request.session['email_factor_id'] = factor['id']
+                            request.session['verification_username'] = email
+                            request.session['verification_user_id'] = user['id']
+                            client.verify_email_factor(user['id'], factor['id'])
+
+            elif state == 'verify-token':
+                state = 'set-password'
+                user_id=request.session['verification_user_id']
+                factor_id=request.session['email_factor_id']
+                response = client.verify_email_factor(user_id=user_id, factor_id=factor_id, pass_code=otp)
+                print(response.content)
+            elif state == 'set-password':
+                payload = {
+                    "credentials": {
+                        "password": {"value": password1}
+                    }
+                }
+                client.set_password(user_id=request.session['verification_user_id'], user=payload)
+                auth = AuthClient('https://' + OKTA_ORG)
+                res = auth.authn(request.session['verification_username'], password1)
+                if res.status_code == 200:
+                    session_token = json.loads(res.content)['sessionToken']
+                    return redirect('https://' + OKTA_ORG + IDP_DISCO_PAGE + '?sessionToken={}'.format(session_token))
         else:
             print('invalid form')
     else:

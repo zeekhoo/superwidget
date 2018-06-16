@@ -8,24 +8,6 @@
         <form id="emailActivationForm" class="form-inline" name="ActivationWithEmailForm" action="{% url 'activate_user2' %}" method="post">
           {% csrf_token %}
           <br>
-          <!--<h4>Verify your email</h4>-->
-          <!--<div id="activationEmailField" class="form-group {% if form.email.errors %} has-error {% endif %}">-->
-              <!--<label class="sr-only" for="email">Email address</label>-->
-              <!--<input type="email" class="form-control" id="email" name="email" placeholder="Email">-->
-          <!--</div>-->
-          <!--<div id="activationTokenField" class="form-group {% if form.otp.errors %} has-error {% endif %} hidden">-->
-              <!--<label class="sr-only" for="verificationCode">Verification Code</label>-->
-              <!--<input type="text" class="form-control" id="verificationCode" name="verificationCode" placeholder="Verification Code">-->
-          <!--</div>-->
-          <!--<div id="password1Field" class="form-group {% if form.password1.errors %} has-error {% endif %} hidden">-->
-              <!--<input type="password" class="form-control" id="password1" name="password1" placeholder="Password">-->
-          <!--</div>-->
-          <!--<div id="password2Field" class="form-group {% if form.password2.errors %} has-error {% endif %} hidden">-->
-              <!--<input type="password" class="form-control" id="password2" name="password2" placeholder="Password (again)">-->
-          <!--</div>-->
-
-
-
           <h4>Verify your email</h4>
           <div v-if="state === 'verify-email'" id="activationEmailField" class="form-group {% if form.email.errors %} has-error {% endif %}">
               <label class="sr-only" for="email">Email address</label>
@@ -46,9 +28,18 @@
           <div class="hidden">
             <input v-model="state" type="state" class="form-control" id="state" name="state">
           </div>
+
           <div class="form-group">
             <button type="button" value="Submit" class="btn btn-block btn-primary" onclick="toggleEmailField()">Send</button>
           </div>
+
+          <!--<div class="form-group" v-if="state === 'set-password'">-->
+            <!--<button type="button" value="fb-submit" class="btn btn-block btn-primary" onclick="loginWithFacebook()">Login with Facebook</button>-->
+          <!--</div>-->
+          <!--<div class="form-group" v-if="state === 'set-password'">-->
+            <!--<button type="button" value="gg-submit" class="btn btn-block btn-danger" onclick="loginWithGoogle()">Login with Google</button>-->
+          <!--</div>-->
+
         </form>
     </div>
     <br>
@@ -63,30 +54,4 @@
   var state = '{{ state }}';
 </script>
 <script src="{% static 'js/email_verification.js' %}" type="text/javascript"></script>
-<!--<script>-->
-  <!--var state = 'verify-email';-->
-
-  <!--function toggleEmailField() {-->
-    <!--var emailField = document.getElementById('activationEmailField');-->
-    <!--if (emailField) {-->
-      <!--switch(state) {-->
-        <!--case 'verify-email':-->
-          <!--emailField.style.display = 'none';-->
-          <!--state = 'verify-token';-->
-          <!--break;-->
-        <!--case 'verify-token':-->
-          <!--document.getElementById('activationEmailField')-->
-          <!--break;-->
-        <!--case 'verify-token':-->
-          <!--break;-->
-
-      <!--}-->
-
-      <!--var form = document.getElementById('emailActivationForm');-->
-      <!--if (form) {-->
-        <!--form.submit();-->
-      <!--}-->
-    <!--}-->
-  <!--}-->
-<!--</script>-->
 {% endblock %}

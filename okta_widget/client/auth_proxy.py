@@ -42,4 +42,3 @@ class SessionsClient(object):
         url = self.base_url + '/api/v1/sessions/me'
         response = requests.get(url, headers=self.headers)
         return response
-

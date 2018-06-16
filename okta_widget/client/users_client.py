@@ -38,3 +38,42 @@ class UsersClient(object):
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
+
+    def get_user(self, user_id):
+        url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def list_factors(self, user_id):
+        url = self.base_url + '/api/v1/users/{}/factors'.format(user_id)
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def enroll_email_factor(self, user_id, email=None):
+        url = self.base_url + '/api/v1/users/{}/factors?activate=true'.format(user_id)
+        data = {
+            'factorType': 'email',
+            'provider': 'OKTA',
+            "profile": {
+                "email": email
+            }
+        }
+        response = requests.post(url, headers=self.headers, data=json.dumps(data))
+        return response
+
+    # def send_email_challenge(self, user_id, factor_id):
+    #     url = self.base_url + '/api/v1/users/{0}/factors/{1}/verify'.format(user_id, factor_id)
+    #     response = requests.post(url, headers=self.headers)
+    #     return response
+
+    def verify_email_factor(self, user_id, factor_id, pass_code=None):
+        url = self.base_url + '/api/v1/users/{0}/factors/{1}/verify'.format(user_id, factor_id)
+        data = None
+        if pass_code:
+            payload = {
+                'passCode': pass_code
+            }
+            data = json.dumps(payload)
+        response = requests.post(url, headers=self.headers, data=data)
+        return response
+
