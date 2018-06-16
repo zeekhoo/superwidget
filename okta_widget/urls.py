@@ -21,7 +21,10 @@ from .views import view_home, view_tokens, view_admin, view_debug
 from .views import list_users, setNameId, login_delegate
 from .views import process_creds
 from .views import view_login, view_logout, view_profile
-from .views import oauth2_post, oauth2_callback, registration_view, registration_view2, registration_success, activation_view
+from .views import oauth2_post, oauth2_callback
+from .views import registration_view, registration_view2, registration_view3, \
+    registration_success, registration_success2, \
+    activation_view, activation_wo_token_view
 from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco
 from .views import view_login_custom
 
@@ -72,8 +75,11 @@ urlpatterns = [
 
     url(r'^register/', registration_view, name='register_user'),
     url(r'^register2/', registration_view2, name='register_user2'),
+    url(r'^register3/', registration_view3, name='register_user3'),
     url(r'^success/$', registration_success, name='registration_success'),
+    url(r'^success2/$', registration_success2, name='registration_success2'),
     url(r'^activate/(?P<slug>.*)/$', activation_view, name='activate_user'),
+    url(r'^activate/$', activation_wo_token_view, name='activate_user2'),
 
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
     url(r'^not-authorized/$', not_authorized, name='not_authorized'),

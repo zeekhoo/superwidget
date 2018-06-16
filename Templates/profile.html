@@ -75,7 +75,7 @@
                 <div class="panel-group" v-if="idToken">
                   <div class="panel panel-default">
                     <div class="panel-heading">
-                      [[ prfl.given_name ]]'s Profile
+                      [[ idToken.name ]]'s Profile
                       <button type="button" class="btn btn-info btn-xs pull-right" data-toggle="modal" data-target="#tokensModal"
                                 onclick="showToken('{{ org }}', '{{ aud }}', '{{ iss }}', '{{ redirect_uri }}')">
                           Technical Details
@@ -93,20 +93,23 @@
                         <dd>[[ idToken.email ]]</dd>
                         <dt>Full Name</dt>
                         <dd>[[ idToken.name ]]</dd>
-
                         <div v-for="(claim, key, index) in idToken"
-                             v-if="!['ver', 'iss', 'sub', 'aud', 'iat', 'exp', 'jti', 'amr', 'idp', 'nonce', 'auth_time', 'at_hash', 'locale', 'zoneinfo', 'updated_at', 'email_verified', 'groups', 'preferred_username', 'given_name', 'family_name', 'email', 'name', ''].includes(key)">
+                             v-if="!['ver', 'iss', 'sub', 'aud', 'iat', 'exp', 'jti', 'amr', 'idp', 'nonce',
+                             'auth_time', 'at_hash', 'c_hash', 'locale', 'zoneinfo', 'updated_at', 'email_verified',
+                             'groups', 'preferred_username', 'email', 'name', ''].includes(key)">
                             <dt>[[ key | formatKey ]]</dt>
                             <dd>[[ claim ]]</dd>
                         </div>
-
-                        <dt>Okta Group Membership</dt>
-                        <dd>[[ accessToken.groups | tostring ]]</dd>
+                        <div v-if="accessToken.groups">
+                            <dt>Okta Group Membership</dt>
+                            <dd>[[ accessToken.groups | tostring ]]</dd>
+                        </div>
                       </dl>
                     </div>
                   </div>
-                  <div class="panel panel-info">
-                    <div class="panel-heading">
+
+                  <div class="panel panel-info" v-if="permissions !== ''">
+                    <div class="panel-heading" v-if="prfl">
                       [[ prfl.given_name ]]'s Permissions
                     </div>
                     <div class="panel-body">
@@ -128,6 +131,8 @@
                       </table>
                     </div>
                   </div>
+
+
               </div>
             </div>
             <div class="col-md-4">

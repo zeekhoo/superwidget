@@ -8,7 +8,7 @@ from okta_widget.client.auth_proxy import AuthClient, SessionsClient
 from okta_widget.client.users_client import UsersClient
 from okta_widget.client.apps_client import AppsClient
 import json
-from okta_widget.forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm
+from okta_widget.forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 import base64
@@ -430,10 +430,38 @@ def registration_view2(request):
                 }
             }
             client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client.create_user(user=user, activate="true")
+        try:
+            print('create user {0} {1}'.format(fn, ln))
+            return HttpResponseRedirect(reverse('registration_success2'))
+        except Exception as e:
+            print("Error: {}".format(e))
+            form.add_error(field=None, error=e)
+    else:
+        form = RegistrationForm2()
+    return render(request, 'register2.html', {'form': form})
+
+
+def registration_view3(request):
+    if request.method == 'POST':
+        form = RegistrationForm2(request.POST)
+        if form.is_valid():
+            fn = form.cleaned_data['firstName']
+            ln = form.cleaned_data['lastName']
+            email = form.cleaned_data['email']
+            user = {
+                "profile": {
+                    "firstName": fn,
+                    "lastName": ln,
+                    "email": email,
+                    "login": email
+                }
+            }
+            client = UsersClient('https://' + OKTA_ORG, API_KEY)
             client.create_user(user=user, activate="false")
         try:
             print('create user {0} {1}'.format(fn, ln))
-            return HttpResponseRedirect(reverse('registration_success'))
+            return HttpResponseRedirect(reverse('registration_success2'))
         except Exception as e:
             print("Error: {}".format(e))
             form.add_error(field=None, error=e)
@@ -486,8 +514,36 @@ def activation_view(request, slug):
     return render(request, 'activate.html', {'form': form, 'slug': slug, 'firstName': name})
 
 
+def activation_wo_token_view(request):
+    state = None
+    if request.method == 'POST':
+        form = ActivationWithEmailForm(request.POST)
+        if form.is_valid():
+            state = form.cleaned_data['state']
+            email = form.cleaned_data['email']
+            otp = form.cleaned_data['verificationCode']
+            # password1 = form.cleaned_data['password1']
+            # password2 = form.cleaned_data['password2']
+
+            print('state={}'.format(state))
+
+            # if state == 'verify-email':
+
+        else:
+            print('invalid form')
+    else:
+        state = 'verify-email'
+        form = ActivationWithEmailForm()
+
+    return render(request, 'activate_w_email.html', {'form': form, 'state': state})
+
+
 def registration_success(request):
     return render(request, 'success.html')
+
+
+def registration_success2(request):
+    return render(request, 'success2.html')
 
 
 def oauth2_callback(request):

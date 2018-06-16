@@ -56,3 +56,30 @@ class ActivationForm(forms.Form):
                 raise forms.ValidationError(_("The two password fields did not match."))
 
         return self.cleaned_data['password2']
+
+
+class ActivationWithEmailForm(forms.Form):
+    state = forms.CharField(max_length=30, required=False)
+    email = forms.CharField(max_length=30, required=False)
+    verificationCode = forms.CharField(max_length=30, required=False)
+    password1 = forms.CharField(max_length=30, required=False)
+    password2 = forms.CharField(max_length=30, required=False)
+
+
+    # password1 = forms.RegexField(
+    #     regex=r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{4,30}$',
+    #     widget=forms.PasswordInput(attrs=dict(required=False, max_length=30, render_value=False)),
+    #     label=_("password"),
+    #     error_messages={'invalid': _("Minimum length 4. Must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter")})
+    # password2 = forms.RegexField(
+    #     regex=r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{4,30}$',
+    #     widget=forms.PasswordInput(attrs=dict(required=False, max_length=30, render_value=False)),
+    #     label=_("password (again)"),
+    #     error_messages={'invalid': _("Minimum length 4. Must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter")})
+
+    # def clean_password2(self):
+    #     if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
+    #         if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+    #             raise forms.ValidationError(_("The two password fields did not match."))
+    #
+    #     return self.cleaned_data['password2']
