@@ -5,6 +5,7 @@
 <script>
     var profile = '{{ profile|safe }}';
     var sub = '{{ request.session.user_id }}';
+    var srv_companyName = '{{ request.session.companyName}}';
     var srv_id_token = '{{ request.session.id_token|safe }}';
     var srv_access_token = '{{ request.session.access_token|safe }}';
 </script>
@@ -16,6 +17,7 @@
       <div class="row">
         <div class="col-md-8">
             <h3>Welcome [[ idToken.name ]]! <span v-if="adminBadge" class="badge">[[ adminBadge ]]</span></h3>
+            <a href="http://localhost:9000/login-disco">Get Fresh Tokens here!</a>
             <h4>Here is your profile based upon your Okta login!</h4>
         </div>
       </div>
@@ -93,10 +95,12 @@
                         <dd>[[ idToken.email ]]</dd>
                         <dt>Full Name</dt>
                         <dd>[[ idToken.name ]]</dd>
+                        <dt>Company Name</dt>
+                        <dd>[[ idToken.companyName ]]</dd>
                         <div v-for="(claim, key, index) in idToken"
                              v-if="!['ver', 'iss', 'sub', 'aud', 'iat', 'exp', 'jti', 'amr', 'idp', 'nonce',
                              'auth_time', 'at_hash', 'c_hash', 'locale', 'zoneinfo', 'updated_at', 'email_verified',
-                             'groups', 'preferred_username', 'email', 'name', ''].includes(key)">
+                             'groups', 'preferred_username', 'email', 'name', 'companyName', ''].includes(key)">
                             <dt>[[ key | formatKey ]]</dt>
                             <dd>[[ claim ]]</dd>
                         </div>
