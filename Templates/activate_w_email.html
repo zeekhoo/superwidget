@@ -2,9 +2,39 @@
 
 {% block content %}
 <div class="container" id="vueapp">
-
-  <div class="reg_page">
-    <div id="register">
+  <div class="activation_page">
+    <!--<div id="vuecomponent">-->
+        <!--<form id="fakeForm" class="form-inline" name="fakeForm">-->
+          <!--<br>-->
+          <!--<h4>Verify your email</h4>-->
+          <!--<div v-if="state === 'verify-email'" class="form-group {% if form.inputEmail.errors %} has-error {% endif %}">-->
+              <!--<label class="sr-only" for="email">Email address</label>-->
+              <!--<input type="email" class="form-control" id="inputEmail" name="inputEmail" placeholder="Email">-->
+          <!--</div>-->
+          <!--<div v-if="state === 'verify-token'" class="form-group {% if form.inputOtp.errors %} has-error {% endif %}">-->
+              <!--<label class="sr-only" for="verificationCode">Verification Code</label>-->
+              <!--<input type="text" class="form-control" id="inputOtp" name="inputOtp" placeholder="Verification Code">-->
+          <!--</div>-->
+          <!--<div id="inputPasswords" v-if="state === 'set-password'">-->
+            <!--<div class="form-group {% if form.inputPw1.errors %} has-error {% endif %}">-->
+                <!--<input type="password" class="form-control" id="inputPw1" name="inputPw1" placeholder="Password">-->
+            <!--</div>-->
+            <!--<div class="form-group {% if form.inputPw2.errors %} has-error {% endif %}">-->
+                <!--<input type="password" class="form-control" id="inputPw2" name="inputPw2" placeholder="Password (again)">-->
+            <!--</div>-->
+          <!--</div>-->
+          <!--<div class="form-group">-->
+            <!--{% if form.errors %}-->
+            <!--<p>{{ form.non_field_errors }}</p>-->
+            <!--{% endif %}-->
+            <!--<button type="button" value="Submit" class="btn btn-block btn-primary" onclick="vueController()">Send</button>-->
+          <!--</div>-->
+          <!--<div class="form-group">-->
+            <!--<input v-model="state">-->
+          <!--</div>-->
+        <!--</form>-->
+    <!--</div>-->
+    <div id="activate">
         <form id="emailActivationForm" class="form-inline" name="ActivationWithEmailForm" action="{% url 'activate_user2' %}" method="post">
           {% csrf_token %}
           <br>
@@ -25,11 +55,10 @@
                 <input type="password" class="form-control" id="password2" name="password2" placeholder="Password (again)">
             </div>
           </div>
-          <div class="hidden">
-            <input v-model="state" type="state" class="form-control" id="state" name="state">
-          </div>
-
           <div class="form-group">
+            {% if form.errors %}
+            <p>{{ form.non_field_errors }}</p>
+            {% endif %}
             <button type="button" value="Submit" class="btn btn-block btn-primary" onclick="toggleEmailField()">Send</button>
           </div>
 
@@ -51,7 +80,7 @@
 {% load static %}
 {% block page_js %}
 <script>
-  var state = '{{ state }}';
+  var state = '{{ request.session.activation_state }}';
 </script>
 <script src="{% static 'js/email_verification.js' %}" type="text/javascript"></script>
 {% endblock %}

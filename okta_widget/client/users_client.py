@@ -14,6 +14,17 @@ class UsersClient(object):
     def create_user(self, user, activate="false"):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        return response
+
+    def set_password(self, user_id, user):
+        url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.put(url, headers=self.headers, data=json.dumps(user))
+        return response
+
+    def activate(self, user_id, send_email="false"):
+        url = self.base_url + '/api/v1/users/{0}/lifecycle/activate?sendEmail={1}'.format(user_id, send_email)
+        response = requests.post(url, headers=self.headers)
+        return response
 
     def list_users(self, limit=25, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
@@ -22,11 +33,6 @@ class UsersClient(object):
 
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
-        return response.content
-
-    def set_password(self, user_id, user):
-        url = self.base_url + '/api/v1/users/{}'.format(user_id)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
         return response.content
 
     def list_users_scoped(self, limit=25, department="", search=None):

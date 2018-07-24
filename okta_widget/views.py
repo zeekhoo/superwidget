@@ -430,34 +430,6 @@ def registration_view2(request):
                 }
             }
             client = UsersClient('https://' + OKTA_ORG, API_KEY)
-            client.create_user(user=user, activate="true")
-        try:
-            print('create user {0} {1}'.format(fn, ln))
-            return HttpResponseRedirect(reverse('registration_success2'))
-        except Exception as e:
-            print("Error: {}".format(e))
-            form.add_error(field=None, error=e)
-    else:
-        form = RegistrationForm2()
-    return render(request, 'register2.html', {'form': form})
-
-
-def registration_view3(request):
-    if request.method == 'POST':
-        form = RegistrationForm2(request.POST)
-        if form.is_valid():
-            fn = form.cleaned_data['firstName']
-            ln = form.cleaned_data['lastName']
-            email = form.cleaned_data['email']
-            user = {
-                "profile": {
-                    "firstName": fn,
-                    "lastName": ln,
-                    "email": email,
-                    "login": email
-                }
-            }
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
             client.create_user(user=user, activate="false")
         try:
             print('create user {0} {1}'.format(fn, ln))
@@ -514,28 +486,32 @@ def activation_view(request, slug):
     return render(request, 'activate.html', {'form': form, 'slug': slug, 'firstName': name})
 
 
+# A custom registration flow where user is created STAGED. Then an OTP is sent via Email to activate the account
 def activation_wo_token_view(request):
     state = None
     if request.method == 'POST':
         form = ActivationWithEmailForm(request.POST)
         if form.is_valid():
-            state = form.cleaned_data['state']
+            state = request.session['activation_state']
+            print('state={}'.format(state))
+
             email = form.cleaned_data['email']
+            print('email={}'.format(email))
             otp = form.cleaned_data['verificationCode']
             password1 = form.cleaned_data['password1']
             password2 = form.cleaned_data['password2']
-
-            print('state={}'.format(state))
 
             client = UsersClient('https://' + OKTA_ORG, API_KEY)
             user = json.loads(client.get_user(email))
 
             if state == 'verify-email':
-                state = 'verify-token'
-                print(user)
-                if user['status'] == 'PROVISIONED':
+                for key in list(request.session.keys()):
+                    if key in ['activation_state', 'email_factor_id', 'verification_username', 'verification_user_id']:
+                        del request.session[key]
+
+                request.session['activation_state'] = 'verify-token'
+                if user['status'] == 'STAGED':
                     enroll_status = client.enroll_email_factor(user['id'], email)
-                    print(enroll_status.status_code)
                     #if enroll_status.status_code == 200:
                     response = client.list_factors(user['id'])
                     factors = json.loads(response)
@@ -545,20 +521,21 @@ def activation_wo_token_view(request):
                             request.session['verification_username'] = email
                             request.session['verification_user_id'] = user['id']
                             client.verify_email_factor(user['id'], factor['id'])
+                            break
 
             elif state == 'verify-token':
-                state = 'set-password'
-                user_id=request.session['verification_user_id']
-                factor_id=request.session['email_factor_id']
-                response = client.verify_email_factor(user_id=user_id, factor_id=factor_id, pass_code=otp)
-                print(response.content)
+                request.session['activation_state'] = 'set-password'
+                response = client.verify_email_factor(user_id=request.session['verification_user_id'],
+                                                      factor_id=request.session['email_factor_id'],
+                                                      pass_code=otp)
             elif state == 'set-password':
                 payload = {
                     "credentials": {
                         "password": {"value": password1}
                     }
                 }
-                client.set_password(user_id=request.session['verification_user_id'], user=payload)
+                setpassword = client.set_password(user_id=request.session['verification_user_id'], user=payload)
+                activate = client.activate(user_id=request.session['verification_user_id'])
                 auth = AuthClient('https://' + OKTA_ORG)
                 res = auth.authn(request.session['verification_username'], password1)
                 if res.status_code == 200:
@@ -568,6 +545,7 @@ def activation_wo_token_view(request):
             print('invalid form')
     else:
         state = 'verify-email'
+        request.session['activation_state'] = state
         form = ActivationWithEmailForm()
 
     return render(request, 'activate_w_email.html', {'form': form, 'state': state})
@@ -608,6 +586,9 @@ def oauth2_post(request):
 
     elif request.method == 'GET':
         print('GET request: {}'.format(request.GET))
+        # print('state={}'.format(request.COOKIES["okta-oauth-state"]))
+        # print('nonce={}'.format(request.COOKIES["okta-oauth-nonce"]))
+
         if 'code' in request.GET:
             code = request.GET['code']
         if 'state' in request.GET:
