@@ -18,9 +18,10 @@ from django.contrib import admin
 from .views import not_authenticated
 from .views import not_authorized
 from .views import view_home, view_tokens, view_admin, view_debug
-from .views import list_users, setNameId, login_delegate
+from .views import list_users, list_user, setNameId, login_delegate, add_users, update_user
+from .views import list_groups, list_perms, list_group, list_perm, update_perm, add_group
 from .views import process_creds
-from .views import view_login, view_logout, view_profile
+from .views import view_login, view_logout, view_profile, edit_profile
 from .views import oauth2_post, oauth2_callback
 from .views import registration_view, registration_view2, registration_view3, \
     registration_success, registration_success2, \
@@ -39,6 +40,7 @@ from .views import view_login_custom
 urlpatterns = [
     url(r'^admin/', view_admin, name='admin'),
     url(r'^debug/', view_debug, name='debug'),
+    url(r'^edit-profile/', edit_profile, name='edit-profile'),
 
     # home
     url(r'^$', view_home, name='home'),
@@ -52,6 +54,15 @@ urlpatterns = [
 
     # impersonation
     url(r'^list-users', list_users, name='list_users'),
+    url(r'^list-user', list_user, name='list_user'),
+    url(r'^add-users', add_users, name='add_users'),
+    url(r'^update-user', update_user, name='update_user'),
+    url(r'^add-group', add_group, name='add_group'),
+    url(r'^list-groups', list_groups, name='list_groups'),
+    url(r'^list-group', list_group, name='list_group'),
+    url(r'^list-perms', list_perms, name='list_perms'),
+    url(r'^list-perm', list_perm, name='list_perm'),
+    url(r'^update-perm', update_perm, name='update_perm'),
     url(r'^set-name-id', setNameId, name='set_name_id'),
     url(r'^login-delegate', login_delegate, name='login_delegate'),
     # url(r'^proxy-callback', proxy_callback, name='proxy_callback'),

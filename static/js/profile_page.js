@@ -43,8 +43,8 @@ var profileApp = new Vue({
         if(this.accessToken && this.accessToken.groups && this.accessToken.groups.includes("Admin")) {
           return "Administrator";
         }
-        else if(this.accessToken && this.accessToken.groups && this.accessToken.groups.includes("Department Admin")){
-          return "Departmental Administrator";
+        else if(this.accessToken && this.accessToken.groups && this.accessToken.groups.includes("Company Admin")){
+          return "Company Administrator";
         }
         else {
           return false;
@@ -87,7 +87,7 @@ function showToken(org, aud, iss, uri) {
         if (access_token != '') {
             var access_token_parts = access_token.split('.');
             profileApp.accessToken = JSON.parse(window.atob(access_token_parts[1]));
-            profileApp.permissions = determinePermissions(profileApp.accessToken.groups);
+            profileApp.permissions = determinePermissions(profileApp.accessToken.groups, profileApp.accessToken.app_permissions);
             profileApp.accessTokenRaw = access_token;
             profileApp.accessTokenHeader = prettyPrint(window.atob(access_token_parts[0]));
             profileApp.accessTokenBody = prettyPrint(window.atob(access_token_parts[1]));
@@ -99,24 +99,25 @@ function showToken(org, aud, iss, uri) {
 
 //This function will look at group membership, and build a list of permissions
 //that a user has based upon them.
-function determinePermissions(groups) {
+function determinePermissions(groups, app_permissions) {
   if (!groups) {
     return '';
   }
   var perms = [];
+  var desc = 'Can Report on ALL personnel,\r\n'  + app_permissions.join(',\r\n');
   groups.forEach(function(grp){
     if(grp == 'Admin') {
       perms.push({
         'Name': 'Administrator',
         'Criteria': 'Due to membership in the Admin group',
-        'Desc': 'Can Report on ALL personnel'
-      });
+        'Desc': desc
+      })
     }
-    else if(grp == 'Department Admin') {
+    else if(grp == 'Company Admin') {
       perms.push({
-        'Name': 'Administrator',
-        'Criteria': 'Due to membership in the Department Admin group',
-        'Desc': 'Can report on active personnel in the same department'
+        'Name': 'Company Administrator',
+        'Criteria': 'Due to membership in the Company Admin group',
+        'Desc': desc
       })
     }
   });
@@ -124,7 +125,7 @@ function determinePermissions(groups) {
       perms.push({
         'Name': 'User',
         'Criteria': 'Due to membership NOT in any Admin group',
-        'Desc': 'Not an admin'
+        'Desc': desc
       });
   }
 

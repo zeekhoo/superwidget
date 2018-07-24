@@ -15,10 +15,41 @@ class UsersClient(object):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
 
+        user_id = response.json().get('id')
+        print(response.json())
+        print(user_id)
+
+        url = self.base_url + '/api/v1/users/{}lifecycle/activate?sendEmail=true'.format(user_id)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+
+    def update_user(self, user, user_id, deactivate="false"):
+        url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        print(response.content)
+
+    def create_user_scoped(self, user, activate="false", group=""):
+        url = self.base_url + '/api/v1/users?activate={}'.format(activate)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+
+        user_id = response.json().get('id')
+        print(user_id)
+
+        url = self.base_url + '/api/v1/users/{}/lifecycle/activate?sendEmail=true'.format(user_id)
+        print(url)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        print(response.content)
+
     def list_users(self, limit=25, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
         if search is not None:
             url += '&search=profile.login sw "{0}"'.format(search)
+
+        print('url={}'.format(url))
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def list_user(self, user_id):
+        url = self.base_url + '/api/v1/users/{0}'.format(user_id)
 
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
@@ -29,9 +60,9 @@ class UsersClient(object):
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
         return response.content
 
-    def list_users_scoped(self, limit=25, department="", search=None):
+    def list_users_scoped(self, limit=25, company="", search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
-        url += '&search=status eq "ACTIVE" and profile.department eq "{0}"'.format(department)
+        url += '&search=profile.companyName eq "{0}"'.format(company)
         if search is not None:
             url += ' and profile.login sw "{0}"'.format(search)
 

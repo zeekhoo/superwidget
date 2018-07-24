@@ -22,3 +22,23 @@ class AppsClient(object):
         return_status = response.status_code
         return return_status
 
+    def list_perms(self, group_id='00g5ve5kcWInHjb1f355'):
+        url = self.base_url + '/api/v1/apps/0oa5vjnkB7SlJwtRR355/groups/{0}'.format('00g5ve5kcWInHjb1f355')
+
+        print('url={}'.format(url))
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def list_perm(self, group_id=''):
+        url = self.base_url + '/api/v1/apps/0oa5vjnkB7SlJwtRR355/groups/{0}'.format(group_id)
+
+        print('url={}'.format(url))
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def update_perm(self, group_id='', perms=[]):
+        url = self.base_url + '/api/v1/apps/0oa5vjnkB7SlJwtRR355/groups/{0}'.format(group_id)
+
+        print('url={}'.format(url))
+        response = requests.put(url, headers=self.headers, data=json.dumps(perms))
+        return response.content
