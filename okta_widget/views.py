@@ -279,17 +279,6 @@ def okta_hosted_login(request):
     return render(request, 'customized-okta-hosted.html', c)
 
 
-# @csrf_exempt
-# def view_login_raas(request):
-#     page = 'login_raas'
-#     pages_js['entry_page'] = page
-#     if request.method == 'POST':
-#         return _do_refresh(request, page)
-#     else:
-#         c.update({"js": _do_format(request, '/js/oidc_raas.js', page)})
-#     return render(request, 'index_raas.html', c)
-
-
 @csrf_exempt
 def view_login_idp(request):
     idps = '['
@@ -393,182 +382,181 @@ def list_user(request):
     return response
 
 
+@csrf_exempt
 def add_users(request):
-    get = request.GET
-    email = None
-    firstName = None
-    lastName = None
-    role = None
-    activate = "false"
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
-    companyName = profile_dict.get('companyName')
-
-    if 'email' in get:
-        email = get['email']
-    if 'firstName' in get:
-        firstName = get['firstName']
-    if 'lastName' in get:
-        lastName = get['lastName']
-    if 'role' in get:
-        role = get['role']
-    if 'activate' in get:
-        activate = "true"
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
-
-    user = {
-        "profile": {
-            "firstName": firstName,
-            "lastName": lastName,
-            "email": email,
-            "login": email,
-            "customer_role": role,
-            "companyName": companyName
-        }
-    }
-
-    if 'admin' in request.session:
-        users = client.create_user(user=user, activate=activate)
-    elif 'company_admin' in request.session:
-        users = client.create_user_scoped(user=user, activate="false", group="")
-    else:
-        return not_authorized(request)
-
     response = HttpResponse()
     response.status_code = 200
-    response.content = users
+
+    if request.method == 'POST':
+        req = request.POST
+        email = None
+        firstName = None
+        lastName = None
+        role = None
+        activate = False
+        profile = request.session['profile']
+        profile_dict = json.loads(profile)
+        companyName = profile_dict.get('companyName')
+
+        if 'email' in req:
+            email = req['email']
+        if 'firstName' in req:
+            firstName = req['firstName']
+        if 'lastName' in req:
+            lastName = req['lastName']
+        if 'role' in req:
+            role = req['role']
+        if 'activate' in req:
+            activate = req['activate']
+        client = UsersClient('https://' + OKTA_ORG, API_KEY)
+
+        user = {
+            "profile": {
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "login": email,
+                "customer_role": role,
+                "companyName": companyName
+            }
+        }
+
+        if 'admin' in request.session:
+            users = client.create_user(user=user, activate=activate)
+        elif 'company_admin' in request.session:
+            users = client.create_user(user=user, activate=activate)
+            # users = client.create_user_scoped(user=user, activate="false", group="")
+        else:
+            return not_authorized(request)
+
+        response.content = users
+
     return response
 
 
+@csrf_exempt
 def update_user(request):
-    get = request.GET
-    email = None
-    firstName = None
-    lastName = None
-    role = None
-    deactivate = "false"
-    user_id = None
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
-    companyName = None
-
-    if 'email' in get:
-        email = get['email']
-    if 'firstName' in get:
-        firstName = get['firstName']
-    if 'lastName' in get:
-        lastName = get['lastName']
-    if 'role' in get:
-        role = get['role']
-    if 'deactivate' in get:
-        deactivate = "true"
-    if 'user_id' in get:
-        user_id = get['user_id']
-    if 'companyName' in get:
-        companyName = get['companyName']
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
-
-    user = {
-        "profile": {
-            "firstName": firstName,
-            "lastName": lastName,
-            "email": email,
-            "login": email,
-            "customer_role": role,
-            "companyName": companyName
-        }
-    }
-
-    print(user)
-
-    if 'admin' in request.session:
-        users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-    elif 'company_admin' in request.session:
-        users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-    else:
-        return not_authorized(request)
-
     response = HttpResponse()
     response.status_code = 200
-    response.content = users
+
+    if request.method == 'POST':
+        req = request.POST
+        print(req)
+        email = None
+        firstName = None
+        lastName = None
+        role = None
+        deactivate = None
+        user_id = None
+        companyName = None
+
+        if 'email' in req:
+            email = req['email']
+        if 'firstName' in req:
+            firstName = req['firstName']
+        if 'lastName' in req:
+            lastName = req['lastName']
+        if 'role' in req:
+            role = req['role']
+        if 'deactivate' in req:
+            deactivate = req['deactivate']
+        if 'user_id' in req:
+            user_id = req['user_id']
+        if 'companyName' in req:
+            companyName = req['companyName']
+        client = UsersClient('https://' + OKTA_ORG, API_KEY)
+
+        user = {
+            "profile": {
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "login": email,
+                "customer_role": role,
+                "companyName": companyName
+            }
+        }
+
+        if 'admin' in request.session:
+            users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
+        elif 'company_admin' in request.session:
+            users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
+        else:
+            return not_authorized(request)
+
+        response.content = users
+
     return response
 
 
 def list_groups(request):
+    response = HttpResponse()
+    response.status_code = 200
+
     profile = request.session['profile']
     profile_dict = json.loads(profile)
     companyName = profile_dict.get('companyName')
 
-    client = GroupsClient('https://' + OKTA_ORG, API_KEY)
-
     if 'company_admin' in request.session:
+        client = GroupsClient('https://' + OKTA_ORG, API_KEY)
         groups = client.list_groups(15, companyName)
+        response.content = groups
     else:
         return not_authorized(request)
 
-    response = HttpResponse()
-    response.status_code = 200
-    response.content = groups
     return response
 
 
-def list_group(request):
+def get_group(request):
     get = request.GET
+    response = HttpResponse()
+    response.status_code = 200
+
     group_id = None
     if 'group_id' in get:
         group_id = get['group_id']
     client = GroupsClient('https://' + OKTA_ORG, API_KEY)
 
-    if 'admin' in request.session or 'company_admin' in request.session:
-        users = client.list_group(group_id)
+    if 'company_admin' in request.session:
+        group = client.get_group_by_id(group_id)
+        response.content = group
     else:
         return not_authorized(request)
 
+    return response
+
+
+def app_schema(request):
     response = HttpResponse()
     response.status_code = 200
-    response.content = users
+
+    if 'company_admin' in request.session:
+        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+        schema = client.get_schema()
+        response.content = schema
+    else:
+        return not_authorized(request)
+
     return response
 
 
 def list_perms(request):
     get = request.GET
-    group_id = None
-
-    client = AppsClient('https://' + OKTA_ORG, API_KEY)
-
-    if 'group_id' in get:
-        group_id = get['group_id']
+    response = HttpResponse()
+    response.status_code = 200
 
     if 'company_admin' in request.session:
-        perms = client.list_perms(group_id)
+        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+
+        group_id = None
+        if 'group_id' in get:
+            group_id = get['group_id']
+
+        perms = client.get_app_group_by_id(group_id)
+        response.content = perms
     else:
         return not_authorized(request)
 
-    response = HttpResponse()
-    response.status_code = 200
-    response.content = perms
-    print(response.content)
-    return response
-
-
-def list_perm(request):
-    get = request.GET
-    group_id = None
-
-    client = AppsClient('https://' + OKTA_ORG, API_KEY)
-
-    if 'group_id' in get:
-        group_id = get['group_id']
-
-    if 'company_admin' in request.session:
-        perms = client.list_perm(group_id)
-    else:
-        return not_authorized(request)
-
-    response = HttpResponse()
-    response.status_code = 200
-    response.content = perms
-    print(response.content)
     return response
 
 
@@ -583,29 +571,27 @@ def update_perm(request):
     if 'perms' in get:
         perms = get['perms']
 
-    print(perms , group_id)
-    perms = perms.strip(',')
-    perms = perms.strip(' ')
-    perms = perms.split(',')
-    print(perms)
-
-    perm = {
-        "profile": {
-            "role_permissions": perms
-        }
-    }
-
-    client = AppsClient('https://' + OKTA_ORG, API_KEY)
-
-    if 'company_admin' in request.session:
-        perms = client.update_perm(group_id, perm)
-    else:
-        return not_authorized(request)
-
     response = HttpResponse()
     response.status_code = 200
-    response.content = perms
-    print(response.content)
+
+    if 'company_admin' in request.session and group_id and perms:
+        if perms[-1:] == ',':
+            perms = perms[:-1]
+        perms = perms.split(',')
+        print(perms)
+
+        perm = {
+            "profile": {
+                "role_permissions": perms
+            }
+        }
+
+        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+        perms = client.update_app_group(group_id, perm)
+        response.content = perms
+
+    else:
+        return not_authorized(request)
     return response
 
 
@@ -975,8 +961,8 @@ def setNameId(request):
                 if auth_header.split(' ')[0] == 'Bearer':
                     access_token = auth_header.split(' ')[1]
                     # ### validate the access_token here ###
-                    client = AppsClient('https://' + OKTA_ORG, API_KEY)
-                    response.status_code = client.set_name_id(IMPERSONATION_SAML_APP_ID, request.session['user_id'], nameid)
+                    client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
+                    response.status_code = client.set_name_id(request.session['user_id'], nameid)
     return response
 
 

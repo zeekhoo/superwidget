@@ -11,7 +11,7 @@ class UsersClient(object):
             'Authorization': 'SSWS ' + token
         }
 
-    def create_user(self, user, activate="false"):
+    def create_user(self, user, activate=False):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
         return response
@@ -21,34 +21,26 @@ class UsersClient(object):
         response = requests.put(url, headers=self.headers, data=json.dumps(user))
         return response
 
-    def activate(self, user_id, send_email="false"):
+    def activate(self, user_id, send_email=False):
         url = self.base_url + '/api/v1/users/{0}/lifecycle/activate?sendEmail={1}'.format(user_id, send_email)
         response = requests.post(url, headers=self.headers)
         return response
 
         user_id = response.json().get('id')
-        print(response.json())
-        print(user_id)
-
         url = self.base_url + '/api/v1/users/{}lifecycle/activate?sendEmail=true'.format(user_id)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        return requests.post(url, headers=self.headers, data=json.dumps(user))
 
-    def update_user(self, user, user_id, deactivate="false"):
+    def update_user(self, user, user_id, deactivate=False):
         url = self.base_url + '/api/v1/users/{}'.format(user_id)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        print(response.content)
+        return requests.post(url, headers=self.headers, data=json.dumps(user))
 
-    def create_user_scoped(self, user, activate="false", group=""):
-        url = self.base_url + '/api/v1/users?activate={}'.format(activate)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
-
-        user_id = response.json().get('id')
-        print(user_id)
-
-        url = self.base_url + '/api/v1/users/{}/lifecycle/activate?sendEmail=true'.format(user_id)
-        print(url)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        print(response.content)
+    # def create_user_scoped(self, user, activate="false", group=""):
+    #     url = self.base_url + '/api/v1/users?activate={}'.format(activate)
+    #     response = requests.post(url, headers=self.headers, data=json.dumps(user))
+    #     user_id = response.json().get('id')
+    #
+    #     url = self.base_url + '/api/v1/users/{}/lifecycle/activate?sendEmail=true'.format(user_id)
+    #     return requests.post(url, headers=self.headers, data=json.dumps(user))
 
     def list_users(self, limit=25, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)

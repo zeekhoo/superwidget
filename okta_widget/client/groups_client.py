@@ -25,13 +25,16 @@ class GroupsClient(object):
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
 
     def list_groups(self, limit=25, search=None):
-        url = self.base_url + '/api/v1/groups?q={0}&limit={1}'.format(search, limit)
+        url = self.base_url + '/api/v1/groups?limit={}'.format(limit)
+
+        if search:
+            url += '&q={}'.format(search)
 
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
 
-    def list_group(self, group_id):
+    def get_group_by_id(self, group_id):
         url = self.base_url + '/api/v1/groups/{0}'.format(group_id)
 
         print('url={}'.format(url))

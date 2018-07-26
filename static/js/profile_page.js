@@ -77,6 +77,7 @@ function showToken(org, aud, iss, uri) {
         if (oktaSignIn.tokenManager.get('accessToken')) {
             var access_token = oktaSignIn.tokenManager.get('accessToken').accessToken;
         }
+
         if (id_token != '') {
             var id_token_parts = id_token.split('.');
             profileApp.idToken = JSON.parse(window.atob(id_token_parts[1]));
@@ -104,7 +105,12 @@ function determinePermissions(groups, app_permissions) {
     return '';
   }
   var perms = [];
-  var desc = 'Can Report on ALL personnel,\r\n'  + app_permissions.join(',\r\n');
+
+  var desc = 'Can Report on ALL personnel\r\n'
+  if (app_permissions) {
+      desc += ', ' + app_permissions.join(',\r\n');
+  }
+
   groups.forEach(function(grp){
     if(grp == 'Admin') {
       perms.push({
