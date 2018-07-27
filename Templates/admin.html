@@ -154,16 +154,16 @@
                 <div class="row">
                   <div class="col-sm-4">
                     <div class="form-group">
-                      <label for="firstName">First Name</label>
-                      <input type="text" id="firstName" class="form-control" value="" v-model="firstName" />
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" class="form-control" value="" v-model="firstName" />
                         <label for="lastName">Last Name</label>
-                      <input type="text" id="lastName" class="form-control" value="" v-model="lastName" />
+                        <input type="text" id="lastName" class="form-control" value="" v-model="lastName" />
                         <label for="email">Email</label>
-                      <input type="text" id="email" class="form-control" value="" v-model="email" />
+                        <input type="text" id="email" class="form-control" value="" v-model="email" />
                         <label for="role">Role</label>
-                      <input type="text" id="role" class="form-control" value="" v-model="role" />
+                        <input type="text" id="role" class="form-control" value="" v-model="role" />
                         <label class="radio">Activate?</label>
-                      <input type="checkbox" id="activate"  v-model="activate" />Yes
+                        <input type="checkbox" id="activate"  v-model="activate" />Yes
                     </div>
                   </div>
                   <div class="col-sm-12">
@@ -205,44 +205,31 @@
         }
     });
 
-    var getUserapp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-updateusers',
-        data: {
-            allUser: data
-        }
-    });
-
     var addUserapp = new Vue({
         delimiters: ['[[', ']]'],
         el: '#vueapp-addusers',
         data: {
-            debug: true,
             firstName: '',
             lastName: '',
             email: '',
             role: '',
             companyName: '',
-            activate: '',
-            ajaxRequest: false
+            activate: ''
         }
     });
 
-    var updateUserapp = new Vue({
+    var updateUserApp = new Vue({
         delimiters: ['[[', ']]'],
         el: '#vueapp-updateusers',
         data: {
-            debug: true,
             userId: '',
             firstName: '',
             lastName: '',
             email: '',
             role: '',
             companyName: '',
-            activate: '',
             deactivate: '',
-            resend_email: '',
-            ajaxRequest: false
+            resend_email: ''
         }
     });
 

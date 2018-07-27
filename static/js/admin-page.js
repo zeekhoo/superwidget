@@ -47,23 +47,15 @@ function listUser(user_id) {
             if (resultsJson) {
                 $("#vueapp-updateusers").show();
                 $("#all_users").hide();
-                getUserapp.allUser = resultsJson;
 
-                updateUserapp.firstName = resultsJson.profile.firstName;
-                updateUserapp.lastName = resultsJson.profile.lastName;
-                updateUserapp.email = resultsJson.profile.email;
-                updateUserapp.role = resultsJson.profile.customer_role;
-                updateUserapp.companyName = resultsJson.profile.companyName;
-                updateUserapp.userId = user_id;
+                updateUserApp.firstName = resultsJson.profile.firstName;
+                updateUserApp.lastName = resultsJson.profile.lastName;
+                updateUserApp.email = resultsJson.profile.email;
+                updateUserApp.role = resultsJson.profile.customer_role;
+                updateUserApp.companyName = resultsJson.profile.companyName;
+                updateUserApp.userId = user_id;
                 if (resultsJson.status == 'STAGED' || resultsJson.status == 'PROVISIONED')
                     $("#resend_email").show();
-
-//                $("#firstName_up").val(resultsJson.profile.firstName);
-//                $("#lastName_up").val(resultsJson.profile.lastName);
-//                $("#email_up").val(resultsJson.profile.email);
-//                $("#role_up").val(resultsJson.profile.customer_role);
-//                $("#user_id_up").val(user_id);
-//                $("#companyName_up").val(resultsJson.profile.companyName);
             }
         }
     });
@@ -105,22 +97,22 @@ function addUser() {
 
 function updateUser() {
     data = {};
-    if (updateUserapp.userId != null && updateUserapp.userId != '')
-        data.user_id=updateUserapp.userId;
-    if (updateUserapp.firstName != null && updateUserapp.firstName != '')
-        data.firstName = updateUserapp.firstName;
-    if (updateUserapp.lastName != null && updateUserapp.lastName != '')
-        data.lastName=updateUserapp.lastName;
-    if (updateUserapp.email != null && updateUserapp.email != '')
-        data.email=updateUserapp.email;
-    if (updateUserapp.role != null && updateUserapp.role != '')
-        data.role=updateUserapp.role;
-    if (updateUserapp.deactivate != null && updateUserapp.deactivate != '')
-        data.deactivate=updateUserapp.deactivate;
-    if (updateUserapp.resend_email != null && updateUserapp.resend_email != '')
-        data.resend_email=updateUserapp.resend_email;
-    if (updateUserapp.companyName != null && updateUserapp.companyName != '')
-        data.companyName=updateUserapp.companyName;
+    if (updateUserApp.userId != null && updateUserApp.userId != '')
+        data.user_id=updateUserApp.userId;
+    if (updateUserApp.firstName != null && updateUserApp.firstName != '')
+        data.firstName = updateUserApp.firstName;
+    if (updateUserApp.lastName != null && updateUserApp.lastName != '')
+        data.lastName=updateUserApp.lastName;
+    if (updateUserApp.email != null && updateUserApp.email != '')
+        data.email=updateUserApp.email;
+    if (updateUserApp.role != null && updateUserApp.role != '')
+        data.role=updateUserApp.role;
+    if (updateUserApp.deactivate != null && updateUserApp.deactivate != '')
+        data.deactivate=updateUserApp.deactivate;
+    if (updateUserApp.resend_email != null && updateUserApp.resend_email != '')
+        data.resend_email=updateUserApp.resend_email;
+    if (updateUserApp.companyName != null && updateUserApp.companyName != '')
+        data.companyName=updateUserApp.companyName;
 
     var accessToken = "";
     $.ajax({
@@ -134,9 +126,30 @@ function updateUser() {
         },
         statusCode: {
             200: function(xhr) {
-                console.log(xhr);
                 var res = JSON.parse(xhr)
-                console.log(res["status"]);
+                if (res["status"] && res["status"] === 'PROVISIONED' || 'STAGED' || 'ACTIVE') {
+                    var searchedUsers = getUsersapp.allUsers;
+                    for (i in searchedUsers) {
+                        var row = searchedUsers[i];
+                        if (row.id === data.user_id) {
+                            if ('email' in data) {
+                                row.profile.login = data.email;
+                                row.profile.email = data.email;
+                            }
+                            if ('firstName' in data)
+                                row.profile.firstName = data.firstName;
+                            if ('lastName' in data)
+                                row.profile.lastName = data.lastName;
+                            if ('role' in data)
+                                row.profile.customer_role = data.role;
+                        }
+                    }
+
+                    $('#vueapp-updateusers').hide();
+                    $('#all_users').show();
+                } else {
+                    console.log(xhr);
+                }
             }
         }
     });
