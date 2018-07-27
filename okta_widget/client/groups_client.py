@@ -13,16 +13,15 @@ class GroupsClient(object):
 
     def create_group(self, group):
         url = self.base_url + '/api/v1/groups'.format()
-        response = requests.post(url, headers=self.headers, data=json.dumps(group))
+        return requests.post(url, headers=self.headers, data=json.dumps(group))
 
     def update_user(self, user, user_id, deactivate="false"):
         url = self.base_url + '/api/v1/users/{}'.format(user_id)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        print(response.content)
+        return requests.post(url, headers=self.headers, data=json.dumps(user))
 
     def create_user_scoped(self, user, activate="false", group=""):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        return requests.post(url, headers=self.headers, data=json.dumps(user))
 
     def list_groups(self, limit=25, search=None):
         url = self.base_url + '/api/v1/groups?limit={}'.format(limit)
@@ -31,13 +30,11 @@ class GroupsClient(object):
             url += '&q={}'.format(search)
 
         print('url={}'.format(url))
-        response = requests.get(url, headers=self.headers)
-        return response.content
+        return requests.get(url, headers=self.headers).content
 
     def get_group_by_id(self, group_id):
         url = self.base_url + '/api/v1/groups/{0}'.format(group_id)
 
         print('url={}'.format(url))
-        response = requests.get(url, headers=self.headers)
-        return response.content
+        return requests.get(url, headers=self.headers).content
 

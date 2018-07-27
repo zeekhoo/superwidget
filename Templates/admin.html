@@ -5,7 +5,7 @@
 {% block head_js %}
 <script>
     var srv_access_token = '{{ request.session.access_token|safe }}';
-    var srv_companyName = '{{ request.session.companyName|safe}}';
+    //var srv_companyName = '{{ request.session.companyName|safe}}';
 </script>
 {% endblock %}
 
@@ -22,7 +22,7 @@
                     <div class="col-md-4">
                         {% if 'admin' in request.session or 'company_admin' in request.session %}
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Starts with" id="sw">
+                            <input type="text" class="form-control" id="sw" placeholder="Starts with">
                             <span class="input-group-btn">
                                 <button class="btn btn-primary" id="search-button" type="button" onclick="listUsers($('#sw').val())">
                                     Click to view Users
@@ -39,11 +39,11 @@
                                 {% endif %}
                                 {% if 'admin' in request.session or 'company_admin' in request.session %}
                                 <button class="btn btn-primary" id="addUser-button" type="button"
-                                        onclick="$('#vueapp-addusers').show(); toggleComponents('vueapp-addusers');">
+                                        onclick="toggleComponents('vueapp-addusers');">
                                     Add User
                                 </button>
                                 <button class="btn btn-primary" id="addGroup-button" type="button"
-                                        onclick="$('#vueapp-addgroup').show(); toggleComponents('vueapp-addgroup');">
+                                        onclick="toggleComponents('vueapp-addgroup');">
                                     Add Role
                                 </button>
                                 {% endif %}
@@ -182,7 +182,7 @@
                     </div>
                   </div>
                   <div class="col-sm-12">
-                    <a class="btn btn-success" onclick="addGroup($(#'groupName').val())">Submit</a>
+                    <a class="btn btn-success" onclick="addGroup()">Submit</a>
                   </div>
                 </div>
                 </div>
@@ -196,12 +196,11 @@
 {% load static %}
 {% block page_js %}
 <script>
-    var data = [];
     var getUsersapp = new Vue({
         delimiters: ['[[', ']]'],
         el: '#vueapp-users',
         data: {
-            allUsers: data
+            allUsers: []
         }
     });
 
@@ -237,18 +236,26 @@
         delimiters: ['[[', ']]'],
         el: '#vueapp-groups',
         data: {
-            allGroups: data
+            allGroups: []
         },
+    });
+
+    var addGroupApp = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vueapp-addgroup',
+        data: {
+            groupName: ''
+        }
     });
 
     var getPermsapp = new Vue({
         delimiters: ['[[', ']]'],
         el: '#vueapp-perms',
         data: {
-            groupId: data,
-            groupName: data,
-            allPerms: data,
-            perms: data
+            groupId: '',
+            groupName: '',
+            allPerms: '',
+            perms: ''
         },
     });
 
@@ -258,6 +265,16 @@
             $("#search-button").click();
         }
     });
+
+    var authClient = new OktaAuth({url: 'https://{{ org }}'});
+    var accessToken = '';
+    if (srv_access_token != '') {
+        //get the accessToken from session if it exists
+        accessToken = srv_access_token;
+    } else if (authClient.tokenManager.get('accessToken')) {
+        //get the accessToken stored in local storage
+        accessToken = authClient.tokenManager.get('accessToken').accessToken;
+    }
 </script>
 <script src="{% static 'js/admin-page.js' %}" type="text/javascript"></script>
 <script id="theScript">{{ js|safe }}</script>

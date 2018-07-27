@@ -48,11 +48,10 @@ urlpatterns = [
     url(r'^login$', view_login, name='login'),
     url(r'^logout$', view_logout, name='logout'),
 
-
     # profile page
     url(r'^profile$', view_profile, name='profile'),
 
-    # impersonation
+    # admin/crud
     url(r'^list-users', list_users, name='list_users'),
     url(r'^list-user', list_user, name='list_user'),
     url(r'^add-users', add_users, name='add_users'),
@@ -63,27 +62,27 @@ urlpatterns = [
     url(r'^list-perms', list_perms, name='list_perms'),
     url(r'^app-schema', app_schema, name='app_schema'),
     url(r'^update-perm', update_perm, name='update_perm'),
+
+    # impersonation
     url(r'^set-name-id', setNameId, name='set_name_id'),
     url(r'^login-delegate', login_delegate, name='login_delegate'),
     # url(r'^proxy-callback', proxy_callback, name='proxy_callback'),
 
-
-    # callbacks
-    url(r'^process-creds', process_creds, name='process_creds'),
-
     # alternate login pages
     url(r'^login-css$', view_login_css, name='login_css'),
     url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
-    # url(r'^login-raas$', view_login_raas, name='login_raas'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
     url(r'^login-disco$', view_login_disco, name='login_idp_disco'),
     url(r'^login-form$', view_login_custom, name='login_custom'),
-
 
     # auth code postback
     url(r'^oauth2/callback', oauth2_post, name='oauth2_post'),
     url(r'^oauth/callback', oauth2_callback, name='oauth2_callback'),
 
+    # callbacks
+    url(r'^process-creds', process_creds, name='process_creds'),
+
+    # registration examples
     url(r'^register/', registration_view, name='register_user'),
     url(r'^register2/', registration_view2, name='register_user2'),
     url(r'^success/$', registration_success, name='registration_success'),
@@ -91,8 +90,10 @@ urlpatterns = [
     url(r'^activate/(?P<slug>.*)/$', activation_view, name='activate_user'),
     url(r'^activate/$', activation_wo_token_view, name='activate_user2'),
 
+    # error pages
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
     url(r'^not-authorized/$', not_authorized, name='not_authorized'),
+
     # okta proxy
     # url(r'^broker/api/v1/sessions/me$', sessions_broker, name='okta_session'),
     # url(r'^broker/api/v1/authn$', auth_broker, name='okta_auth'),

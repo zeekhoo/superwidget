@@ -1,32 +1,18 @@
-function toggleComponents(component) {
-    if (component != 'all_users')
-        $('#all_users').hide();
-
-    if (component != 'vueapp-addusers')
-        $('#vueapp-addusers').hide();
-
-    if (component != 'vueapp-updateusers')
-        $('#vueapp-updateusers').hide();
-
-    if (component != 'vueapp-addgroup')
-        $('#vueapp-addgroup').hide();
-
-    if (component != 'vueapp-groups')
-        $('#vueapp-groups').hide();
-
-    if (component != 'vueapp-perms')
-        $('#vueapp-perms').hide();
-}
-
 function listUsers(startsWith) {
     toggleComponents('all_users');
 
-    url = "/list-users";
+    data = {};
     if (startsWith != null && startsWith != '') {
-        url += '?startsWith=' + startsWith;
+        data.startsWith = startsWith;
     }
-    $.get(url, function(res) {
-        if (res) {
+    $.ajax({
+        url: '/list-users',
+        method: 'GET',
+        data: data,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        success: function(res) {
             var resultsJson = JSON.parse(res);
             if (resultsJson) {
                 $('#all_users').show();
@@ -37,12 +23,18 @@ function listUsers(startsWith) {
 }
 
 function listUser(user_id) {
-    url = "/list-user";
+    data = {}
     if (user_id != null && user_id != '') {
-        url += '?user=' + user_id;
+        data.user = user_id;
     }
-    $.get(url, function(res) {
-        if (res) {
+    $.ajax({
+        url: '/list-user',
+        method: 'GET',
+        data: data,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        success: function(res) {
             var resultsJson = JSON.parse(res);
             if (resultsJson) {
                 $("#vueapp-updateusers").show();
@@ -74,21 +66,29 @@ function addUser() {
     if (addUserapp.activate != null && addUserapp.activate != '')
         data.activate = addUserapp.activate;
 
-    var accessToken = "";
     $.ajax({
         url: '/add-users',
         method: 'POST',
         data: data,
-        contentType: 'application/x-www-form-urlencoded',
-        crossDomain: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
         },
         statusCode: {
             200: function(xhr) {
-                console.log(xhr);
-                var res = JSON.parse(xhr)
-                console.log(res["status"]);
+                var res = JSON.parse(xhr);
+                if ("id" in res) {
+                    $('#sw').val(addUserapp.email);
+
+                    addUserapp.firstName = '';
+                    addUserapp.lastName = '';
+                    addUserapp.email = '';
+                    addUserapp.role = '';
+                    addUserapp.activate = '';
+
+                    listUsers($('#sw').val());
+                } else {
+                    console.log(res);
+                }
             }
         }
     });
@@ -114,13 +114,10 @@ function updateUser() {
     if (updateUserApp.companyName != null && updateUserApp.companyName != '')
         data.companyName=updateUserApp.companyName;
 
-    var accessToken = "";
     $.ajax({
         url: '/update-user',
         method: 'POST',
         data: data,
-        contentType: 'application/x-www-form-urlencoded',
-        crossDomain: true,
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
         },
@@ -157,22 +154,43 @@ function updateUser() {
 
 function addGroup(groupName) {
     url = "/add-group";
-    if (groupName != null && groupName != '') {
-        url += '?groupName=' + groupName;
+    data = {};
+    if (addGroupApp.groupName != null && addGroupApp.groupName != '') {
+        data.groupName = addGroupApp.groupName;
+
+        $.ajax({
+            url: '/add-group',
+            method: 'POST',
+            data: data,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            },
+            statusCode: {
+                200: function(xhr) {
+                    var res = JSON.parse(xhr);
+                    if ("id" in res) {
+                        addGroupApp.groupName = '';
+                        listGroups();
+                    }
+                    else {
+                        console.log(res);
+                    }
+                }
+            }
+        });
     }
-    $.get(url, function(res) {
-        if (res) {
-            var resultsJson = '';
-        }
-    });
 }
 
 function listGroups() {
     toggleComponents('vueapp-groups');
 
-    url = "/list-groups";
-    $.get(url, function(res) {
-        if (res) {
+    $.ajax({
+        url: '/list-groups',
+        method: 'GET',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        success: function(res) {
             var resultsJson = JSON.parse(res);
             if (resultsJson) {
                 $("#vueapp-groups")[0].style.display='block';
@@ -180,14 +198,17 @@ function listGroups() {
             }
         }
     });
-
 }
 
 
 function listPerms(group_id, group_name) {
-    url = "/app-schema";
-    $.get(url, function(res) {
-        if (res) {
+    $.ajax({
+        url: '/app-schema',
+        method: 'GET',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        success: function(res) {
             var resultsJson = JSON.parse(res);
             if (resultsJson) {
                 $('#vueapp-perms')[0].style.display='block';
@@ -217,14 +238,21 @@ function listPerms(group_id, group_name) {
 }
 
 function selectedPerms(group_id, group_name) {
-    url = "/list-perms";
+    data = {};
     if (group_id != null && group_id != '') {
-        url += '?group_id=' + group_id;
+        data.group_id = group_id;
     }
-    $.get(url, function(res) {
-        if (res) {
+
+    $.ajax({
+        url: '/list-perms',
+        method: 'GET',
+        data: data,
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        success: function(res) {
             var resultsJson = JSON.parse(res);
-            if (resultsJson) {
+            if (resultsJson.profile) {
                 var allPerms = getPermsapp.allPerms;
                 var role_permissions = resultsJson.profile.role_permissions;
                 for (i in role_permissions) {
@@ -262,16 +290,57 @@ function updatePermsGroup() {
         }
     }
 
-    url = "/update-perm";
+    data = {};
     if (group_id != null && group_id != '') {
-        url += '?group_id=' + group_id;
+        data.group_id = group_id;
     }
     if (perms != null && perms != '') {
-        url += '&perms=' + perms;
+        data.perms = perms;
     }
-    $.get(url, function(res) {
-        if (res) {
-            var resultsJson = JSON.parse(res);
+
+    $.ajax({
+        url: '/update-perm',
+        method: 'POST',
+        data: data,
+        contentType: 'application/x-www-form-urlencoded',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        complete: function(res, xhr, settings) {
+            console.log(res);
         }
     });
+}
+
+
+function toggleComponents(component) {
+    if (component === 'all_users')
+        $('#all_users').show();
+    else
+        $('#all_users').hide();
+
+    if (component === 'vueapp-addusers')
+        $('#vueapp-addusers').show();
+    else
+        $('#vueapp-addusers').hide();
+
+    if (component === 'vueapp-updateusers')
+        $('#vueapp-updateusers').show();
+    else
+        $('#vueapp-updateusers').hide();
+
+    if (component === 'vueapp-addgroup')
+        $('#vueapp-addgroup').show();
+    else
+        $('#vueapp-addgroup').hide();
+
+    if (component === 'vueapp-groups')
+        $('#vueapp-groups').show();
+    else
+        $('#vueapp-groups').hide();
+
+    if (component === 'vueapp-perms')
+        $('#vueapp-perms').show();
+    else
+        $('#vueapp-perms').hide();
 }

@@ -13,6 +13,7 @@ class UsersClient(object):
 
     def create_user(self, user, activate=False):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
+        print('url = {}'.format(url))
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
         return response
 
@@ -42,6 +43,11 @@ class UsersClient(object):
     #     url = self.base_url + '/api/v1/users/{}/lifecycle/activate?sendEmail=true'.format(user_id)
     #     return requests.post(url, headers=self.headers, data=json.dumps(user))
 
+    def set_password(self, user_id, user):
+        url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        return response.content
+
     def list_users(self, limit=25, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
         if search is not None:
@@ -52,24 +58,29 @@ class UsersClient(object):
         return response.content
 
     def list_user(self, user_id):
-        url = self.base_url + '/api/v1/users/{0}'.format(user_id)
+        if not user_id or user_id == '':
+            return None
 
+        url = self.base_url + '/api/v1/users/{0}'.format(user_id)
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
 
-    def set_password(self, user_id, user):
-        url = self.base_url + '/api/v1/users/{}'.format(user_id)
-        response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        return response.content
-
-    def list_users_scoped(self, limit=25, company="", search=None):
+    def list_users_scoped(self, limit=25, company=None, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
-        url += '&search=profile.companyName eq "{0}"'.format(company)
+        s = ''
+        if company is not None:
+            s = 'profile.companyName eq "{0}"'.format(company)
         if search is not None:
-            url += ' and profile.login sw "{0}"'.format(search)
+            if s != '':
+                s += ' and '
+            s += 'profile.login sw "{0}"'.format(search)
+
+        if s != '':
+            url += '&search={}'.format(s)
 
         print('url={}'.format(url))
+
         response = requests.get(url, headers=self.headers)
         return response.content
 

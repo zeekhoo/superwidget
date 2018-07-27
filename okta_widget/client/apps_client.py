@@ -24,13 +24,12 @@ class AppsClient(object):
         return return_status
 
     def get_app_group_by_id(self, group_id=None):
-        url = self.base_url + '/api/v1/apps/{0}/groups/{1}'.format(self.client_id, group_id)
-
-        print('url={}'.format(url))
         if group_id is None:
-            return None
-        else:
-            response = requests.get(url, headers=self.headers)
+            return {}
+
+        url = self.base_url + '/api/v1/apps/{0}/groups/{1}'.format(self.client_id, group_id)
+        print('url={}'.format(url))
+        response = requests.get(url, headers=self.headers)
         return response.content
 
     def update_app_group(self, group_id=None, perms=[]):
@@ -38,7 +37,7 @@ class AppsClient(object):
 
         print('url={}'.format(url))
         if group_id is None:
-            return None
+            return {}
         else:
             response = requests.put(url, headers=self.headers, data=json.dumps(perms))
         return response.content
