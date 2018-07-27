@@ -128,10 +128,14 @@ function determinePermissions(groups, app_permissions) {
     }
   });
   if (perms.length == 0) {
+      var userPermissions = 'No Privileged Permissions';
+      if (app_permissions) {
+          userPermissions = 'Permissions\r\n' + ', ' + app_permissions.join(',\r\n');
+      }
       perms.push({
         'Name': 'User',
         'Criteria': 'Due to membership NOT in any Admin group',
-        'Desc': desc
+        'Desc': userPermissions
       });
   }
 
