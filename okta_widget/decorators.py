@@ -12,6 +12,7 @@ def access_token_required(func):
                     access_token = auth_header.split(' ')[1]
 
         if access_token:
+            # Demo code does not validate access token. Normally, it'd be done here.
             return func(request, *args, **kw)
         else:
             # no access_token. return 401 (Unauthorized)
