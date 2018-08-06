@@ -58,7 +58,8 @@ if settings.DEFAULT_SCOPES and settings.DEFAULT_SCOPES != 'None':
 # Option: IDP Discovery setting
 IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
 
-# Option: Do Impersonation hack
+# Option: Do Impersonation with SAML
+IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION != 'None' else 1
 IMPERSONATION_ORG = settings.IMPERSONATION_ORG
 IMPERSONATION_ORG_AUTH_SERVER_ID = settings.IMPERSONATION_ORG_AUTH_SERVER_ID
 IMPERSONATION_ORG_OIDC_CLIENT_ID = settings.IMPERSONATION_ORG_OIDC_CLIENT_ID
@@ -72,6 +73,11 @@ if IMPERSONATION_ORG and IMPERSONATION_ORG != 'None' \
     allow_impersonation = True
 else:
     allow_impersonation = False
+IMPERSONATION_V2_SAML_APP_ID = settings.IMPERSONATION_V2_SAML_APP_ID
+IMPERSONATION_V2_ORG_API_KEY = settings.IMPERSONATION_V2_ORG_API_KEY
+IMPERSONATION_V2_ORG = settings.IMPERSONATION_V2_ORG
+IMPERSONATION_V2_SAML_APP_EMBED_LINK = settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK
+
 
 c = {
     "org": BASE_URL,
@@ -168,7 +174,8 @@ def view_tokens(request):
 
 
 @csrf_exempt
-def view_login(request):
+def view_login(request, recoveryToken=None):
+    unused = recoveryToken
     page = 'login'
     pages_js['entry_page'] = page
     if request.method == 'POST':
@@ -246,7 +253,8 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     impersonation_org=IMPERSONATION_ORG,
                     impersonation_org_auth_server_id=IMPERSONATION_ORG_AUTH_SERVER_ID,
                     impersonation_org_oidc_client_id=IMPERSONATION_ORG_OIDC_CLIENT_ID,
-                    impersonation_org_redirect_idp_id=IMPERSONATION_ORG_REDIRECT_IDP_ID)
+                    impersonation_org_redirect_idp_id=IMPERSONATION_ORG_REDIRECT_IDP_ID,
+                    impersonation_app_embed_link=IMPERSONATION_V2_SAML_APP_EMBED_LINK)
         pages_js[key] = text
         return text
 
@@ -340,6 +348,7 @@ def view_admin(request):
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
     c.update({"user_department": request.session.get('department', '')})
+    c.update({"impersonation_version": IMPERSONATION_VERSION})
     return render(request, 'admin.html', c)
 
 
@@ -621,13 +630,21 @@ def add_group(request):
         profile_dict = json.loads(profile)
 
         if 'groupName' in req and 'companyName' in profile_dict:
-            companyName = profile_dict.get('companyName')
+            prefix = None
+            if 'companyName' in profile_dict:
+                prefix = profile_dict.get('companyName')
+                if prefix == '':
+                    prefix = None
+
             group_name = req['groupName']
+            if prefix:
+                group_name = prefix + '_' + group_name
+
             client = GroupsClient('https://' + OKTA_ORG, API_KEY)
 
             group = {
                 "profile": {
-                    "name": companyName + '_' + group_name,
+                    "name": group_name,
                 }
             }
 
@@ -916,7 +933,6 @@ def oauth2_post(request):
         if 'groups' in payload:
             if 'Admin' in payload['groups']:
                 request.session['admin'] = True
-
             if 'Company Admin' in payload['groups']:
                 request.session['company_admin'] = True
 
@@ -968,10 +984,20 @@ def setNameId(request):
 
     response = HttpResponse()
     if 'nameid' in post:
-        nameid = post['nameid']
-
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
-        response.status_code = client.set_name_id(request.session['user_id'], nameid)
+        version = '{}'.format(IMPERSONATION_VERSION)
+        if version == "1":
+            client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
+            response.status_code = client.set_name_id(request.session['user_id'], post['nameid'])
+        if version == "2":
+            u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
+            profile = request.session['profile']
+            users = u_client.list_user(json.loads(profile)['preferred_username'])
+            users = json.loads(users)
+            if "id" in users:
+                client = AppsClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY, IMPERSONATION_V2_SAML_APP_ID)
+                response.status_code = client.set_name_id(users["id"], post['nameid'])
+                for key in list(request.session.keys()):
+                    del request.session[key]
     return response
 
 

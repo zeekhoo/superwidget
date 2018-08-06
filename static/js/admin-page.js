@@ -1,3 +1,82 @@
+$("#sw").keyup(function(event) {
+    if (event.keyCode === 13) {
+        $("#search-button").click();
+    }
+});
+
+var getUsersapp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-users',
+    data: {
+        allUsers: []
+    }
+});
+
+var addUserapp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-addusers',
+    data: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: '',
+        companyName: '',
+        activate: ''
+    }
+});
+
+var updateUserApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-updateusers',
+    data: {
+        userId: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: '',
+        companyName: '',
+        deactivate: '',
+        resend_email: ''
+    }
+});
+
+var getGroupsapp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-groups',
+    data: {
+        allGroups: []
+    },
+});
+
+var addGroupApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-addgroup',
+    data: {
+        groupName: ''
+    }
+});
+
+var getPermsapp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-perms',
+    data: {
+        groupId: '',
+        groupName: '',
+        allPerms: '',
+        perms: ''
+    },
+});
+
+var authClient = new OktaAuth({url: 'https://{{ org }}'});
+var accessToken = '';
+if (srv_access_token != '') {
+    //get the accessToken from session if it exists
+    accessToken = srv_access_token;
+} else if (authClient.tokenManager.get('accessToken')) {
+    //get the accessToken stored in local storage
+    accessToken = authClient.tokenManager.get('accessToken').accessToken;
+}
+
 function listUsers(startsWith) {
     toggleComponents('all_users');
 

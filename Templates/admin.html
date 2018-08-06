@@ -5,7 +5,7 @@
 {% block head_js %}
 <script>
     var srv_access_token = '{{ request.session.access_token|safe }}';
-    //var srv_companyName = '{{ request.session.companyName|safe}}';
+    var impersonation_version = '{{ impersonation_version }}';
 </script>
 {% endblock %}
 
@@ -42,6 +42,8 @@
                                         onclick="toggleComponents('vueapp-addusers');">
                                     Add User
                                 </button>
+                                {% endif %}
+                                {% if 'company_admin' in request.session %}
                                 <button class="btn btn-primary" id="addGroup-button" type="button"
                                         onclick="toggleComponents('vueapp-addgroup');">
                                     Add Role
@@ -78,7 +80,7 @@
                             <td><label>[[ user.status ]]</label></td>
                             <td><button class="btn btn-primary btn-xs" v-bind:id=user.id onclick="listUser(this.id)">View More</button></td>
                             {% if allow_impersonation == True %}
-                            <td><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id)">Impersonate-Delegate</button></td>
+                            <td><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id, impersonation_version)">Impersonate-Delegate</button></td>
                             {% endif %}
                         </tr>
                     </tbody>
@@ -195,87 +197,6 @@
 
 {% load static %}
 {% block page_js %}
-<script>
-    var getUsersapp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-users',
-        data: {
-            allUsers: []
-        }
-    });
-
-    var addUserapp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-addusers',
-        data: {
-            firstName: '',
-            lastName: '',
-            email: '',
-            role: '',
-            companyName: '',
-            activate: ''
-        }
-    });
-
-    var updateUserApp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-updateusers',
-        data: {
-            userId: '',
-            firstName: '',
-            lastName: '',
-            email: '',
-            role: '',
-            companyName: '',
-            deactivate: '',
-            resend_email: ''
-        }
-    });
-
-    var getGroupsapp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-groups',
-        data: {
-            allGroups: []
-        },
-    });
-
-    var addGroupApp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-addgroup',
-        data: {
-            groupName: ''
-        }
-    });
-
-    var getPermsapp = new Vue({
-        delimiters: ['[[', ']]'],
-        el: '#vueapp-perms',
-        data: {
-            groupId: '',
-            groupName: '',
-            allPerms: '',
-            perms: ''
-        },
-    });
-
-
-    $("#sw").keyup(function(event) {
-        if (event.keyCode === 13) {
-            $("#search-button").click();
-        }
-    });
-
-    var authClient = new OktaAuth({url: 'https://{{ org }}'});
-    var accessToken = '';
-    if (srv_access_token != '') {
-        //get the accessToken from session if it exists
-        accessToken = srv_access_token;
-    } else if (authClient.tokenManager.get('accessToken')) {
-        //get the accessToken stored in local storage
-        accessToken = authClient.tokenManager.get('accessToken').accessToken;
-    }
-</script>
 <script src="{% static 'js/admin-page.js' %}" type="text/javascript"></script>
 <script id="theScript">{{ js|safe }}</script>
 {% endblock %}
