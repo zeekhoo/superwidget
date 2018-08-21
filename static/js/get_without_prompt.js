@@ -33,5 +33,6 @@ function showApp(res) {
         key = Object.keys(res[1])[0];
         authClient.tokenManager.add(key, res[1]);
     }
+    post_tokens(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
     get_profile(key, authClient.tokenManager.get(key));
 }

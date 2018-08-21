@@ -15,7 +15,7 @@ for (var i=0; i < result.length; i++) {
 }
 
 //show the app
-get_profile('accessToken', authClient.tokenManager.get('accessToken'), '[[impersonation_org]]');
+post_tokens(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'), '[[impersonation_org]]');
 
 
 //destroy session
