@@ -18,15 +18,15 @@ from django.contrib import admin
 from .views import not_authenticated
 from .views import not_authorized
 from .views import view_home, view_tokens, view_admin, view_debug
-from .views import list_users, list_user, setNameId, login_delegate, add_users, update_user
-from .views import app_schema, list_groups, list_perms, get_group, update_perm, add_group
+from .api import list_users, list_user, setNameId, add_users, update_user
+from .api import app_schema, list_groups, list_perms, get_group, update_perm, add_group
 from .views import process_creds
 from .views import view_login, view_logout, view_login_auto, view_profile, edit_profile
 from .views import oauth2_post, oauth2_callback
 from .views import registration_view, registration_view2, \
     registration_success, registration_success2, \
     activation_view, activation_wo_token_view
-from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco
+from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco, login_delegate
 from .views import view_login_custom
 
 
