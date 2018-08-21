@@ -57,6 +57,7 @@ if settings.DEFAULT_SCOPES and settings.DEFAULT_SCOPES != 'None':
 
 # Option: IDP Discovery setting
 IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
+LOGIN_NOPROMPT_BOOKMARK = settings.LOGIN_NOPROMPT_BOOKMARK
 
 # Option: Do Impersonation with SAML
 IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION != 'None' else 1
@@ -78,6 +79,12 @@ IMPERSONATION_V2_ORG_API_KEY = settings.IMPERSONATION_V2_ORG_API_KEY
 IMPERSONATION_V2_ORG = settings.IMPERSONATION_V2_ORG
 IMPERSONATION_V2_SAML_APP_EMBED_LINK = settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK
 
+if not allow_impersonation\
+    and IMPERSONATION_V2_ORG and IMPERSONATION_V2_ORG != 'None'\
+    and IMPERSONATION_V2_SAML_APP_ID and IMPERSONATION_V2_SAML_APP_ID != 'None'\
+    and IMPERSONATION_V2_ORG_API_KEY and IMPERSONATION_V2_ORG_API_KEY != 'None'\
+    and IMPERSONATION_V2_SAML_APP_EMBED_LINK and IMPERSONATION_V2_SAML_APP_EMBED_LINK != 'None':
+    allow_impersonation = True
 
 c = {
     "org": BASE_URL,
@@ -183,6 +190,25 @@ def view_login(request, recoveryToken=None):
     else:
         c.update({"js": _do_format(request, '/js/oidc_base.js', page)})
     return render(request, 'index.html', c)
+
+
+@csrf_exempt
+def view_login_auto(request):
+    page = 'login_noprompt'
+
+    referrer = ''
+    if 'from' in request.GET:
+        referrer = request.GET['from']
+
+    print('referrer={}'.format(referrer))
+    if referrer and referrer != '':
+        pages_js['entry_page'] = referrer
+
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        c.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    return render(request, 'index_get_without_prompt.html', c)
 
 
 def _do_refresh(request, key, redirect=None):
@@ -784,7 +810,7 @@ def activation_view(request, slug):
                 res = auth.authn(username, pw)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://' + OKTA_ORG + IDP_DISCO_PAGE + '?sessionToken={}'.format(session_token))
+                    return redirect('https://' + OKTA_ORG + LOGIN_NOPROMPT_BOOKMARK + '?sessionToken={}'.format(session_token))
 
             return HttpResponseRedirect(reverse('registration_success'))
         except Exception as e:

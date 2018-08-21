@@ -84,7 +84,7 @@ This app can demo IdP discovery, but there are some configuration steps to take 
 
     Login Initiated by = `Either Okta or App`
 
-    Initiate login URI = `http://localhost:8000/login-disco`
+    Initiate login URI = `http://localhost:8000/login-noprompt?from=login_idp_disco`
     
 3. Now you should see an "Idp Discovery" tab in the demo app. 
     

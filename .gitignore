@@ -10,7 +10,7 @@ static/css/okta-sign-in.min.css
 static/js/okta*
 static/js/z*
 static/okta*
-.env_dev
+.env_dev*
 .env_preview
 .env_testing
 env.conf

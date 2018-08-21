@@ -21,7 +21,7 @@ from .views import view_home, view_tokens, view_admin, view_debug
 from .views import list_users, list_user, setNameId, login_delegate, add_users, update_user
 from .views import app_schema, list_groups, list_perms, get_group, update_perm, add_group
 from .views import process_creds
-from .views import view_login, view_logout, view_profile, edit_profile
+from .views import view_login, view_logout, view_login_auto, view_profile, edit_profile
 from .views import oauth2_post, oauth2_callback
 from .views import registration_view, registration_view2, \
     registration_success, registration_success2, \
@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^login$', view_login, name='login'),
     url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
     url(r'^logout$', view_logout, name='logout'),
+    url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
 
     # profile page
     url(r'^profile$', view_profile, name='profile'),
