@@ -103,7 +103,7 @@ function showToken(org, aud, iss, uri) {
 function determinePermissions(app_permissions) {
   var perms = [];
 
-  var desc = 'Can Report on ALL personnel\r\n'
+  var desc = ''
   if (app_permissions) {
       desc += ', ' + app_permissions.join(',\r\n');
   }
@@ -113,14 +113,14 @@ function determinePermissions(app_permissions) {
       perms.push({
         'Name': 'Administrator',
         'Criteria': 'Due to being assigned the Admin role in Okta.',
-        'Desc': desc
+        'Desc': 'Can lookup users.'
       })
     }
     else if(perm == 'company_admin') {
       perms.push({
         'Name': 'Company Administrator',
         'Criteria': 'Due to being assigned the Company Admin role in Okta.',
-        'Desc': desc
+        'Desc': 'Can manage company resources.'
       })
     }
   });
