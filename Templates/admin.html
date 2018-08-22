@@ -57,7 +57,7 @@
                 {% if 'company_admin' in request.session.id_token.app_permissions %}
                 <div class="row">
                     <div class="col-md-12">
-                        <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ srv_id_token.Department }} department.</h6>
+                        <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ request.session.id_token.Department }} department.</h6>
                     </div>
                 </div>
                 {% endif %}
