@@ -13,7 +13,7 @@ def access_token_required(func):
 
         if access_token:
             # Demo code does not validate access token. Normally, it'd be done here.
-            return func(request, *args, **kw)
+            return func(request, access_token, *args, **kw)
         else:
             # no access_token. return 401 (Unauthorized)
             response = HttpResponse()

@@ -4,7 +4,8 @@
 
 {% block head_js %}
 <script>
-    var srv_access_token = '{{ request.session.access_token|safe }}';
+    var srv_access_token = '{{ request.session.access_token_raw }}';
+    var srv_id_token = '{{ srv_id_token|safe }}'
     var impersonation_version = '{{ impersonation_version }}';
 </script>
 {% endblock %}
@@ -20,7 +21,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-md-4">
-                        {% if 'admin' in request.session or 'company_admin' in request.session %}
+                        {% if 'admin' in request.session.id_token.app_permissions or 'company_admin' in request.session.id_token.app_permissions %}
                         <div class="input-group">
                             <input type="text" class="form-control" id="sw" placeholder="Starts with">
                             <span class="input-group-btn">
@@ -34,16 +35,16 @@
                     <div class="col-md-6">
                         <div class="input-group">
                             <span class="input-group-btn">
-                                {% if 'company_admin' in request.session %}
+                                {% if 'company_admin' in request.session.id_token.app_permissions %}
                                 <button class="btn btn-primary" id="search-button2" type="button" onclick="listGroups()">Click to view Roles</button>
                                 {% endif %}
-                                {% if 'admin' in request.session or 'company_admin' in request.session %}
+                                {% if 'admin' in request.session.id_token.app_permissions or 'company_admin' in request.session.id_token.app_permissions %}
                                 <button class="btn btn-primary" id="addUser-button" type="button"
                                         onclick="toggleComponents('vueapp-addusers');">
                                     Add User
                                 </button>
                                 {% endif %}
-                                {% if 'company_admin' in request.session %}
+                                {% if 'company_admin' in request.session.id_token.app_permissions %}
                                 <button class="btn btn-primary" id="addGroup-button" type="button"
                                         onclick="toggleComponents('vueapp-addgroup');">
                                     Add Role
@@ -53,10 +54,10 @@
                         </div>
                     </div>
                 </div>
-                {% if 'company_admin' in request.session %}
+                {% if 'company_admin' in request.session.id_token.app_permissions %}
                 <div class="row">
                     <div class="col-md-12">
-                        <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ user_department }} department.</h6>
+                        <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ srv_id_token.Department }} department.</h6>
                     </div>
                 </div>
                 {% endif %}

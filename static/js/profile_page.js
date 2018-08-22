@@ -40,10 +40,10 @@ var profileApp = new Vue({
     },
     computed: {
       adminBadge: function () {
-        if(this.accessToken && this.accessToken.groups && this.accessToken.groups.includes("Admin")) {
+        if(this.idToken && this.idToken.app_permissions && this.idToken.app_permissions.includes("admin")) {
           return "Administrator";
         }
-        else if(this.accessToken && this.accessToken.groups && this.accessToken.groups.includes("Company Admin")){
+        else if(this.idToken && this.idToken.app_permissions && this.idToken.app_permissions.includes("company_admin")){
           return "Company Administrator";
         }
         else {
@@ -88,7 +88,7 @@ function showToken(org, aud, iss, uri) {
         if (access_token != '') {
             var access_token_parts = access_token.split('.');
             profileApp.accessToken = JSON.parse(window.atob(access_token_parts[1]));
-            profileApp.permissions = determinePermissions(profileApp.accessToken.groups, profileApp.accessToken.app_permissions);
+            profileApp.permissions = determinePermissions(profileApp.idToken.app_permissions);
             profileApp.accessTokenRaw = access_token;
             profileApp.accessTokenHeader = prettyPrint(window.atob(access_token_parts[0]));
             profileApp.accessTokenBody = prettyPrint(window.atob(access_token_parts[1]));
@@ -100,10 +100,7 @@ function showToken(org, aud, iss, uri) {
 
 //This function will look at group membership, and build a list of permissions
 //that a user has based upon them.
-function determinePermissions(groups, app_permissions) {
-  if (!groups) {
-    return '';
-  }
+function determinePermissions(app_permissions) {
   var perms = [];
 
   var desc = 'Can Report on ALL personnel\r\n'
@@ -111,27 +108,24 @@ function determinePermissions(groups, app_permissions) {
       desc += ', ' + app_permissions.join(',\r\n');
   }
 
-  groups.forEach(function(grp){
-    if(grp == 'Admin') {
+  app_permissions.forEach(function(perm){
+    if(perm == 'admin') {
       perms.push({
         'Name': 'Administrator',
-        'Criteria': 'Due to membership in the Admin group',
+        'Criteria': 'Due to being assigned the Admin role in Okta.',
         'Desc': desc
       })
     }
-    else if(grp == 'Company Admin') {
+    else if(perm == 'company_admin') {
       perms.push({
         'Name': 'Company Administrator',
-        'Criteria': 'Due to membership in the Company Admin group',
+        'Criteria': 'Due to being assigned the Company Admin role in Okta.',
         'Desc': desc
       })
     }
   });
   if (perms.length == 0) {
       var userPermissions = 'No Privileged Permissions';
-      if (app_permissions) {
-          userPermissions = 'Permissions\r\n' + ', ' + app_permissions.join(',\r\n');
-      }
       perms.push({
         'Name': 'User',
         'Criteria': 'Due to membership NOT in any Admin group',

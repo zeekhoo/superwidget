@@ -17,6 +17,16 @@ import base64
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
 
+from .authx import set_id_token
+from .authx import set_access_token
+from .authx import is_logged_in
+from .authx import set_profile
+from .authx import logout
+from .authx import get_profile
+from .authx import get_id_token_string
+from .authx import get_access_token_string
+from .authx import is_admin
+
 API_KEY = settings.API_KEY
 OKTA_ORG = settings.OKTA_ORG
 ISSUER = settings.AUTH_SERVER_ID
@@ -97,26 +107,14 @@ c = {
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
     "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
     "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
-    "allow_impersonation": allow_impersonation,
-    "user_department": None
+    "allow_impersonation": allow_impersonation
 }
 
 url_map = {}
 pages_js = {}
 
-
 def view_home(request):
-    if 'profile' in request.session:
-        # profile = json.loads(request.session['profile'])
-        # print('profile={}'.format(profile))
-        # if 'preferred_username' in profile:
-        #     try:
-        #         u = User.objects.get(username=profile['preferred_username'])
-        #         if u is not None:
-        #             print('user = {}'.format(u))
-        #             login(request, u)
-        #     except Exception as e:
-        #         print('exception: {}'.format(e))
+    if is_logged_in(request):
         return HttpResponseRedirect(reverse('profile'))
     else:
         print('no profile in request')
@@ -132,7 +130,7 @@ def not_authorized(request):
 
 
 def view_profile(request):
-    if 'profile' in request.session:
+    if is_logged_in(request):
         if 'entry_page' in pages_js:
             # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
             page = pages_js['entry_page']
@@ -144,8 +142,10 @@ def view_profile(request):
         else:
             url_js = '/js/oidc_base.js'
 
-        p = {'profile': request.session['profile'],
-             "js": _do_format(request, url_js, page)
+        p = {'profile': json.dumps(get_profile(request)),
+            "js": _do_format(request, url_js, page),
+            "srv_access_token": get_access_token_string(request),
+            "srv_id_token": get_id_token_string(request)
              }
         c.update(p)
     else:
@@ -154,7 +154,7 @@ def view_profile(request):
 
 
 def edit_profile(request):
-    if 'profile' in request.session:
+    if is_logged_in(request):
         if 'entry_page' in pages_js:
             # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
             page = pages_js['entry_page']
@@ -166,7 +166,7 @@ def edit_profile(request):
         else:
             url_js = '/js/oidc_base.js'
 
-        p = {'profile': request.session['profile'],
+        p = {'profile': get_profile(request),
              "js": _do_format(request, url_js, page)
              }
         c.update(p)
@@ -368,12 +368,12 @@ def view_login_disco(request):
 
 
 def view_admin(request):
-    if 'admin' not in request.session and 'company_admin' not in request.session:
+    if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
-    c.update({"user_department": request.session.get('department', '')})
     c.update({"impersonation_version": IMPERSONATION_VERSION})
+    c.update({"srv_id_token": get_id_token_string(request)})
     return render(request, 'admin.html', c)
 
 def view_debug(request):
@@ -381,8 +381,7 @@ def view_debug(request):
 
 
 def view_logout(request):
-    if 'profile' in request.session:
-        del request.session['profile']
+    logout(request)
 
     if 'entry_page' in pages_js:
         page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
@@ -396,10 +395,6 @@ def view_logout(request):
     c.update({"org": OKTA_ORG})
     c.update({"iss": ISSUER})
     c.update({"aud": CLIENT_ID})
-
-    for key in list(request.session.keys()):
-        print('deleting {}'.format(key))
-        del request.session[key]
 
     return render(request, 'logged_out.html', c)
 
@@ -626,10 +621,9 @@ def oauth2_post(request):
         tokens = client.token(code, REDIRECT_URI, ISSUER)
         if tokens['access_token']:
             access_token = tokens['access_token']
-            request.session['access_token'] = access_token
+
         if tokens['id_token']:
             id_token = tokens['id_token']
-            request.session['id_token'] = id_token
 
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
@@ -637,49 +631,15 @@ def oauth2_post(request):
 
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
-        print('profile = {}'.format(profile))
-        try:
-            request.session['profile'] = json.dumps(profile)
-            request.session['given_name'] = profile['given_name']
-            request.session['user_id'] = profile['sub']
-            request.session['companyName'] = profile['companyName']
-            request.session['app_permissions'] = profile['app_permissions']
-        except Exception as e:
-            print('exception: {}'.format(e))
-
-        payload = json.loads(_decode_payload(access_token))
-        if 'groups' in payload:
-            if 'Admin' in payload['groups']:
-                request.session['admin'] = True
-            if 'Company Admin' in payload['groups']:
-                request.session['company_admin'] = True
+        set_profile(request, profile)
+        set_access_token(request, access_token)
 
     if id_token:
         # In the real world, you should validate the id_token. But this demo app is going to skip that part.
         print('id_token = {}'.format(id_token))
-
-        if 'profile' not in request.session:
-            try:
-                decoded = _decode_payload(id_token)
-                profile = json.loads(decoded)
-                request.session['profile'] = decoded
-                request.session['given_name'] = profile['given_name']
-                request.session['user_id'] = profile['sub']
-                request.session['companyName'] = profile['companyName']
-            except Exception as e:
-                print('exception: {}'.format(e))
-        else:
-            print('profile = {}'.format(request.session['profile']))
+        set_id_token(request, id_token)
 
     return HttpResponseRedirect(reverse('home'))
-
-
-def _decode_payload(token):
-    parts = token.split('.')
-    payload = parts[1]
-    payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
-    decoded = str(base64.b64decode(payload), 'utf-8')
-    return decoded
 
 
 # IMPERSONATION Demo

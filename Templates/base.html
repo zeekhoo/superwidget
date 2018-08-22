@@ -48,7 +48,7 @@
                   {% if 'profile' not in request.session %}
                   <a class="navbar-brand" href="{% url 'login' %}">Home</a>
                   {% else %}
-                  <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.given_name }}!</a>
+                  <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.id_token.name }}!</a>
                   {% endif %}
 
                   <button type="button" class="navbar-toggle btn btn-link" data-toggle="collapse" data-target="#navbar-responsive-collapse">
@@ -70,7 +70,7 @@
                       {% endif %}
 
                       {% else %}
-                      {% if 'admin' in request.session or 'company_admin' in request.session %}
+                      {% if 'admin' in request.session.id_token.app_permissions or 'company_admin' in request.session.id_token.app_permissions %}
                       <a role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
                       {% endif %}
 

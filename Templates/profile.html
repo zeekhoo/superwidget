@@ -4,10 +4,9 @@
 <title>Successful Authentication</title>
 <script>
     var profile = '{{ profile|safe }}';
-    var sub = '{{ request.session.user_id }}';
-    var srv_companyName = '{{ request.session.companyName}}';
-    var srv_id_token = '{{ request.session.id_token|safe }}';
-    var srv_access_token = '{{ request.session.access_token|safe }}';
+    var srv_id_token = '{{ srv_id_token|safe }}';
+    var srv_access_token = '{{ srv_access_token|safe }}';
+    var sub = '{{ request.session.id_token.sub }}'
 </script>
 {% endblock %}
 

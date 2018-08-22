@@ -14,26 +14,29 @@ from okta_widget.views import IMPERSONATION_SAML_APP_ID
 from okta_widget.views import IMPERSONATION_V2_ORG
 from okta_widget.views import IMPERSONATION_V2_ORG_API_KEY
 from okta_widget.views import IMPERSONATION_V2_SAML_APP_ID
+from okta_widget.views import not_authorized
 
 from django.http import HttpResponseRedirect, HttpResponse
+from .authx import api_access_admin
+from .authx import api_access_company_admin
 
 import json
 
 @access_token_required
-def list_users(request):
+def list_users(request, token):
     get = request.GET
     startsWith = None
     if 'startsWith' in get:
         startsWith = get['startsWith']
 
     client = UsersClient('https://' + OKTA_ORG, API_KEY)
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
+    profile_dict = request.session['profile']
+    #profile_dict = json.loads(profile)
     companyName = profile_dict.get('companyName')
 
-    if 'admin' in request.session:
+    if api_access_admin(token):
         users = client.list_users(15, startsWith)
-    elif 'company_admin' in request.session:
+    elif api_access_company_admin(token):
         users = client.list_users_scoped(15, companyName, startsWith)
     else:
         return not_authorized(request)
@@ -45,14 +48,14 @@ def list_users(request):
 
 
 @access_token_required
-def list_user(request):
+def list_user(request, token):
     get = request.GET
     user_id = None
     if 'user' in get:
         user_id = get['user']
     client = UsersClient('https://' + OKTA_ORG, API_KEY)
 
-    if 'admin' in request.session or 'company_admin' in request.session:
+    if api_access_admin(token) or api_access_company_admin(token):
         users = client.list_user(user_id)
     else:
         return not_authorized(request)
@@ -65,7 +68,7 @@ def list_user(request):
 
 @csrf_exempt
 @access_token_required
-def add_users(request):
+def add_users(request, token):
     response = HttpResponse()
     response.status_code = 200
 
@@ -78,7 +81,8 @@ def add_users(request):
         role = ''
         activate = False
 
-        profile_dict = json.loads(request.session['profile'])
+        #profile_dict = json.loads(request.session['profile'])
+        profile_dict = request.session['profile']
         companyName = ''
         if 'companyName' in profile_dict:
             companyName = profile_dict.get('companyName')
@@ -106,9 +110,9 @@ def add_users(request):
             }
         }
 
-        if 'admin' in request.session:
+        if api_access_admin(token):
             users = client.create_user(user=user, activate=activate)
-        elif 'company_admin' in request.session:
+        elif api_access_company_admin(token):
             users = client.create_user(user=user, activate=activate)
             # users = client.create_user_scoped(user=user, activate="false", group="")
         else:
@@ -121,7 +125,7 @@ def add_users(request):
 
 @csrf_exempt
 @access_token_required
-def update_user(request):
+def update_user(request, token):
     response = HttpResponse()
     response.status_code = 200
 
@@ -163,9 +167,9 @@ def update_user(request):
                 }
             }
 
-            if 'admin' in request.session:
+            if api_access_admin(token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-            elif 'company_admin' in request.session:
+            elif api_access_company_admin(token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
             else:
                 return not_authorized(request)
@@ -176,17 +180,17 @@ def update_user(request):
 
 
 @access_token_required
-def list_groups(request):
+def list_groups(request, token):
     response = HttpResponse()
     response.status_code = 200
 
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
+    profile_dict = request.session['profile']
+    #profile_dict = json.loads(profile)
     companyName = ''
     if 'companyName' in profile_dict:
         companyName = profile_dict.get('companyName')
 
-    if 'company_admin' in request.session:
+    if api_access_company_admin(token):
         client = GroupsClient('https://' + OKTA_ORG, API_KEY)
         response.content = client.list_groups(15, companyName)
     else:
@@ -196,7 +200,7 @@ def list_groups(request):
 
 
 @access_token_required
-def get_group(request):
+def get_group(request, token):
     get = request.GET
     response = HttpResponse()
     response.status_code = 200
@@ -206,7 +210,7 @@ def get_group(request):
         group_id = get['group_id']
     client = GroupsClient('https://' + OKTA_ORG, API_KEY)
 
-    if 'company_admin' in request.session:
+    if api_access_company_admin(token):
         response.content = client.get_group_by_id(group_id)
     else:
         return not_authorized(request)
@@ -215,11 +219,11 @@ def get_group(request):
 
 
 @access_token_required
-def app_schema(request):
+def app_schema(request, token):
     response = HttpResponse()
     response.status_code = 200
 
-    if 'company_admin' in request.session:
+    if api_access_company_admin(token):
         client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
         schema = client.get_schema()
         response.content = schema
@@ -230,12 +234,12 @@ def app_schema(request):
 
 
 @access_token_required
-def list_perms(request):
+def list_perms(request, token):
     get = request.GET
     response = HttpResponse()
     response.status_code = 200
 
-    if 'company_admin' in request.session:
+    if api_access_company_admin(token):
         client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
 
         group_id = None
@@ -252,7 +256,7 @@ def list_perms(request):
 
 @csrf_exempt
 @access_token_required
-def update_perm(request):
+def update_perm(request, token):
     req = request.POST
 
     group_id = None
@@ -266,7 +270,7 @@ def update_perm(request):
     response = HttpResponse()
     response.status_code = 200
 
-    if 'company_admin' in request.session and group_id and group_id and perms:
+    if api_access_company_admin(token) and group_id and group_id and perms:
         if perms[-1:] == ',':
             perms = perms[:-1]
         perms = perms.split(',')
@@ -288,14 +292,14 @@ def update_perm(request):
 
 @csrf_exempt
 @access_token_required
-def add_group(request):
+def add_group(request, token):
     response = HttpResponse()
     response.status_code = 200
 
     if request.method == 'POST':
         req = request.POST
-        profile = request.session['profile']
-        profile_dict = json.loads(profile)
+        profile_dict = request.session['profile']
+        #profile_dict = json.loads(profile)
 
         if 'groupName' in req and 'companyName' in profile_dict:
             prefix = None
@@ -316,9 +320,9 @@ def add_group(request):
                 }
             }
 
-            if 'admin' in request.session:
+            if api_access_admin(token):
                 response.content = client.create_group(group)
-            elif 'company_admin' in request.session:
+            elif api_access_company_admin(token):
                 response.content = client.create_group(group)
             else:
                 return not_authorized(request)
@@ -328,7 +332,7 @@ def add_group(request):
 # IMPERSONATION Demo
 @csrf_exempt
 @access_token_required
-def setNameId(request):
+def setNameId(request, token):
     post = request.POST
     print(post)
 
