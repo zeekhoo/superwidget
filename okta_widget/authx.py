@@ -7,6 +7,7 @@ def is_logged_in(request):
 
 def set_id_token(request, id_token):
     request.session['id_token'] = json.loads(_decode_payload(id_token))
+    request.session['id_token_raw'] = id_token
     #Used instead of a custom django template filter.
 
     if 'profile' not in request.session:
@@ -17,6 +18,12 @@ def set_id_token(request, id_token):
 def get_id_token_string(request):
     return json.dumps(request.session['id_token'])
 
+def get_id_token(request):
+    return request.session['id_token_raw']
+
+def get_access_token(request):
+    return request.session['access_token_raw']
+
 def set_access_token(request, access_token):
     request.session['access_token'] = json.loads(_decode_payload(access_token))
     request.session['access_token_raw'] = access_token
@@ -24,25 +31,6 @@ def set_access_token(request, access_token):
 def get_access_token_string(request):
     return json.dumps(request.session['access_token'])
 
-# def client_has_scope(access_token, scope):
-#     result = False
-#     try:
-#         if request.session['access_token'] is not None:
-#             access_token = json.dumps(request.session['access_token'])
-#             result = scope in access_token['scp']
-#     except Exception as e:
-#         print('exception: {}'.format(e))
-#         result = False
-#     return result
-#
-# def get_access_claims(request):
-#     try:
-#         if request.session['access_token'] is not None:
-#             return access_token['claims']
-#     except Exception as e:
-#         print('exception: {}'.format(e))
-#         return None
-#     return None
 
 def get_profile(request):
     print('returning profile = {}'.format(request.session['profile']))

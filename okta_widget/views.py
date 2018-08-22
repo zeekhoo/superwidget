@@ -25,6 +25,8 @@ from .authx import logout
 from .authx import get_profile
 from .authx import get_id_token_string
 from .authx import get_access_token_string
+from .authx import get_id_token
+from .authx import get_access_token
 from .authx import is_admin
 
 API_KEY = settings.API_KEY
@@ -144,8 +146,8 @@ def view_profile(request):
 
         p = {'profile': json.dumps(get_profile(request)),
             "js": _do_format(request, url_js, page),
-            "srv_access_token": get_access_token_string(request),
-            "srv_id_token": get_id_token_string(request)
+            "srv_access_token": get_access_token(request),
+            "srv_id_token": get_id_token(request)
              }
         c.update(p)
     else:
@@ -619,6 +621,7 @@ def oauth2_post(request):
     if code:
         client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
         tokens = client.token(code, REDIRECT_URI, ISSUER)
+        print(print('Tokens from the code retrieval {}'.format(tokens)))
         if tokens['access_token']:
             access_token = tokens['access_token']
 
