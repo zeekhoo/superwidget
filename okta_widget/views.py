@@ -9,7 +9,6 @@ from okta_widget.client.users_client import UsersClient
 from okta_widget.client.groups_client import GroupsClient
 from okta_widget.client.apps_client import AppsClient
 from okta_widget.forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
-from okta_widget.decorators import access_token_required
 
 import json
 from django.contrib.auth.models import User
@@ -17,6 +16,18 @@ from django.contrib.auth import login
 import base64
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
+
+from .authx import set_id_token
+from .authx import set_access_token
+from .authx import is_logged_in
+from .authx import set_profile
+from .authx import logout
+from .authx import get_profile
+from .authx import get_id_token_string
+from .authx import get_access_token_string
+from .authx import get_id_token
+from .authx import get_access_token
+from .authx import is_admin
 
 API_KEY = settings.API_KEY
 OKTA_ORG = settings.OKTA_ORG
@@ -98,26 +109,14 @@ c = {
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
     "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
     "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
-    "allow_impersonation": allow_impersonation,
-    "user_department": None
+    "allow_impersonation": allow_impersonation
 }
 
 url_map = {}
 pages_js = {}
 
-
 def view_home(request):
-    if 'profile' in request.session:
-        # profile = json.loads(request.session['profile'])
-        # print('profile={}'.format(profile))
-        # if 'preferred_username' in profile:
-        #     try:
-        #         u = User.objects.get(username=profile['preferred_username'])
-        #         if u is not None:
-        #             print('user = {}'.format(u))
-        #             login(request, u)
-        #     except Exception as e:
-        #         print('exception: {}'.format(e))
+    if is_logged_in(request):
         return HttpResponseRedirect(reverse('profile'))
     else:
         print('no profile in request')
@@ -133,7 +132,7 @@ def not_authorized(request):
 
 
 def view_profile(request):
-    if 'profile' in request.session:
+    if is_logged_in(request):
         if 'entry_page' in pages_js:
             # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
             page = pages_js['entry_page']
@@ -145,8 +144,10 @@ def view_profile(request):
         else:
             url_js = '/js/oidc_base.js'
 
-        p = {'profile': request.session['profile'],
-             "js": _do_format(request, url_js, page)
+        p = {'profile': json.dumps(get_profile(request)),
+            "js": _do_format(request, url_js, page),
+            "srv_access_token": get_access_token(request),
+            "srv_id_token": get_id_token(request)
              }
         c.update(p)
     else:
@@ -155,7 +156,7 @@ def view_profile(request):
 
 
 def edit_profile(request):
-    if 'profile' in request.session:
+    if is_logged_in(request):
         if 'entry_page' in pages_js:
             # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
             page = pages_js['entry_page']
@@ -167,7 +168,7 @@ def edit_profile(request):
         else:
             url_js = '/js/oidc_base.js'
 
-        p = {'profile': request.session['profile'],
+        p = {'profile': get_profile(request),
              "js": _do_format(request, url_js, page)
              }
         c.update(p)
@@ -369,328 +370,20 @@ def view_login_disco(request):
 
 
 def view_admin(request):
-    if 'admin' not in request.session and 'company_admin' not in request.session:
+    if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
-    c.update({"user_department": request.session.get('department', '')})
     c.update({"impersonation_version": IMPERSONATION_VERSION})
+    c.update({"srv_id_token": get_id_token_string(request)})
     return render(request, 'admin.html', c)
-
-
-@access_token_required
-def list_users(request):
-    get = request.GET
-    startsWith = None
-    if 'startsWith' in get:
-        startsWith = get['startsWith']
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
-    companyName = profile_dict.get('companyName')
-
-    if 'admin' in request.session:
-        users = client.list_users(15, startsWith)
-    elif 'company_admin' in request.session:
-        users = client.list_users_scoped(15, companyName, startsWith)
-    else:
-        return not_authorized(request)
-
-    response = HttpResponse()
-    response.status_code = 200
-    response.content = users
-    return response
-
-
-@access_token_required
-def list_user(request):
-    get = request.GET
-    user_id = None
-    if 'user' in get:
-        user_id = get['user']
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
-
-    if 'admin' in request.session or 'company_admin' in request.session:
-        users = client.list_user(user_id)
-    else:
-        return not_authorized(request)
-
-    response = HttpResponse()
-    response.status_code = 200
-    response.content = users
-    return response
-
-
-@csrf_exempt
-@access_token_required
-def add_users(request):
-    response = HttpResponse()
-    response.status_code = 200
-
-    if request.method == 'POST':
-        req = request.POST
-
-        email = ''
-        firstName = ''
-        lastName = ''
-        role = ''
-        activate = False
-
-        profile_dict = json.loads(request.session['profile'])
-        companyName = ''
-        if 'companyName' in profile_dict:
-            companyName = profile_dict.get('companyName')
-
-        if 'email' in req:
-            email = req['email']
-        if 'firstName' in req:
-            firstName = req['firstName']
-        if 'lastName' in req:
-            lastName = req['lastName']
-        if 'role' in req:
-            role = req['role']
-        if 'activate' in req:
-            activate = req['activate']
-        client = UsersClient('https://' + OKTA_ORG, API_KEY)
-
-        user = {
-            "profile": {
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email,
-                "login": email,
-                "customer_role": role,
-                "companyName": companyName
-            }
-        }
-
-        if 'admin' in request.session:
-            users = client.create_user(user=user, activate=activate)
-        elif 'company_admin' in request.session:
-            users = client.create_user(user=user, activate=activate)
-            # users = client.create_user_scoped(user=user, activate="false", group="")
-        else:
-            return not_authorized(request)
-
-        response.content = users
-
-    return response
-
-
-@csrf_exempt
-@access_token_required
-def update_user(request):
-    response = HttpResponse()
-    response.status_code = 200
-
-    if request.method == 'POST':
-        req = request.POST
-
-        if 'user_id' in req:
-            user_id = req['user_id']
-
-            email = ''
-            firstName = ''
-            lastName = ''
-            role = ''
-            companyName = ''
-            deactivate = None
-
-            if 'email' in req:
-                email = req['email']
-            if 'firstName' in req:
-                firstName = req['firstName']
-            if 'lastName' in req:
-                lastName = req['lastName']
-            if 'role' in req:
-                role = req['role']
-            if 'deactivate' in req:
-                deactivate = req['deactivate']
-            if 'companyName' in req:
-                companyName = req['companyName']
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
-
-            user = {
-                "profile": {
-                    "firstName": firstName,
-                    "lastName": lastName,
-                    "email": email,
-                    "login": email,
-                    "customer_role": role,
-                    "companyName": companyName
-                }
-            }
-
-            if 'admin' in request.session:
-                users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-            elif 'company_admin' in request.session:
-                users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-            else:
-                return not_authorized(request)
-
-            response.content = users
-
-    return response
-
-
-@access_token_required
-def list_groups(request):
-    response = HttpResponse()
-    response.status_code = 200
-
-    profile = request.session['profile']
-    profile_dict = json.loads(profile)
-    companyName = ''
-    if 'companyName' in profile_dict:
-        companyName = profile_dict.get('companyName')
-
-    if 'company_admin' in request.session:
-        client = GroupsClient('https://' + OKTA_ORG, API_KEY)
-        response.content = client.list_groups(15, companyName)
-    else:
-        return not_authorized(request)
-
-    return response
-
-
-@access_token_required
-def get_group(request):
-    get = request.GET
-    response = HttpResponse()
-    response.status_code = 200
-
-    group_id = None
-    if 'group_id' in get:
-        group_id = get['group_id']
-    client = GroupsClient('https://' + OKTA_ORG, API_KEY)
-
-    if 'company_admin' in request.session:
-        response.content = client.get_group_by_id(group_id)
-    else:
-        return not_authorized(request)
-
-    return response
-
-
-@access_token_required
-def app_schema(request):
-    response = HttpResponse()
-    response.status_code = 200
-
-    if 'company_admin' in request.session:
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
-        schema = client.get_schema()
-        response.content = schema
-    else:
-        return not_authorized(request)
-
-    return response
-
-
-@access_token_required
-def list_perms(request):
-    get = request.GET
-    response = HttpResponse()
-    response.status_code = 200
-
-    if 'company_admin' in request.session:
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
-
-        group_id = None
-        if 'group_id' in get:
-            group_id = get['group_id']
-
-        perms = client.get_app_group_by_id(group_id)
-        response.content = perms
-    else:
-        return not_authorized(request)
-
-    return response
-
-
-@csrf_exempt
-@access_token_required
-def update_perm(request):
-    req = request.POST
-
-    group_id = None
-    perms = None
-
-    if 'group_id' in req:
-        group_id = req['group_id']
-    if 'perms' in req:
-        perms = req['perms']
-
-    response = HttpResponse()
-    response.status_code = 200
-
-    if 'company_admin' in request.session and group_id and group_id and perms:
-        if perms[-1:] == ',':
-            perms = perms[:-1]
-        perms = perms.split(',')
-        print(perms)
-
-        perm = {
-            "profile": {
-                "role_permissions": perms
-            }
-        }
-
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
-        perms = client.update_app_group(group_id, perm)
-        response.content = perms
-    else:
-        return not_authorized(request)
-    return response
-
-
-@csrf_exempt
-@access_token_required
-def add_group(request):
-    response = HttpResponse()
-    response.status_code = 200
-
-    if request.method == 'POST':
-        req = request.POST
-        profile = request.session['profile']
-        profile_dict = json.loads(profile)
-
-        if 'groupName' in req and 'companyName' in profile_dict:
-            prefix = None
-            if 'companyName' in profile_dict:
-                prefix = profile_dict.get('companyName')
-                if prefix == '':
-                    prefix = None
-
-            group_name = req['groupName']
-            if prefix:
-                group_name = prefix + '_' + group_name
-
-            client = GroupsClient('https://' + OKTA_ORG, API_KEY)
-
-            group = {
-                "profile": {
-                    "name": group_name,
-                }
-            }
-
-            if 'admin' in request.session:
-                response.content = client.create_group(group)
-            elif 'company_admin' in request.session:
-                response.content = client.create_group(group)
-            else:
-                return not_authorized(request)
-
-    return response
-
 
 def view_debug(request):
     return render(request, 'debug.html', {'meta': request.META})
 
 
 def view_logout(request):
-    if 'profile' in request.session:
-        del request.session['profile']
+    logout(request)
 
     if 'entry_page' in pages_js:
         page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
@@ -704,10 +397,6 @@ def view_logout(request):
     c.update({"org": OKTA_ORG})
     c.update({"iss": ISSUER})
     c.update({"aud": CLIENT_ID})
-
-    for key in list(request.session.keys()):
-        print('deleting {}'.format(key))
-        del request.session[key]
 
     return render(request, 'logged_out.html', c)
 
@@ -932,12 +621,12 @@ def oauth2_post(request):
     if code:
         client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
         tokens = client.token(code, REDIRECT_URI, ISSUER)
+        print(print('Tokens from the code retrieval {}'.format(tokens)))
         if tokens['access_token']:
             access_token = tokens['access_token']
-            request.session['access_token'] = access_token
+
         if tokens['id_token']:
             id_token = tokens['id_token']
-            request.session['id_token'] = id_token
 
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
@@ -945,49 +634,15 @@ def oauth2_post(request):
 
         client = OAuth2Client('https://' + OKTA_ORG)
         profile = client.profile(access_token)
-        print('profile = {}'.format(profile))
-        try:
-            request.session['profile'] = json.dumps(profile)
-            request.session['given_name'] = profile['given_name']
-            request.session['user_id'] = profile['sub']
-            request.session['companyName'] = profile['companyName']
-            request.session['app_permissions'] = profile['app_permissions']
-        except Exception as e:
-            print('exception: {}'.format(e))
-
-        payload = json.loads(_decode_payload(access_token))
-        if 'groups' in payload:
-            if 'Admin' in payload['groups']:
-                request.session['admin'] = True
-            if 'Company Admin' in payload['groups']:
-                request.session['company_admin'] = True
+        set_profile(request, profile)
+        set_access_token(request, access_token)
 
     if id_token:
         # In the real world, you should validate the id_token. But this demo app is going to skip that part.
         print('id_token = {}'.format(id_token))
-
-        if 'profile' not in request.session:
-            try:
-                decoded = _decode_payload(id_token)
-                profile = json.loads(decoded)
-                request.session['profile'] = decoded
-                request.session['given_name'] = profile['given_name']
-                request.session['user_id'] = profile['sub']
-                request.session['companyName'] = profile['companyName']
-            except Exception as e:
-                print('exception: {}'.format(e))
-        else:
-            print('profile = {}'.format(request.session['profile']))
+        set_id_token(request, id_token)
 
     return HttpResponseRedirect(reverse('home'))
-
-
-def _decode_payload(token):
-    parts = token.split('.')
-    payload = parts[1]
-    payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
-    decoded = str(base64.b64decode(payload), 'utf-8')
-    return decoded
 
 
 # IMPERSONATION Demo
@@ -999,32 +654,6 @@ def login_delegate(request):
 
     c.update({"js": _do_format(request, '/js/login-delegate.js', 'login_delegate')})
     return render(request, 'login_delegate.html', c)
-
-
-# IMPERSONATION Demo
-@csrf_exempt
-@access_token_required
-def setNameId(request):
-    post = request.POST
-    print(post)
-
-    response = HttpResponse()
-    if 'nameid' in post:
-        version = '{}'.format(IMPERSONATION_VERSION)
-        if version == "1":
-            client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
-            response.status_code = client.set_name_id(request.session['user_id'], post['nameid'])
-        if version == "2":
-            u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
-            profile = request.session['profile']
-            users = u_client.list_user(json.loads(profile)['preferred_username'])
-            users = json.loads(users)
-            if "id" in users:
-                client = AppsClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY, IMPERSONATION_V2_SAML_APP_ID)
-                response.status_code = client.set_name_id(users["id"], post['nameid'])
-                for key in list(request.session.keys()):
-                    del request.session[key]
-    return response
 
 
 @csrf_exempt

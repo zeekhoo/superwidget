@@ -19,27 +19,32 @@ function prettyPrint(ugly) {
     return JSON.stringify(obj, undefined, 4);
 }
 
-function get_profile(token_type, token, org) {
-    var formData = new FormData();
-    if (token_type === 'accessToken')
-        formData.append('access_token', token.accessToken);
-    else
-        formData.append('id_token', token.idToken);
-    if (typeof org !== 'undefined') {
-        formData.append('org', org);
-    }
-    $.ajax({
-        url: "/oauth2/callback",
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
-        statusCode: {
-            200: function(res) {
-                window.location.href = '/profile';
-            }
-        }
-    });
+function post_tokens(id_token, access_token, org) {
+  var formData = new FormData();
+  if (access_token !== 'undefined') {
+      formData.append('access_token', access_token.accessToken);
+  }
+
+  if (id_token !== 'undefined') {
+      formData.append('id_token', id_token.idToken);
+  }
+
+  if (typeof org !== 'undefined') {
+      formData.append('org', org);
+  }
+
+  $.ajax({
+      url: "/oauth2/callback",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      statusCode: {
+          200: function(res) {
+              window.location.href = '/profile';
+          }
+      }
+  });
 }
 
 function openInNewTab(url) {
