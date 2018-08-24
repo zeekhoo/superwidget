@@ -1,33 +1,20 @@
-from django.conf import settings
+# from django.contrib.auth.models import User
+# from django.contrib.auth import login
+
+# from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-from okta_widget.client.oauth2_client import OAuth2Client
-from okta_widget.client.auth_proxy import AuthClient, SessionsClient
-from okta_widget.client.users_client import UsersClient
-from okta_widget.client.groups_client import GroupsClient
-from okta_widget.client.apps_client import AppsClient
-from okta_widget.forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
-
-import json
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-import base64
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
 
-from .authx import set_id_token
-from .authx import set_access_token
-from .authx import is_logged_in
-from .authx import set_profile
-from .authx import logout
-from .authx import get_profile
-from .authx import get_id_token_string
-from .authx import get_access_token_string
-from .authx import get_id_token
-from .authx import get_access_token
-from .authx import is_admin
+from .client.oauth2_client import OAuth2Client
+from .client.auth_proxy import AuthClient
+from .client.users_client import UsersClient
+from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
+from .authx import *
+
 
 API_KEY = settings.API_KEY
 OKTA_ORG = settings.OKTA_ORG
@@ -89,7 +76,6 @@ IMPERSONATION_V2_SAML_APP_ID = settings.IMPERSONATION_V2_SAML_APP_ID
 IMPERSONATION_V2_ORG_API_KEY = settings.IMPERSONATION_V2_ORG_API_KEY
 IMPERSONATION_V2_ORG = settings.IMPERSONATION_V2_ORG
 IMPERSONATION_V2_SAML_APP_EMBED_LINK = settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK
-
 if not allow_impersonation\
     and IMPERSONATION_V2_ORG and IMPERSONATION_V2_ORG != 'None'\
     and IMPERSONATION_V2_SAML_APP_ID and IMPERSONATION_V2_SAML_APP_ID != 'None'\
@@ -109,11 +95,14 @@ c = {
     "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
     "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
     "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
+    "app_permissions_claim": APP_PERMISSIONS_CLAIM,
+    "api_permissions_claim": API_PERMISSIONS_CLAIM,
     "allow_impersonation": allow_impersonation
 }
 
 url_map = {}
 pages_js = {}
+
 
 def view_home(request):
     if is_logged_in(request):
@@ -145,9 +134,9 @@ def view_profile(request):
             url_js = '/js/oidc_base.js'
 
         p = {'profile': json.dumps(get_profile(request)),
-            "js": _do_format(request, url_js, page),
-            "srv_access_token": get_access_token(request),
-            "srv_id_token": get_id_token(request)
+             "js": _do_format(request, url_js, page),
+             "srv_access_token": get_access_token(request),
+             "srv_id_token": get_id_token(request)
              }
         c.update(p)
     else:
@@ -375,8 +364,9 @@ def view_admin(request):
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
     c.update({"impersonation_version": IMPERSONATION_VERSION})
-    c.update({"srv_id_token": get_id_token_string(request)})
+    c.update({"srv_id_token": get_id_token(request)})
     return render(request, 'admin.html', c)
+
 
 def view_debug(request):
     return render(request, 'debug.html', {'meta': request.META})

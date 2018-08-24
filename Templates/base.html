@@ -15,12 +15,11 @@
       <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <!-- CSS -->
-    {% bootstrap_css %}
+      <!-- CSS -->
+      {% bootstrap_css %}
 
-    <!-- JavaScript -->
-    {% bootstrap_javascript jquery=1 %}
-      <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
+      <!-- JavaScript -->
+      {% bootstrap_javascript jquery=1 %}
 
       <link href="{% static 'css/demo.css' %}" rel="stylesheet">
 
@@ -33,6 +32,7 @@
       <script src="https://unpkg.com/vue"></script>
       <script src="https://unpkg.com/vue-router"></script>
 
+
     {% block head_js %}{% endblock head_js %}
 
     {% block head %}{% endblock head %}
@@ -42,15 +42,16 @@
   </head>
 
   <body>
-      <div class="navbar navbar-inverse navbar-fixed-top">
+    <div id="no-vueapp">
+
+      <div id="vueapp-nav" class="navbar navbar-inverse navbar-fixed-top">
           <div class="container-fluid">
               <div class="navbar-header">
                   {% if 'profile' not in request.session %}
                   <a class="navbar-brand" href="{% url 'login' %}">Home</a>
                   {% else %}
-                  <a class="navbar-brand" href="{% url 'profile' %}">Welcome, {{ request.session.id_token.name }}!</a>
+                  <a class="navbar-brand" href="{% url 'profile' %}">Welcome, [[ nameLabel ]]!</a>
                   {% endif %}
-
                   <button type="button" class="navbar-toggle btn btn-link" data-toggle="collapse" data-target="#navbar-responsive-collapse">
                     <span class = "sr-only">Toggle navigation</span>
                     <span>Menu <b class = "caret"></b></span>
@@ -64,15 +65,13 @@
                       <li><a href="{% url 'okta_hosted_login' %}">OnClick > Redirect</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget</a></li>
                       <li><a href="{% url 'login_idp' %}">Social/IdP Login</a></li>
-
                       {% if idp_disco_page != 'None' %}
                       <li><a href="{% url 'login_idp_disco' %}">IdP Discovery</a></li>
                       {% endif %}
 
                       {% else %}
-                      {% if 'admin' in request.session.id_token.app_permissions or 'company_admin' in request.session.id_token.app_permissions %}
-                      <a role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
-                      {% endif %}
+
+                      <a v-if="showAdminButton" role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
 
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
@@ -110,18 +109,36 @@
       </div>
 
       <div class="bg-fill" id="demo-main-container">
-      {% block content %}
-      {% endblock content %}
+          <div id="vueapp-profile">
+          {% block profile-page %}
+          {% endblock profile-page %}
+          </div>
+          {% block content %}
+          {% endblock content %}
+
       </div>
+    </div>
   </body>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/theme/cobalt.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/mode/javascript/javascript.min.js"></script>
+
+  <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
   <script>
     var org = '{{ org }}';
+    var aud = '{{ aud }}';
+    var iss = '{{ iss }}';
+    var redirect_uri = '{{ redirect_uri }}';
+    var profile = '{{ profile|safe }}';
+    var app_permissions_claim = '{{app_permissions_claim}}';
+    var api_permissions_claim = '{{api_permissions_claim}}';
+    var srv_id_token = '{{ srv_id_token|safe }}';
+    var srv_access_token = '{{ srv_access_token|safe }}';
+    var sub = '{{ request.session.id_token.sub }}'
   </script>
+  <script src="{% static 'js/profile_page.js' %}" type="text/javascript"></script>
 
   {% block page_js %}
   {% endblock page_js %}

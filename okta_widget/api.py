@@ -345,7 +345,7 @@ def setNameId(request, token):
         if version == "2":
             u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
             profile = request.session['profile']
-            users = u_client.list_user(json.loads(profile)['preferred_username'])
+            users = u_client.list_user(profile['preferred_username'])
             users = json.loads(users)
             if "id" in users:
                 client = AppsClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY, IMPERSONATION_V2_SAML_APP_ID)

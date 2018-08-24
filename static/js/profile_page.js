@@ -1,4 +1,15 @@
+var id_token_str = srv_id_token;
+var access_token = srv_access_token;
 var url = 'https://' + org;
+var oktaSignIn = new OktaSignIn({
+    baseUrl: url,
+    clientId: aud,
+    redirectUri: redirect_uri,
+    authParams: {
+        issuer: url + '/oauth2/' + iss
+    }
+});
+
 
 Vue.filter('tostring', function (value) {
   if (!value)
@@ -21,10 +32,30 @@ Vue.filter('formatKey', function(value) {
     }
 });
 
-var data = [];
+var navApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-nav',
+    computed: {
+        nameLabel: function() {
+            if (profile) {
+                var prfl = JSON.parse(profile);
+                return prfl.name;
+            }
+            return '';
+        },
+        showAdminButton: function() {
+            var list = appPermissions();
+            if (list.includes("admin") || list.includes("company_admin")) {
+                return true;
+            }
+            return false;
+        }
+    }
+});
+
 var profileApp = new Vue({
     delimiters: ['[[', ']]'],
-    el: '#vueapp',
+    el: '#vueapp-profile',
     data: {
         idToken: false,
         idTokenRaw: false,
@@ -35,80 +66,112 @@ var profileApp = new Vue({
         accessTokenBody: false,
         accessTokenHeader: false,
         appLinks: false,
-        prfl: JSON.parse(profile),
         permissions: false,
     },
     computed: {
-      adminBadge: function () {
-        if(this.idToken && this.idToken.app_permissions && this.idToken.app_permissions.includes("admin")) {
-          return "Administrator";
+        prfl: function() {
+            if (profile) {
+                var prfl = JSON.parse(profile);
+                return prfl;
+            }
+            return false;
+        },
+        adminBadge: function () {
+            if(this.idToken){
+                var list = appPermissions();
+                if (list.includes("admin")) {
+                    return "Administrator";
+                } else if (list.includes("company_admin")) {
+                    return "Company Administrator";
+                }
+            }
+            return false;
+        },
+        isAdmin: function() {
+            var str = this.adminBadge;
+            if (str && str.includes('Administrator')) {
+                return true;
+            }
+            return false;
+        },
+        isCompanyAdmin: function() {
+            var str = this.adminBadge;
+            if (str && str.includes('Administrator') && str.includes('Company')) {
+                return true;
+            }
+            return false;
         }
-        else if(this.idToken && this.idToken.app_permissions && this.idToken.app_permissions.includes("company_admin")){
-          return "Company Administrator";
-        }
-        else {
-          return false;
-        }
-      }
     }
 });
 
+function appPermissions() {
+    var list = [];
 
-function showToken(org, aud, iss, uri) {
-    var oktaSignIn = new OktaSignIn({
-        baseUrl: url,
-        clientId: aud,
-        redirectUri: uri,
-        authParams: {
-            issuer: url + '/oauth2/' + iss
-        }
-    });
     oktaSignIn.session.get(function (res) {
-      console.log(res);
-      if (res.status === 'ACTIVE') {
-        console.log('have session');
-        console.log('user_id = ' + res.userId);
-
-        var id_token = srv_id_token;
-        if (oktaSignIn.tokenManager.get('idToken')) {
-            id_token = oktaSignIn.tokenManager.get('idToken').idToken;
+        console.log(res);
+        if (res.status === 'ACTIVE') {
+            if (oktaSignIn.tokenManager.get('idToken')) {
+                id_token_str = oktaSignIn.tokenManager.get('idToken').idToken;
+            }
         }
-        var access_token = srv_access_token;
-        if (oktaSignIn.tokenManager.get('accessToken')) {
-            var access_token = oktaSignIn.tokenManager.get('accessToken').accessToken;
-        }
-
-        if (id_token != '') {
-            var id_token_parts = id_token.split('.');
-            profileApp.idToken = JSON.parse(window.atob(id_token_parts[1]));
-            profileApp.idTokenRaw = id_token;
-            profileApp.idTokenHeader = prettyPrint(window.atob(id_token_parts[0]));
-            profileApp.idTokenBody = prettyPrint(window.atob(id_token_parts[1]));
-        }
-        if (access_token != '') {
-            var access_token_parts = access_token.split('.');
-            profileApp.accessToken = JSON.parse(window.atob(access_token_parts[1]));
-            profileApp.permissions = determinePermissions(profileApp.idToken.app_permissions);
-            profileApp.accessTokenRaw = access_token;
-            profileApp.accessTokenHeader = prettyPrint(window.atob(access_token_parts[0]));
-            profileApp.accessTokenBody = prettyPrint(window.atob(access_token_parts[1]));
-        }
-      }
     });
+    if (id_token_str != '') {
+        var decodedIdToken = JSON.parse(window.atob(id_token_str.split('.')[1]));
+        if (app_permissions_claim in decodedIdToken) {
+            list = decodedIdToken[app_permissions_claim];
+            console.log('list ' + app_permissions_claim + ':' + list);
+        }
+        for (var i=0; i < list.length; i++) {
+            list[i] = list[i].toLowerCase().replace(" ", "_");
+        }
+    }
+    return list;
+}
+
+function showToken() {
+    oktaSignIn.session.get(function (res) {
+        console.log(res);
+        if (res.status === 'ACTIVE') {
+            if (oktaSignIn.tokenManager.get('idToken')) {
+                id_token_str = oktaSignIn.tokenManager.get('idToken').idToken;
+            }
+            if (oktaSignIn.tokenManager.get('accessToken')) {
+                access_token = oktaSignIn.tokenManager.get('accessToken').accessToken;
+            }
+        }
+    });
+
+    if (id_token_str != '') {
+        var id_token_parts = id_token_str.split('.');
+        profileApp.idToken = JSON.parse(window.atob(id_token_parts[1]));
+        profileApp.idTokenRaw = id_token_str;
+        profileApp.idTokenHeader = prettyPrint(window.atob(id_token_parts[0]));
+        profileApp.idTokenBody = prettyPrint(window.atob(id_token_parts[1]));
+    }
+    if (access_token != '') {
+        var access_token_parts = access_token.split('.');
+        profileApp.accessToken = JSON.parse(window.atob(access_token_parts[1]));
+        profileApp.permissions = determinePermissions();
+        profileApp.accessTokenRaw = access_token;
+        profileApp.accessTokenHeader = prettyPrint(window.atob(access_token_parts[0]));
+        profileApp.accessTokenBody = prettyPrint(window.atob(access_token_parts[1]));
+    }
 }
 
 
 //This function will look at group membership, and build a list of permissions
 //that a user has based upon them.
-function determinePermissions(app_permissions) {
-  var perms = [];
+function determinePermissions() {
+    var perms = [];
 
-  var desc = ''
-  if (app_permissions) {
+    var app_permissions = appPermissions();
+
+    var desc = ''
+    if (app_permissions) {
       desc += ', ' + app_permissions.join(',\r\n');
-  }
+    }
 
-  app_permissions.forEach(function(perm){
+    app_permissions.forEach(function(perm){
     if(perm == 'admin') {
       perms.push({
         'Name': 'Administrator',
@@ -123,17 +186,17 @@ function determinePermissions(app_permissions) {
         'Desc': 'Can manage company resources.'
       })
     }
-  });
-  if (perms.length == 0) {
+    });
+    if (perms.length == 0) {
       var userPermissions = 'No Privileged Permissions';
       perms.push({
         'Name': 'User',
         'Criteria': 'Due to membership NOT in any Admin group',
         'Desc': userPermissions
       });
-  }
+    }
 
-  return perms;
+    return perms;
 }
 
 function showMyAppLinks(userId) {

@@ -1,9 +1,21 @@
+from django.conf import settings
 import json
-import requests
 import base64
+
+
+# Option: Admin Functions
+APP_PERMISSIONS_CLAIM = settings.APP_PERMISSIONS_CLAIM
+API_PERMISSIONS_CLAIM = settings.API_PERMISSIONS_CLAIM
+
+if APP_PERMISSIONS_CLAIM is None or APP_PERMISSIONS_CLAIM == 'None' or APP_PERMISSIONS_CLAIM == '':
+    APP_PERMISSIONS_CLAIM = 'groups'
+if API_PERMISSIONS_CLAIM is None or API_PERMISSIONS_CLAIM == 'None' or API_PERMISSIONS_CLAIM == '':
+    API_PERMISSIONS_CLAIM = 'groups'
+
 
 def is_logged_in(request):
     return 'id_token' in request.session or 'access_token' in request.session
+
 
 def set_id_token(request, id_token):
     request.session['id_token'] = json.loads(_decode_payload(id_token))
@@ -15,20 +27,25 @@ def set_id_token(request, id_token):
     request.session['profile'].update(request.session['id_token'])
     print('id_Token + profile = {}'.format(request.session['profile']))
 
-def get_id_token_string(request):
+
+def get_id_token_json(request):
     return json.dumps(request.session['id_token'])
+
 
 def get_id_token(request):
     return request.session['id_token_raw']
 
+
 def get_access_token(request):
     return request.session['access_token_raw']
+
 
 def set_access_token(request, access_token):
     request.session['access_token'] = json.loads(_decode_payload(access_token))
     request.session['access_token_raw'] = access_token
 
-def get_access_token_string(request):
+
+def get_access_token_json(request):
     return json.dumps(request.session['access_token'])
 
 
@@ -49,22 +66,42 @@ def logout(request):
         print('deleting {}'.format(key))
         del request.session[key]
 
+
 def is_admin(request):
-    return ('admin' in request.session['id_token']['app_permissions'] or
-        'company_admin' in request.session['id_token']['app_permissions'])
+    if APP_PERMISSIONS_CLAIM in request.session['id_token']:
+        list = _formatted_list(request.session['id_token'][APP_PERMISSIONS_CLAIM])
+        return 'admin' in list or 'company_admin' in list
+
+    return False
+
 
 def api_access_admin(bearer_token):
     token = _parse_bearer_token(bearer_token)
     print('Parsed bearer token = {}'.format(token))
-    return 'admin' in token['api_permissions']
+    if API_PERMISSIONS_CLAIM in token:
+        return 'admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
+
+    return False
+
 
 def api_access_company_admin(bearer_token):
     token = _parse_bearer_token(bearer_token)
     print('Parsed bearer token = {}'.format(token))
-    return 'company_admin' in token['api_permissions']
+    if API_PERMISSIONS_CLAIM in token:
+        return 'company_admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
+
+    return False
+
+
+def _formatted_list(claims_array):
+    if len(claims_array) <= 0:
+        return claims_array
+    return [x.lower().replace(" ", "_") for x in claims_array]
+
 
 def _parse_bearer_token(bearer_token):
     return json.loads(_decode_payload(bearer_token))
+
 
 def _decode_payload(token):
     parts = token.split('.')
