@@ -341,7 +341,7 @@ def setNameId(request, token):
         version = '{}'.format(IMPERSONATION_VERSION)
         if version == "1":
             client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
-            response.status_code = client.set_name_id(request.session['user_id'], post['nameid'])
+            response.status_code = client.set_name_id(request.session['id_token']['sub'], post['nameid'])
         if version == "2":
             u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
             profile = request.session['profile']

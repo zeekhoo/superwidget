@@ -198,6 +198,8 @@ def view_login_auto(request):
         return _do_refresh(request, page)
     else:
         c.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    #Lets ensure everything is cleared out and refreshed.
+    logout(request)
     return render(request, 'index_get_without_prompt.html', c)
 
 
