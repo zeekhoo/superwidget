@@ -15,6 +15,7 @@ class UsersClient(object):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
         print('url = {}'.format(url))
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
+        print(response.content)
         return response
 
     def set_password(self, user_id, user):
@@ -86,6 +87,11 @@ class UsersClient(object):
 
     def get_user(self, user_id):
         url = self.base_url + '/api/v1/users/{}'.format(user_id)
+        response = requests.get(url, headers=self.headers)
+        return response.content
+
+    def get_user_groups(self, user_id):
+        url = self.base_url + '/api/v1/users/{}/groups'.format(user_id)
         response = requests.get(url, headers=self.headers)
         return response.content
 

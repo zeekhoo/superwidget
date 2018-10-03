@@ -21,6 +21,8 @@ from .authx import api_access_admin
 from .authx import api_access_company_admin
 
 import json
+import datetime
+
 
 @access_token_required
 def list_users(request, token):
@@ -338,18 +340,42 @@ def setNameId(request, token):
 
     response = HttpResponse()
     if 'nameid' in post:
+        name_id = post['nameid']
+        admin = request.session['profile']['preferred_username']
+
         version = '{}'.format(IMPERSONATION_VERSION)
         if version == "1":
             client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
-            response.status_code = client.set_name_id(request.session['user_id'], post['nameid'])
+            response.status_code = client.set_name_id(request.session['id_token']['sub'], name_id)
         if version == "2":
+
+            u_client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            target = u_client.list_user(name_id)
+            target = json.loads(target)
+            target_profile = target["profile"]
+            target_groups = u_client.get_user_groups(target["id"])
+            target_groups = json.loads(target_groups)
+            groupsIds = []
+            for g in target_groups:
+                if g["type"] != 'BUILT_IN':
+                    groupsIds.append(g["id"])
+
+            now = datetime.datetime.now()
+            new_login = "IM" + now.strftime('%Y%m%d%H%M%S') + admin.split("@")[0].replace(".", "") + "AS" + target_profile["login"]
+            target_profile["login"] = new_login
+            target_profile["email"] = new_login
+            temp_user = {
+                "profile": target_profile,
+                "groupIds": groupsIds
+            }
+            u_client.create_user(user=temp_user, activate=True)
+
             u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
-            profile = request.session['profile']
-            users = u_client.list_user(profile['preferred_username'])
+            users = u_client.list_user(admin)
             users = json.loads(users)
             if "id" in users:
                 client = AppsClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY, IMPERSONATION_V2_SAML_APP_ID)
-                response.status_code = client.set_name_id(users["id"], post['nameid'])
+                response.status_code = client.set_name_id(users["id"], new_login)
                 for key in list(request.session.keys()):
                     del request.session[key]
     return response
