@@ -15,7 +15,6 @@ class UsersClient(object):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
         print('url = {}'.format(url))
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        print(response.content)
         return response
 
     def set_password(self, user_id, user):
@@ -47,7 +46,7 @@ class UsersClient(object):
     def set_password(self, user_id, user):
         url = self.base_url + '/api/v1/users/{}'.format(user_id)
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
-        return response.content
+        return response.content.decode('utf-8')
 
     def list_users(self, limit=25, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
@@ -56,16 +55,18 @@ class UsersClient(object):
 
         print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
-        return response.content
+        return response.content.decode('utf-8')
 
     def list_user(self, user_id):
         if not user_id or user_id == '':
             return None
 
         url = self.base_url + '/api/v1/users/{0}'.format(user_id)
-        print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
-        return response.content
+        print('url={0}, status={1}'.format(url, response.status_code))
+        if response.status_code != 200:
+            print(response.content)
+        return response.content.decode('utf-8')
 
     def list_users_scoped(self, limit=25, company=None, search=None):
         url = self.base_url + '/api/v1/users?limit={0}'.format(limit)
@@ -83,22 +84,22 @@ class UsersClient(object):
         print('url={}'.format(url))
 
         response = requests.get(url, headers=self.headers)
-        return response.content
+        return response.content.decode('utf-8')
 
     def get_user(self, user_id):
         url = self.base_url + '/api/v1/users/{}'.format(user_id)
         response = requests.get(url, headers=self.headers)
-        return response.content
+        return response.content.decode('utf-8')
 
     def get_user_groups(self, user_id):
         url = self.base_url + '/api/v1/users/{}/groups'.format(user_id)
         response = requests.get(url, headers=self.headers)
-        return response.content
+        return response.content.decode('utf-8')
 
     def list_factors(self, user_id):
         url = self.base_url + '/api/v1/users/{}/factors'.format(user_id)
         response = requests.get(url, headers=self.headers)
-        return response.content
+        return response.content.decode('utf-8')
 
     def enroll_email_factor(self, user_id, email=None):
         url = self.base_url + '/api/v1/users/{}/factors?activate=true'.format(user_id)

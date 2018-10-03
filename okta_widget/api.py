@@ -350,11 +350,9 @@ def setNameId(request, token):
         if version == "2":
 
             u_client = UsersClient('https://' + OKTA_ORG, API_KEY)
-            target = u_client.list_user(name_id)
-            target = json.loads(target)
+            target = json.loads(u_client.list_user(name_id))
             target_profile = target["profile"]
-            target_groups = u_client.get_user_groups(target["id"])
-            target_groups = json.loads(target_groups)
+            target_groups = json.loads(u_client.get_user_groups(target["id"]))
             groupsIds = []
             for g in target_groups:
                 if g["type"] != 'BUILT_IN':
