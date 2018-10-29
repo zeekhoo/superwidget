@@ -47,6 +47,7 @@ urlpatterns = [
     url(r'^tokens$', view_tokens, name='tokens'),
     url(r'^login$', view_login, name='login'),
     url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
+    url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
     url(r'^logout$', view_logout, name='logout'),
     url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
 

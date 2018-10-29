@@ -262,6 +262,7 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
             .replace("{", "{{").replace("}", "}}") \
             .replace("[[", "{").replace("]]", "}") \
             .format(org=org_url,
+                    base_org=OKTA_ORG,
                     iss=issuer,
                     aud=audience,
                     redirect=REDIRECT_URI,
@@ -387,7 +388,7 @@ def view_logout(request):
     c.update({"page": reverse(page)})
 
     # Reset the base variables in case there was impersonation event
-    c.update({"org": OKTA_ORG})
+    c.update({"org": BASE_URL})
     c.update({"iss": ISSUER})
     c.update({"aud": CLIENT_ID})
 

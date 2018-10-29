@@ -21,10 +21,11 @@ function prettyPrint(ugly) {
 
 function post_tokens(id_token, access_token, org) {
   var formData = new FormData();
+  console.log('access_token='+access_token.accessToken);
   if (access_token !== 'undefined') {
       formData.append('access_token', access_token.accessToken);
   }
-
+  console.log('id_token='+id_token.idToken);
   if (id_token !== 'undefined') {
       formData.append('id_token', id_token.idToken);
   }
@@ -106,23 +107,23 @@ function toggleJsView(buttonId) {
 }
 
 
-function handleOAuthResponse(res, oktaSignIn) {
-    if (res[0]) {
-        if (res[0].idToken)
-            oktaSignIn.tokenManager.add('id_token', res[0]);
-        else if (res[0].accessToken)
-            oktaSignIn.tokenManager.add('access_token', res[0]);
-    }
-    if (res[1]) {
-        if (res[1].idToken)
-            oktaSignIn.tokenManager.add('id_token', res[1]);
-        else if (res[1].accessToken)
-            oktaSignIn.tokenManager.add('access_token', res[1]);
-    }
-    if (res.status === 'SUCCESS') {
-        if (oktaSignIn.tokenManager.get('access_token'))
-            get_profile('access_token', oktaSignIn.tokenManager.get('access_token').accessToken);
-        else if (oktaSignIn.tokenManager.get('id_token'))
-            get_profile('id_token', oktaSignIn.tokenManager.get('id_token').idToken);
-    }
-}
+//function handleOAuthResponse(res, oktaSignIn) {
+//    if (res[0]) {
+//        if (res[0].idToken)
+//            oktaSignIn.tokenManager.add('id_token', res[0]);
+//        else if (res[0].accessToken)
+//            oktaSignIn.tokenManager.add('access_token', res[0]);
+//    }
+//    if (res[1]) {
+//        if (res[1].idToken)
+//            oktaSignIn.tokenManager.add('id_token', res[1]);
+//        else if (res[1].accessToken)
+//            oktaSignIn.tokenManager.add('access_token', res[1]);
+//    }
+//    if (res.status === 'SUCCESS') {
+//        if (oktaSignIn.tokenManager.get('access_token'))
+//            get_profile('access_token', oktaSignIn.tokenManager.get('access_token').accessToken);
+//        else if (oktaSignIn.tokenManager.get('id_token'))
+//            get_profile('id_token', oktaSignIn.tokenManager.get('id_token').idToken);
+//    }
+//}

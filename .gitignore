@@ -13,5 +13,5 @@ static/okta*
 .env_dev*
 .env_preview
 .env_testing
-env.conf
+env*.conf
 sample.html

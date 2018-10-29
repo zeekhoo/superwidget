@@ -1,9 +1,34 @@
-var authClient = new OktaAuth({
-    url: 'https://[[org]]',
+function urlParams() {
+    var urlParams;
+    (window.onpopstate = function () {
+        var match,
+            pl     = /\+/g,  // Regex for replacing addition symbol with a space
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+            query  = window.location.search.substring(1);
+
+        urlParams = {};
+        while (match = search.exec(query))
+           urlParams[decode(match[1])] = decode(match[2]);
+    })();
+
+    return urlParams;
+}
+
+var org = 'https://[[org]]';
+//var params = urlParams();
+//if (params['iss']) {
+//    org = params['iss'];
+//}
+
+var options = {
+    url: org,
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
-    issuer: 'https://[[org]]/oauth2/[[iss]]'
-});
+    issuer: org + '/oauth2/[[iss]]'
+}
+
+var authClient = new OktaAuth(options);
 
 authClient.session.exists()
 .then(function(exists) {
