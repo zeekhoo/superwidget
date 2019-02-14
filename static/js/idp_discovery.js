@@ -3,7 +3,7 @@ var oktaSignIn = new OktaSignIn({
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
     idpDiscovery: {
-        requestContext: '/'
+        requestContext: '[[idp_disco]]'
     },
     features: {
         idpDiscovery: true,
