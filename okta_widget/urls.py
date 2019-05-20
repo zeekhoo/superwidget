@@ -1,41 +1,18 @@
-"""okta_widget URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.10/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
-"""
 from django.conf.urls import url
-from django.contrib import admin
 from .views import not_authenticated
 from .views import not_authorized
 from .views import view_home, view_tokens, view_admin, view_debug
 from .api import list_users, list_user, setNameId, add_users, update_user
 from .api import app_schema, list_groups, list_perms, get_group, update_perm, add_group
 from .views import process_creds
-from .views import view_login, view_logout, view_login_auto, view_profile, edit_profile
+from .views import view_login, view_logout, view_login_auto, view_auth_groupadmin, view_profile, edit_profile
 from .views import oauth2_post, oauth2_callback
 from .views import registration_view, registration_view2, \
     registration_success, registration_success2, \
     activation_view, activation_wo_token_view
 from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco, login_delegate
 from .views import view_login_custom
-
-
-# from .views import auth_broker, sessions_broker
-# from .views import hellovue
-# from .views import view_login_baybridge, view_login_brooklynbridge
-# from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-# from django.conf.urls.static import static
-
+from .views import delegate_init
 
 urlpatterns = [
     url(r'^admin/', view_admin, name='admin'),
@@ -50,6 +27,7 @@ urlpatterns = [
     url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
     url(r'^logout$', view_logout, name='logout'),
     url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
+    url(r'^auth-groupadmin', view_auth_groupadmin, name='auth_groupadmin'),
 
     # profile page
     url(r'^profile$', view_profile, name='profile'),
@@ -69,7 +47,7 @@ urlpatterns = [
     # impersonation
     url(r'^set-name-id', setNameId, name='set_name_id'),
     url(r'^login-delegate', login_delegate, name='login_delegate'),
-    # url(r'^proxy-callback', proxy_callback, name='proxy_callback'),
+    url(r'^delegate-init', delegate_init, name='delegate_init'),
 
     # alternate login pages
     url(r'^login-css$', view_login_css, name='login_css'),
@@ -96,14 +74,4 @@ urlpatterns = [
     # error pages
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
     url(r'^not-authorized/$', not_authorized, name='not_authorized'),
-
-    # okta proxy
-    # url(r'^broker/api/v1/sessions/me$', sessions_broker, name='okta_session'),
-    # url(r'^broker/api/v1/authn$', auth_broker, name='okta_auth'),
-
-    # url(r'^login-baybridge$', view_login_baybridge, name='login_baybridge'),
-    # url(r'^login-brooklynbridge$', view_login_brooklynbridge, name='login_brooklynbridge'),
-    # url(r'^hellovue/$', hellovue, name='hellovue'),
 ]
-
-# urlpatterns += staticfiles_urlpatterns()

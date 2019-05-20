@@ -23,10 +23,10 @@
 
       <link href="{% static 'css/demo.css' %}" rel="stylesheet">
 
-      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.10.0/js/okta-sign-in.min.js" type="text/javascript"></script>
-      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.10.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
-      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.10.0/css/okta-theme.css" type="text/css" rel="stylesheet">
-      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.13.0/okta-auth-js.min.js" type="text/javascript"></script>
+      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
+      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.17.0/okta-auth-js.min.js" type="text/javascript"></script>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
       <script src="https://unpkg.com/vue"></script>
@@ -35,6 +35,19 @@
 
     {% block head_js %}{% endblock head_js %}
 
+      <script>
+        var org = '{{ org }}';
+        var aud = '{{ aud }}';
+        var iss = '{{ iss }}';
+        var redirect_uri = '{{ redirect_uri }}';
+        var profile = '{{ profile|safe }}';
+        var app_permissions_claim = '{{app_permissions_claim}}';
+        var api_permissions_claim = '{{api_permissions_claim}}';
+        var sub = '{{ request.session.id_token.sub }}'
+        var srv_id_token = '{{ srv_id_token|safe }}';
+        var srv_access_token = '{{ srv_access_token|safe }}';
+      </script>
+
     {% block head %}{% endblock head %}
 
     {% block page_css %}{% endblock page_css %}
@@ -42,7 +55,7 @@
   </head>
 
   <body>
-    <div id="no-vueapp">
+    <div id="vueapp-spa">
 
       <div id="vueapp-nav" class="navbar navbar-inverse navbar-fixed-top">
           <div class="container-fluid">
@@ -72,6 +85,7 @@
                       {% else %}
 
                       <a v-if="showAdminButton" role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
+                      <a v-if="showDelegateButton" role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'auth_groupadmin' %}" aria-pressed="true">Delegate</a>
 
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
@@ -109,15 +123,11 @@
       </div>
 
       <div class="bg-fill" id="demo-main-container">
-          <div id="vueapp-profile">
-          {% block profile-page %}
-          {% endblock profile-page %}
-          </div>
-          {% block content %}
-          {% endblock content %}
-
+      {% block content %}
+      {% endblock content %}
       </div>
     </div>
+
   </body>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/codemirror.js"></script>
@@ -126,19 +136,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.33.0/mode/javascript/javascript.min.js"></script>
 
   <script src="{% static 'js/utils.js' %}" type="text/javascript"></script>
-  <script>
-    var org = '{{ org }}';
-    var aud = '{{ aud }}';
-    var iss = '{{ iss }}';
-    var redirect_uri = '{{ redirect_uri }}';
-    var profile = '{{ profile|safe }}';
-    var app_permissions_claim = '{{app_permissions_claim}}';
-    var api_permissions_claim = '{{api_permissions_claim}}';
-    var srv_id_token = '{{ srv_id_token|safe }}';
-    var srv_access_token = '{{ srv_access_token|safe }}';
-    var sub = '{{ request.session.id_token.sub }}'
-  </script>
-  <script src="{% static 'js/profile_page.js' %}" type="text/javascript"></script>
+  <script src="{% static 'js/vuespa.js' %}" type="text/javascript"></script>
 
   {% block page_js %}
   {% endblock page_js %}

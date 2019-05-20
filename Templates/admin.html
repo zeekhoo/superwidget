@@ -4,9 +4,8 @@
 
 {% block head_js %}
 <script>
-    var srv_access_token = '{{ request.session.access_token_raw }}';
-    var srv_id_token = '{{ srv_id_token|safe }}'
-    var impersonation_version = '{{ impersonation_version }}';
+var impersonation_version = '{{ impersonation_version }}';
+var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
 </script>
 {% endblock %}
 
@@ -18,40 +17,42 @@
     </div>
     <div class="row">
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="row">
-                    <div v-if="isAdmin" class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="sw" placeholder="Starts with">
-                            <span class="input-group-btn">
-                                <button class="btn btn-primary" id="search-button" type="button" onclick="listUsers($('#sw').val())">
-                                    Click to view Users
-                                </button>
-                            </span>
+            <div class="panel-heading" id="vueapp-adminbuttons">
+                <div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="sw" placeholder="Starts with">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" id="search-button" type="button" onclick="listUsers($('#sw').val())">
+                                        Click to view Users
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span v-if="isCompanyAdmin" class="input-group-btn">
+                                    <button class="btn btn-primary" id="search-button2" type="button"
+                                            onclick="listGroups()">
+                                        Click to view Roles
+                                    </button>
+                                    <button class="btn btn-primary" id="addUser-button" type="button"
+                                            onclick="toggleComponents('vueapp-addusers');">
+                                        Add User
+                                    </button>
+                                    <button class="btn btn-primary" id="addGroup-button" type="button"
+                                            onclick="toggleComponents('vueapp-addgroup');">
+                                        Add Role
+                                    </button>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <span v-if="isAdmin" class="input-group-btn">
-                                <button v-if="isCompanyAdmin" class="btn btn-primary" id="search-button2" type="button"
-                                        onclick="listGroups()">
-                                    Click to view Roles
-                                </button>
-                                <button class="btn btn-primary" id="addUser-button" type="button"
-                                        onclick="toggleComponents('vueapp-addusers');">
-                                    Add User
-                                </button>
-                                <button v-if="isCompanyAdmin" class="btn btn-primary" id="addGroup-button" type="button"
-                                        onclick="toggleComponents('vueapp-addgroup');">
-                                    Add Role
-                                </button>
-                            </span>
+                    <div v-if="isCompanyAdmin" class="row">
+                        <div class="col-md-12">
+                            <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ request.session.id_token.Department }} department.</h6>
                         </div>
-                    </div>
-                </div>
-                <div v-if="isCompanyAdmin" class="row">
-                    <div class="col-md-12">
-                        <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ request.session.id_token.Department }} department.</h6>
                     </div>
                 </div>
             </div>
@@ -62,19 +63,23 @@
                         <th>login</th>
                         <th>email</th>
                         <th>Role</th>
-                        <th>Company Name</th>
+                        <th v-if="isCompanyAdmin">Company Name</th>
                         <th>Status</th>
-                        <th>Action</th>
                         <th></th>
+                        <th v-if="showDelegateButton"></th>
                         <tr v-for="user in allUsers">
                             <td><label>[[ user.profile.login ]]</label></td>
                             <td><label>[[ user.profile.email ]]</label></td>
                             <td><label>[[ user.profile.customer_role ]]</label></td>
-                            <td><label>[[ user.profile.companyName ]]</label></td>
+                            <td v-if="isCompanyAdmin"><label>[[ user.profile.companyName ]]</label></td>
                             <td><label>[[ user.status ]]</label></td>
                             <td><button class="btn btn-primary btn-xs" v-bind:id=user.id onclick="listUser(this.id)">View More</button></td>
                             {% if allow_impersonation == True %}
-                            <td><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id, impersonation_version)">Impersonate-Delegate</button></td>
+                            {% if impersonation_version == '3' %}
+                            <td v-if="showDelegateButton"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="proxyLogin(this.id)">Proxy-Login</button></td>
+                            {% else %}
+                            <td v-if="showDelegateButton"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id, impersonation_version)">Delegate</button></td>
+                            {% endif %}
                             {% endif %}
                         </tr>
                     </tbody>
@@ -94,15 +99,19 @@
                       <input type="text" id="email_up" class="form-control" value="" v-model="email"/>
                       <label for="role">Role</label>
                       <input type="text" id="role_up" class="form-control"  value="" v-model="role"/>
-                      <label class="radio">Deactivate?</label>
-                      <input type="checkbox" id="deactivate"  v-model="deactivate">&nbsp; Yes
-                      <label id="resend_email_label" class="radio">Resend activation email?</label>
-                      <input type="checkbox" id="resend_email"  v-model="resend_email"  style="display:none;">&nbsp; Yes
+                      <div v-if="isCompanyAdmin">
+                          <label class="radio">Deactivate?</label>
+                          <input type="checkbox" id="deactivate"  v-model="deactivate">
+                          &nbsp; Yes
+                          <label id="resend_email_label" class="radio">Resend activation email?</label>
+                          <input type="checkbox" id="resend_email"  v-model="resend_email"  style="display:none;">
+                          &nbsp; Yes
+                      </div>
                       <input type="text" id="user_id_up"  v-model="userId"  style="display:none;"/>
                       <input type="text" id="companyName_up"  v-model="companyName"  style="display:none;"/>
                     </div>
                   </div>
-                  <div class="col-sm-12">
+                  <div v-if="isCompanyAdmin" class="col-sm-12">
                     <a class="btn btn-success" onclick="updateUser()">Update</a>
                   </div>
                 </div>

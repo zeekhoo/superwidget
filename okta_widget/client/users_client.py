@@ -1,5 +1,6 @@
 import requests
 import json
+from ..authx import parse_bearer_token
 
 
 class UsersClient(object):
@@ -8,8 +9,12 @@ class UsersClient(object):
         self.headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': 'SSWS ' + token
+            'Authorization': 'SSWS {}'.format(token)
         }
+
+    def set_bearer_token(self, bearer_token):
+        if bearer_token:
+            self.headers['Authorization'] = 'Bearer {}'.format(bearer_token)
 
     def create_user(self, user, activate=False):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)

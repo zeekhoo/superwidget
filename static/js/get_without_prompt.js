@@ -1,25 +1,4 @@
-function urlParams() {
-    var urlParams;
-    (window.onpopstate = function () {
-        var match,
-            pl     = /\+/g,  // Regex for replacing addition symbol with a space
-            search = /([^&=]+)=?([^&]*)/g,
-            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
-            query  = window.location.search.substring(1);
-
-        urlParams = {};
-        while (match = search.exec(query))
-           urlParams[decode(match[1])] = decode(match[2]);
-    })();
-
-    return urlParams;
-}
-
 var org = 'https://[[org]]';
-//var params = urlParams();
-//if (params['iss']) {
-//    org = params['iss'];
-//}
 
 var options = {
     url: org,
@@ -33,9 +12,17 @@ var authClient = new OktaAuth(options);
 authClient.session.exists()
 .then(function(exists) {
     if (exists) {
+        var scp = [[scopes]];
+
+        if (authClient.tokenManager.get('accessToken')) {
+            var access_token_str = authClient.tokenManager.get('accessToken').accessToken;
+            var access_token = JSON.parse(window.atob(access_token_str.split('.')[1]));
+            scp = access_token.scp;
+        }
+
         authClient.token.getWithoutPrompt({
             responseType: ['id_token', 'token'],
-            scopes: [[scopes]],
+            scopes: scp,
         })
         .then(function(tokens){
             showApp(tokens);

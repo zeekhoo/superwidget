@@ -4,11 +4,24 @@ $("#sw").keyup(function(event) {
     }
 });
 
+showToken();
+
+var adminButtonsApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-adminbuttons',
+    data: {
+        isCompanyAdmin: navbarApp.isCompanyAdmin
+    }
+});
+
 var getUsersapp = new Vue({
     delimiters: ['[[', ']]'],
     el: '#vueapp-users',
     data: {
-        allUsers: []
+        allUsers: [],
+        isCompanyAdmin: navbarApp.isCompanyAdmin,
+        showDelegateButton: navbarApp.showDelegateButton,
+        orgAccessTokenString: false
     }
 });
 
@@ -29,6 +42,7 @@ var updateUserApp = new Vue({
     delimiters: ['[[', ']]'],
     el: '#vueapp-updateusers',
     data: {
+        isCompanyAdmin: navbarApp.isCompanyAdmin,
         userId: '',
         firstName: '',
         lastName: '',
@@ -77,8 +91,21 @@ if (srv_access_token != '') {
     accessToken = authClient.tokenManager.get('accessToken').accessToken;
 }
 
+var idToken = '';
+if (srv_id_token != '') {
+    //get the idToken from session if it exists
+    idToken = srv_id_token;
+} else if (authClient.tokenManager.get('idToken')) {
+    //get the idToken stored in local storage
+    idToken = authClient.tokenManager.get('idToken').idToken;
+}
+
 function listUsers(startsWith) {
     toggleComponents('all_users');
+
+    var bearerToken = accessToken;
+    if (getUsersapp.orgAccessTokenString)
+        bearerToken = getUsersapp.orgAccessTokenString;
 
     data = {};
     if (startsWith != null && startsWith != '') {
@@ -89,7 +116,7 @@ function listUsers(startsWith) {
         method: 'GET',
         data: data,
         beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            xhr.setRequestHeader("Authorization", "Bearer " + bearerToken);
         },
         success: function(res) {
             var resultsJson = JSON.parse(res);
@@ -391,6 +418,49 @@ function updatePermsGroup() {
     });
 }
 
+function doProxyLogin(target) {
+    data = {
+        "delegation_target": target
+    }
+    $.ajax({
+        url: delegation_service_endpoint + '/delegate/init',
+        method: 'POST',
+        data: JSON.stringify(data),
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        complete: function(res, xhr, settings) {
+            console.log(JSON.stringify(res));
+            if (res.responseJSON.status === 'SUCCESS') {
+                window.location = '/login-noprompt';
+            }
+        }
+    });
+}
+
+
+function proxyLogin(target) {
+    data = {
+        "delegation_target": target
+    }
+    $.ajax({
+        url: '/delegate-init',
+        method: 'POST',
+        data: JSON.stringify(data),
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+        },
+        complete: function(res, xhr, settings) {
+            console.log(JSON.stringify(res));
+            if (res.responseJSON.status === 'SUCCESS') {
+                window.location = '/login-noprompt';
+            }
+        }
+    });
+}
+
 
 function toggleComponents(component) {
     if (component === 'all_users')
@@ -423,3 +493,15 @@ function toggleComponents(component) {
     else
         $('#vueapp-perms').hide();
 }
+
+
+function getAccessTokenFragment(param) {
+    if (param) {
+        var access_token = param.split("&")[0].split("#")[1].split('=')[1];
+        if (access_token) {
+            return access_token;
+        }
+    }
+    return false;
+}
+getUsersapp.orgAccessTokenString = getAccessTokenFragment(window.location.hash);

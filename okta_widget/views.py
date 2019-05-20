@@ -1,10 +1,6 @@
-# from django.contrib.auth.models import User
-# from django.contrib.auth import login
-
-# from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
 from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
@@ -12,6 +8,7 @@ import requests
 from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient
 from .client.users_client import UsersClient
+from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from .authx import *
 
@@ -41,6 +38,7 @@ if settings.DEFAULT_PORT and settings.DEFAULT_PORT != 'None':
     DEFAULT_PORT = settings.DEFAULT_PORT
 
 REDIRECT_URI = 'http://localhost:{}/oauth2/callback'.format(DEFAULT_PORT)
+AUTH_GROUPADMIN_REDIRECT_URI = 'http://localhost:{}/admin'.format(DEFAULT_PORT)
 
 if settings.REDIRECT_URI and settings.REDIRECT_URI != 'None':
     REDIRECT_URI = settings.REDIRECT_URI
@@ -58,7 +56,8 @@ IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
 LOGIN_NOPROMPT_BOOKMARK = settings.LOGIN_NOPROMPT_BOOKMARK
 
 # Option: Do Impersonation with SAML
-IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION != 'None' else 1
+IMPERSONATION_DEFAULT_VER=3
+IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION != 'None' else IMPERSONATION_DEFAULT_VER
 IMPERSONATION_ORG = settings.IMPERSONATION_ORG
 IMPERSONATION_ORG_AUTH_SERVER_ID = settings.IMPERSONATION_ORG_AUTH_SERVER_ID
 IMPERSONATION_ORG_OIDC_CLIENT_ID = settings.IMPERSONATION_ORG_OIDC_CLIENT_ID
@@ -83,6 +82,8 @@ if not allow_impersonation\
     and IMPERSONATION_V2_SAML_APP_EMBED_LINK and IMPERSONATION_V2_SAML_APP_EMBED_LINK != 'None':
     allow_impersonation = True
 
+DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
+
 c = {
     "org": BASE_URL,
     "iss": ISSUER,
@@ -97,7 +98,8 @@ c = {
     "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
     "app_permissions_claim": APP_PERMISSIONS_CLAIM,
     "api_permissions_claim": API_PERMISSIONS_CLAIM,
-    "allow_impersonation": allow_impersonation
+    "allow_impersonation": allow_impersonation,
+    "delegation_service_endpoint": DELEGATION_SERVICE_ENDPOINT
 }
 
 url_map = {}
@@ -182,7 +184,23 @@ def view_login(request, recoveryToken=None):
     return render(request, 'index.html', c)
 
 
-@csrf_exempt
+def view_auth_groupadmin(request):
+    if not is_admin(request):
+        return HttpResponseRedirect(reverse('not_authorized'))
+
+    page = 'login_groupadmin'
+
+    referrer = ''
+    if 'from' in request.GET:
+        referrer = request.GET['from']
+
+    if referrer and referrer != '':
+        pages_js['entry_page'] = referrer
+
+    c.update({"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
+    return render(request, 'index_get_without_prompt.html', c)
+
+
 def view_login_auto(request):
     page = 'login_noprompt'
 
@@ -190,14 +208,10 @@ def view_login_auto(request):
     if 'from' in request.GET:
         referrer = request.GET['from']
 
-    print('referrer={}'.format(referrer))
     if referrer and referrer != '':
         pages_js['entry_page'] = referrer
 
-    if request.method == 'POST':
-        return _do_refresh(request, page)
-    else:
-        c.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    c.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
 
     # Lets ensure everything is cleared out and refreshed.
     logout(request)
@@ -266,6 +280,7 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     iss=issuer,
                     aud=audience,
                     redirect=REDIRECT_URI,
+                    auth_groupadmin_redirect=AUTH_GROUPADMIN_REDIRECT_URI,
                     scopes=scps,
                     idps=idps,
                     btns=btns,
@@ -367,8 +382,14 @@ def view_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
-    c.update({"impersonation_version": IMPERSONATION_VERSION})
     c.update({"srv_id_token": get_id_token(request)})
+
+    if can_delegate(request):
+        c.update({"impersonation_version": "3"})
+        c.update({"allow_impersonation": True})
+    else:
+        c.update({"impersonation_version": IMPERSONATION_VERSION})
+
     return render(request, 'admin.html', c)
 
 
@@ -391,6 +412,9 @@ def view_logout(request):
     c.update({"org": BASE_URL})
     c.update({"iss": ISSUER})
     c.update({"aud": CLIENT_ID})
+    c.update({"srv_access_token": ''})
+    c.update({"srv_id_token": ''})
+    c.update({"profile": ''})
 
     return render(request, 'logged_out.html', c)
 
@@ -615,7 +639,7 @@ def oauth2_post(request):
     if code:
         client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
         tokens = client.token(code, REDIRECT_URI, ISSUER)
-        print(print('Tokens from the code retrieval {}'.format(tokens)))
+        print('Tokens from the code retrieval {}'.format(tokens))
         if tokens['access_token']:
             access_token = tokens['access_token']
 
@@ -648,6 +672,17 @@ def login_delegate(request):
 
     c.update({"js": _do_format(request, '/js/login-delegate.js', 'login_delegate')})
     return render(request, 'login_delegate.html', c)
+
+
+# IMPERSONATION Demo
+@csrf_exempt
+def delegate_init(request):
+    if request.method == 'POST':
+        client = OktadelegateClient(DELEGATION_SERVICE_ENDPOINT,
+                                    request.META["HTTP_AUTHORIZATION"].split(" ")[1],
+                                    API_KEY)
+        result = client.delegate_init(json.loads(request.body)["delegation_target"])
+        return JsonResponse(json.loads(result.content))
 
 
 @csrf_exempt

@@ -68,16 +68,33 @@ def logout(request):
 
 
 def is_admin(request):
+    if can_delegate(request):
+        return True
+
     if APP_PERMISSIONS_CLAIM in request.session['id_token']:
         list = _formatted_list(request.session['id_token'][APP_PERMISSIONS_CLAIM])
-        return 'admin' in list or 'company_admin' in list
+        return set(['admin', 'companyadmin']) & set(list)
 
     return False
 
 
+def can_delegate(request):
+    if 'access_token' in request.session:
+        return _can_delegate(request.session['access_token'])
+    return False
+
+
+def _can_delegate(token):
+    if 'groupadmin' in token['scp']:
+        return True
+    return False
+
+
 def api_access_admin(bearer_token):
-    token = _parse_bearer_token(bearer_token)
-    print('Parsed bearer token = {}'.format(token))
+    token = parse_bearer_token(bearer_token)
+    if _can_delegate(token):
+        return True
+
     if API_PERMISSIONS_CLAIM in token:
         return 'admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
 
@@ -85,10 +102,12 @@ def api_access_admin(bearer_token):
 
 
 def api_access_company_admin(bearer_token):
-    token = _parse_bearer_token(bearer_token)
-    print('Parsed bearer token = {}'.format(token))
+    token = parse_bearer_token(bearer_token)
+    if _can_delegate(token):
+        return True
+
     if API_PERMISSIONS_CLAIM in token:
-        return 'company_admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
+        return set(['companyadmin']) & set(_formatted_list(token[API_PERMISSIONS_CLAIM]))
 
     return False
 
@@ -96,16 +115,19 @@ def api_access_company_admin(bearer_token):
 def _formatted_list(claims_array):
     if len(claims_array) <= 0:
         return claims_array
-    return [x.lower().replace(" ", "_") for x in claims_array]
+    return [x.lower().replace(" ", "_").replace("_", "") for x in claims_array]
 
 
-def _parse_bearer_token(bearer_token):
+def parse_bearer_token(bearer_token):
     return json.loads(_decode_payload(bearer_token))
 
 
 def _decode_payload(token):
-    parts = token.split('.')
-    payload = parts[1]
-    payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
-    decoded = str(base64.b64decode(payload), 'utf-8')
-    return decoded
+    try:
+        parts = token.split('.')
+        payload = parts[1]
+        payload += '=' * (-len(payload) % 4)  # add == padding to avoid padding errors in python
+        decoded = str(base64.b64decode(payload), 'utf-8')
+        return decoded
+    except Exception as ex:
+        return ex

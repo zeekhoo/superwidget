@@ -16,9 +16,8 @@ from okta_widget.views import IMPERSONATION_V2_ORG_API_KEY
 from okta_widget.views import IMPERSONATION_V2_SAML_APP_ID
 from okta_widget.views import not_authorized
 
-from django.http import HttpResponseRedirect, HttpResponse
-from .authx import api_access_admin
-from .authx import api_access_company_admin
+from django.http import HttpResponse
+from .authx import api_access_admin, api_access_company_admin, parse_bearer_token
 
 import json
 import datetime
@@ -27,21 +26,32 @@ import datetime
 @access_token_required
 def list_users(request, token):
     get = request.GET
-    startsWith = None
+    starts_with = None
     if 'startsWith' in get:
-        startsWith = get['startsWith']
+        starts_with = get['startsWith']
 
     client = UsersClient('https://' + OKTA_ORG, API_KEY)
-    profile_dict = request.session['profile']
-    #profile_dict = json.loads(profile)
-    companyName = profile_dict.get('companyName')
 
-    if api_access_admin(token):
-        users = client.list_users(15, startsWith)
-    elif api_access_company_admin(token):
-        users = client.list_users_scoped(15, companyName, startsWith)
+    is_org_token = False
+    try:
+        token_obj = parse_bearer_token(token)
+        if token_obj['iss'] == 'https://{0}'.format(OKTA_ORG):
+            is_org_token = True
+    except Exception as e:
+        print(e)
+
+    if is_org_token:
+        client.set_bearer_token(token)
+        users = client.list_users(15, starts_with)
     else:
-        return not_authorized(request)
+        profile_dict = request.session['profile']
+        company_name = profile_dict.get('companyName')
+        if api_access_admin(token):
+            users = client.list_users(15, starts_with)
+        elif api_access_company_admin(token):
+            users = client.list_users_scoped(15, company_name, starts_with)
+        else:
+            return not_authorized(request)
 
     response = HttpResponse()
     response.status_code = 200
@@ -78,23 +88,22 @@ def add_users(request, token):
         req = request.POST
 
         email = ''
-        firstName = ''
-        lastName = ''
+        first_name = ''
+        last_name = ''
         role = ''
         activate = False
 
-        #profile_dict = json.loads(request.session['profile'])
         profile_dict = request.session['profile']
-        companyName = ''
+        company_name = ''
         if 'companyName' in profile_dict:
-            companyName = profile_dict.get('companyName')
+            company_name = profile_dict.get('companyName')
 
         if 'email' in req:
             email = req['email']
         if 'firstName' in req:
-            firstName = req['firstName']
+            first_name = req['firstName']
         if 'lastName' in req:
-            lastName = req['lastName']
+            last_name = req['lastName']
         if 'role' in req:
             role = req['role']
         if 'activate' in req:
@@ -103,12 +112,12 @@ def add_users(request, token):
 
         user = {
             "profile": {
-                "firstName": firstName,
-                "lastName": lastName,
+                "firstName": first_name,
+                "lastName": last_name,
                 "email": email,
                 "login": email,
                 "customer_role": role,
-                "companyName": companyName
+                "companyName": company_name
             }
         }
 
@@ -116,7 +125,6 @@ def add_users(request, token):
             users = client.create_user(user=user, activate=activate)
         elif api_access_company_admin(token):
             users = client.create_user(user=user, activate=activate)
-            # users = client.create_user_scoped(user=user, activate="false", group="")
         else:
             return not_authorized(request)
 
@@ -138,34 +146,34 @@ def update_user(request, token):
             user_id = req['user_id']
 
             email = ''
-            firstName = ''
-            lastName = ''
+            first_name = ''
+            last_name = ''
             role = ''
-            companyName = ''
+            company_name = ''
             deactivate = None
 
             if 'email' in req:
                 email = req['email']
             if 'firstName' in req:
-                firstName = req['firstName']
+                first_name = req['firstName']
             if 'lastName' in req:
-                lastName = req['lastName']
+                last_name = req['lastName']
             if 'role' in req:
                 role = req['role']
             if 'deactivate' in req:
                 deactivate = req['deactivate']
             if 'companyName' in req:
-                companyName = req['companyName']
+                company_name = req['companyName']
             client = UsersClient('https://' + OKTA_ORG, API_KEY)
 
             user = {
                 "profile": {
-                    "firstName": firstName,
-                    "lastName": lastName,
+                    "firstName": first_name,
+                    "lastName": last_name,
                     "email": email,
                     "login": email,
                     "customer_role": role,
-                    "companyName": companyName
+                    "companyName": company_name
                 }
             }
 
@@ -187,14 +195,13 @@ def list_groups(request, token):
     response.status_code = 200
 
     profile_dict = request.session['profile']
-    #profile_dict = json.loads(profile)
-    companyName = ''
+    company_name = ''
     if 'companyName' in profile_dict:
-        companyName = profile_dict.get('companyName')
+        company_name = profile_dict.get('companyName')
 
     if api_access_company_admin(token):
         client = GroupsClient('https://' + OKTA_ORG, API_KEY)
-        response.content = client.list_groups(15, companyName)
+        response.content = client.list_groups(15, company_name)
     else:
         return not_authorized(request)
 
@@ -301,7 +308,6 @@ def add_group(request, token):
     if request.method == 'POST':
         req = request.POST
         profile_dict = request.session['profile']
-        #profile_dict = json.loads(profile)
 
         if 'groupName' in req and 'companyName' in profile_dict:
             prefix = None
