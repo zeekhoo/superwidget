@@ -5,37 +5,30 @@ from okta_widget.client.users_client import UsersClient
 from okta_widget.client.groups_client import GroupsClient
 from okta_widget.client.apps_client import AppsClient
 
-from okta_widget.views import OKTA_ORG
-from okta_widget.views import API_KEY
-from okta_widget.views import CLIENT_ID
-
-from okta_widget.views import IMPERSONATION_VERSION
-from okta_widget.views import IMPERSONATION_SAML_APP_ID
-from okta_widget.views import IMPERSONATION_V2_ORG
-from okta_widget.views import IMPERSONATION_V2_ORG_API_KEY
-from okta_widget.views import IMPERSONATION_V2_SAML_APP_ID
 from okta_widget.views import not_authorized
+from okta_widget.views import config, _get_config
 
 from django.http import HttpResponse
 from .authx import api_access_admin, api_access_company_admin, parse_bearer_token
 
-import json
-import datetime
+
+# cfg = config.get_config()
 
 
 @access_token_required
 def list_users(request, token):
+    conf = _get_config(request)
     get = request.GET
     starts_with = None
     if 'startsWith' in get:
         starts_with = get['startsWith']
 
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
+    client = UsersClient('https://' + conf['org'], config.get_api_key())
 
     is_org_token = False
     try:
         token_obj = parse_bearer_token(token)
-        if token_obj['iss'] == 'https://{0}'.format(OKTA_ORG):
+        if token_obj['iss'] == 'https://{0}'.format(conf['org']):
             is_org_token = True
     except Exception as e:
         print(e)
@@ -61,11 +54,12 @@ def list_users(request, token):
 
 @access_token_required
 def list_user(request, token):
+    conf = _get_config(request)
     get = request.GET
     user_id = None
     if 'user' in get:
         user_id = get['user']
-    client = UsersClient('https://' + OKTA_ORG, API_KEY)
+    client = UsersClient('https://' + conf['org'], config.get_api_key())
 
     if api_access_admin(token) or api_access_company_admin(token):
         users = client.list_user(user_id)
@@ -81,6 +75,8 @@ def list_user(request, token):
 @csrf_exempt
 @access_token_required
 def add_users(request, token):
+    conf = _get_config(request)
+
     response = HttpResponse()
     response.status_code = 200
 
@@ -108,7 +104,7 @@ def add_users(request, token):
             role = req['role']
         if 'activate' in req:
             activate = req['activate']
-        client = UsersClient('https://' + OKTA_ORG, API_KEY)
+        client = UsersClient('https://' + conf['org'], config.get_api_key())
 
         user = {
             "profile": {
@@ -136,6 +132,8 @@ def add_users(request, token):
 @csrf_exempt
 @access_token_required
 def update_user(request, token):
+    conf = _get_config(request)
+
     response = HttpResponse()
     response.status_code = 200
 
@@ -164,7 +162,7 @@ def update_user(request, token):
                 deactivate = req['deactivate']
             if 'companyName' in req:
                 company_name = req['companyName']
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client = UsersClient('https://' + conf['org'], config.get_api_key())
 
             user = {
                 "profile": {
@@ -191,6 +189,8 @@ def update_user(request, token):
 
 @access_token_required
 def list_groups(request, token):
+    conf = _get_config(request)
+
     response = HttpResponse()
     response.status_code = 200
 
@@ -200,7 +200,7 @@ def list_groups(request, token):
         company_name = profile_dict.get('companyName')
 
     if api_access_company_admin(token):
-        client = GroupsClient('https://' + OKTA_ORG, API_KEY)
+        client = GroupsClient('https://' + conf['org'], config.get_api_key())
         response.content = client.list_groups(15, company_name)
     else:
         return not_authorized(request)
@@ -210,6 +210,8 @@ def list_groups(request, token):
 
 @access_token_required
 def get_group(request, token):
+    conf = _get_config(request)
+
     get = request.GET
     response = HttpResponse()
     response.status_code = 200
@@ -217,7 +219,7 @@ def get_group(request, token):
     group_id = None
     if 'group_id' in get:
         group_id = get['group_id']
-    client = GroupsClient('https://' + OKTA_ORG, API_KEY)
+    client = GroupsClient('https://' + conf['org'], config.get_api_key())
 
     if api_access_company_admin(token):
         response.content = client.get_group_by_id(group_id)
@@ -229,11 +231,13 @@ def get_group(request, token):
 
 @access_token_required
 def app_schema(request, token):
+    conf = _get_config(request)
+
     response = HttpResponse()
     response.status_code = 200
 
     if api_access_company_admin(token):
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
         schema = client.get_schema()
         response.content = schema
     else:
@@ -244,12 +248,14 @@ def app_schema(request, token):
 
 @access_token_required
 def list_perms(request, token):
+    conf = _get_config(request)
+
     get = request.GET
     response = HttpResponse()
     response.status_code = 200
 
     if api_access_company_admin(token):
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
 
         group_id = None
         if 'group_id' in get:
@@ -266,6 +272,8 @@ def list_perms(request, token):
 @csrf_exempt
 @access_token_required
 def update_perm(request, token):
+    conf = _get_config(request)
+
     req = request.POST
 
     group_id = None
@@ -291,7 +299,7 @@ def update_perm(request, token):
             }
         }
 
-        client = AppsClient('https://' + OKTA_ORG, API_KEY, CLIENT_ID)
+        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
         perms = client.update_app_group(group_id, perm)
         response.content = perms
     else:
@@ -302,6 +310,8 @@ def update_perm(request, token):
 @csrf_exempt
 @access_token_required
 def add_group(request, token):
+    conf = _get_config(request)
+
     response = HttpResponse()
     response.status_code = 200
 
@@ -320,7 +330,7 @@ def add_group(request, token):
             if prefix:
                 group_name = prefix + '_' + group_name
 
-            client = GroupsClient('https://' + OKTA_ORG, API_KEY)
+            client = GroupsClient('https://' + conf['org'], config.get_api_key())
 
             group = {
                 "profile": {
@@ -337,49 +347,48 @@ def add_group(request, token):
 
     return response
 
-# IMPERSONATION Demo
-@csrf_exempt
-@access_token_required
-def setNameId(request, token):
-    post = request.POST
-    print(post)
-
-    response = HttpResponse()
-    if 'nameid' in post:
-        name_id = post['nameid']
-        admin = request.session['profile']['preferred_username']
-
-        version = '{}'.format(IMPERSONATION_VERSION)
-        if version == "1":
-            client = AppsClient('https://' + OKTA_ORG, API_KEY, IMPERSONATION_SAML_APP_ID)
-            response.status_code = client.set_name_id(request.session['id_token']['sub'], name_id)
-        if version == "2":
-
-            u_client = UsersClient('https://' + OKTA_ORG, API_KEY)
-            target = json.loads(u_client.list_user(name_id))
-            target_profile = target["profile"]
-            target_groups = json.loads(u_client.get_user_groups(target["id"]))
-            groupsIds = []
-            for g in target_groups:
-                if g["type"] != 'BUILT_IN':
-                    groupsIds.append(g["id"])
-
-            now = datetime.datetime.now()
-            new_login = "IM" + now.strftime('%Y%m%d%H%M%S') + admin.split("@")[0].replace(".", "") + "AS" + target_profile["login"]
-            target_profile["login"] = new_login
-            target_profile["email"] = new_login
-            temp_user = {
-                "profile": target_profile,
-                "groupIds": groupsIds
-            }
-            u_client.create_user(user=temp_user, activate=True)
-
-            u_client = UsersClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY)
-            users = u_client.list_user(admin)
-            users = json.loads(users)
-            if "id" in users:
-                client = AppsClient('https://' + IMPERSONATION_V2_ORG, IMPERSONATION_V2_ORG_API_KEY, IMPERSONATION_V2_SAML_APP_ID)
-                response.status_code = client.set_name_id(users["id"], new_login)
-                for key in list(request.session.keys()):
-                    del request.session[key]
-    return response
+# IMPERSONATION Demo (Deprecated)
+# @csrf_exempt
+# @access_token_required
+# def setNameId(request, token):
+#     post = request.POST
+#     print(post)
+#
+#     response = HttpResponse()
+#     if 'nameid' in post:
+#         name_id = post['nameid']
+#         admin = request.session['profile']['preferred_username']
+#
+#         version = '{}'.format(cfg['impersonation_version'])
+#         if version == "1":
+#             client = AppsClient('https://' + cfg['org'], config.get_api_key(), cfg['impersonation_saml_app_id'])
+#             response.status_code = client.set_name_id(request.session['id_token']['sub'], name_id)
+#         if version == "2":
+#             u_client = UsersClient('https://' + cfg['org'], config.get_api_key())
+#             target = json.loads(u_client.list_user(name_id))
+#             target_profile = target["profile"]
+#             target_groups = json.loads(u_client.get_user_groups(target["id"]))
+#             groupsIds = []
+#             for g in target_groups:
+#                 if g["type"] != 'BUILT_IN':
+#                     groupsIds.append(g["id"])
+#
+#             now = datetime.datetime.now()
+#             new_login = "IM" + now.strftime('%Y%m%d%H%M%S') + admin.split("@")[0].replace(".", "") + "AS" + target_profile["login"]
+#             target_profile["login"] = new_login
+#             target_profile["email"] = new_login
+#             temp_user = {
+#                 "profile": target_profile,
+#                 "groupIds": groupsIds
+#             }
+#             u_client.create_user(user=temp_user, activate=True)
+#
+#             u_client = UsersClient('https://' + cfg['impersonation_v2_org'], cfg['impersonation_v2_org_api_key'])
+#             users = u_client.list_user(admin)
+#             users = json.loads(users)
+#             if "id" in users:
+#                 client = AppsClient('https://' + cfg['impersonation_v2_org'], cfg['impersonation_v2_org_api_key'], cfg['impersonation_v2_saml_app_id'])
+#                 response.status_code = client.set_name_id(users["id"], new_login)
+#                 for key in list(request.session.keys()):
+#                     del request.session[key]
+#     return response

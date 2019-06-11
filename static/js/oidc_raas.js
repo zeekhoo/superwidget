@@ -30,7 +30,7 @@ oktaSignIn.renderEl(
             oktaSignIn.tokenManager.add(key, res[1]);
         }
         if (res.status === 'SUCCESS') {
-            post_tokens(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
+            login(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
         }
     }
 );

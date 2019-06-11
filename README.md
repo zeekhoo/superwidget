@@ -61,10 +61,10 @@ But first you need to provide the container with environment variables.
     FB_IDP_ID=0oaxmxaszOUXlhDAu1t6
     LNKD_IDP_ID=0oatmj8l3QhUvJ3lQ1t6
     SAML_IDP_ID=0oayqdoj63vdxXHtI1t6
-    BACKGROUND_IMAGE=/static/img/okta-brand/background/SFBayBridge.jpg
-    BACKGROUND_IMAGE_CSS=/static/img/okta-brand/background/SFBayBridge.jpg
-    BACKGROUND_IMAGE_AUTHJS=/static/img/okta-brand/background/focus.jpg
-    BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg
+    BACKGROUND_IMAGE=/img/okta-brand/background/SFBayBridge.jpg
+    BACKGROUND_IMAGE_CSS=/img/okta-brand/background/SFBayBridge.jpg
+    BACKGROUND_IMAGE_AUTHJS=/img/okta-brand/background/focus.jpg
+    BACKGROUND_IMAGE_IDP=/img/okta-brand/background/NewYork.jpg
     ```
 
 3. In Okta, configure your App to support both **authorization_code**

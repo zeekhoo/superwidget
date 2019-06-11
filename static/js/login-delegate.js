@@ -14,9 +14,4 @@ for (var i=0; i < result.length; i++) {
     }
 }
 
-//show the app
-post_tokens(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'), '[[impersonation_org]]');
-
-
-//destroy session
-//authClient.signOut();
+login(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'), '[[impersonation_org]]');

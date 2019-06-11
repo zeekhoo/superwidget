@@ -19,7 +19,7 @@ function prettyPrint(ugly) {
     return JSON.stringify(obj, undefined, 4);
 }
 
-function post_tokens(id_token, access_token, org) {
+function login(id_token, access_token, org) {
   var formData = new FormData();
   console.log('access_token='+access_token.accessToken);
   if (access_token !== 'undefined') {

@@ -45,5 +45,5 @@ function showApp(res) {
         key = Object.keys(res[1])[0];
         authClient.tokenManager.add(key, res[1]);
     }
-    post_tokens(authClient.tokenManager.get('idToken'), authClient.tokenManager.get('accessToken'));
+    login(authClient.tokenManager.get('idToken'), authClient.tokenManager.get('accessToken'));
 }

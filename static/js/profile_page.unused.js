@@ -2,17 +2,6 @@ var id_token_str = srv_id_token || '';
 var access_token = srv_access_token || '';
 var url = 'https://' + org;
 
-
-//var oktaSignIn = new OktaSignIn({
-//    baseUrl: url,
-//    clientId: aud,
-//    redirectUri: redirect_uri,
-//    authParams: {
-//        issuer: url + '/oauth2/' + iss
-//    }
-//});
-
-
 Vue.filter('tostring', function (value) {
   if (!value)
     return '';

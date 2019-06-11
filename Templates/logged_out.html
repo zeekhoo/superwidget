@@ -14,7 +14,7 @@
 {% block page_js %}
 <script type="text/javascript">
 var oktaSignIn = new OktaSignIn({
-    baseUrl: 'https://{{ org }}'
+    baseUrl: 'https://{{ base_url }}'
 });
 oktaSignIn.session.get(function (res) {
     if (res.status === 'ACTIVE') {

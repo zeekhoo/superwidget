@@ -12,6 +12,7 @@ function impersonate(loginAs, version) {
         accessToken = authClient.tokenManager.get('accessToken').accessToken;
     }
 
+    //(Deprecated)
     //Call some API that takes the input argument "loginAs" and then
     //1) Copies the profile over as a "shadow user" to the 2nd Okta org,
     //2) then, in the 1st Org, sets the "Application Credentials for Assigned User" (see https://developer.okta.com/docs/api/resources/apps#update-application-credentials-for-assigned-user)

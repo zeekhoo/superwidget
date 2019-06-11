@@ -9,26 +9,10 @@
 	<div class="login-pg login-pg-base" style="background-image: url({{ background_authjs }}); background-repeat: no-repeat; background-size: 100%; background-position: center center;">
 		<div class="no-widget">
 			<div class="container-fluid">
-				<!--<div class="col-md-6">-->
-					<!--<div id="login_form">-->
-						<!--<form class="form-inline" name="LoginForm">-->
-							<!--<div class="form-group">-->
-								<!--<input type="text" class="form-control" id="un" name="username" placeholder="Username">-->
-							<!--</div>-->
-							<!--<div class="form-group">-->
-								<!--<input type="password" class="form-control" id="pw" name="password" placeholder="Password">-->
-							<!--</div>-->
-							<!--<div class="form-group">-->
-								<!--<button type="button" onclick="do_login(this.form.username.value, this.form.password.value)"-->
-									  <!--class="btn btn-block btn-primary">Sign in</button>-->
-							<!--</div>-->
-						<!--</form>-->
-					<!--</div>-->
-				<!--</div>-->
 				<div class="col-md-8">
 					<div id="code-preview" class="code-preview">
 						<br><br>
-						<form class="form-horizontal" name="RegistrationForm" action="{% url 'login_custom' %}" method="post">
+						<form class="form-horizontal" name="CodeForm" action="{% url 'login_custom' %}" method="post">
 							<div class="btn-toolbar" role="toolbar" aria-label="...">
 								<button type="submit" class="btn btn-primary btn-xs" name="Update">Update & Reload</button>
 								<button type="submit" class="btn btn-primary btn-xs" name="Default">Reset</button>

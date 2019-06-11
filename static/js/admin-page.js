@@ -4,6 +4,16 @@ $("#sw").keyup(function(event) {
     }
 });
 
+
+var authClient = new OktaAuth({url: 'https://{{ base_url }}'});
+var accessToken = '';
+if (srv_access_token != '') {
+    //get the accessToken from session if it exists
+    accessToken = srv_access_token;
+} else if (authClient.tokenManager.get('accessToken')) {
+    //get the accessToken stored in local storage
+    accessToken = authClient.tokenManager.get('accessToken').accessToken;
+}
 showToken();
 
 var adminButtonsApp = new Vue({
@@ -80,16 +90,6 @@ var getPermsapp = new Vue({
         perms: ''
     },
 });
-
-var authClient = new OktaAuth({url: 'https://{{ org }}'});
-var accessToken = '';
-if (srv_access_token != '') {
-    //get the accessToken from session if it exists
-    accessToken = srv_access_token;
-} else if (authClient.tokenManager.get('accessToken')) {
-    //get the accessToken stored in local storage
-    accessToken = authClient.tokenManager.get('accessToken').accessToken;
-}
 
 var idToken = '';
 if (srv_id_token != '') {

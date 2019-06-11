@@ -4,7 +4,6 @@
 
 {% block head_js %}
 <script>
-var impersonation_version = '{{ impersonation_version }}';
 var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
 </script>
 {% endblock %}
@@ -75,11 +74,7 @@ var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
                             <td><label>[[ user.status ]]</label></td>
                             <td><button class="btn btn-primary btn-xs" v-bind:id=user.id onclick="listUser(this.id)">View More</button></td>
                             {% if allow_impersonation == True %}
-                            {% if impersonation_version == '3' %}
                             <td v-if="showDelegateButton"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="proxyLogin(this.id)">Proxy-Login</button></td>
-                            {% else %}
-                            <td v-if="showDelegateButton"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="impersonate(this.id, impersonation_version)">Delegate</button></td>
-                            {% endif %}
                             {% endif %}
                         </tr>
                     </tbody>

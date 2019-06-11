@@ -29,7 +29,7 @@ var oktaSignIn = new OktaSignIn({ // Caution editing this section as you may bre
             //'primaryauth.password.tooltip': 'Your APIDemo Password', // Changes the tooltip for password
             // More e.g. [primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]. Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
         }
-    },
+    }
 });
 oktaSignIn.renderEl( //Caution editing this section as you may break the demo.
     {el: '#okta-login-container'},
@@ -44,7 +44,7 @@ oktaSignIn.renderEl( //Caution editing this section as you may break the demo.
             oktaSignIn.tokenManager.add(key, res[1]);
         }
         if (res.status === 'SUCCESS') {
-            post_tokens(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
+            login(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
         }
     }
 );

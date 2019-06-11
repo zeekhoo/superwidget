@@ -2,108 +2,19 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
-from django.contrib.staticfiles.templatetags.staticfiles import static
 import requests
+import time
 
 from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient
 from .client.users_client import UsersClient
 from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
-from .authx import *
+from .configs import *
 
 
-API_KEY = settings.API_KEY
-OKTA_ORG = settings.OKTA_ORG
-ISSUER = settings.AUTH_SERVER_ID
-CUSTOM_LOGIN_URL = settings.CUSTOM_LOGIN_URL
-CLIENT_ID = settings.CLIENT_ID
-CLIENT_SECRET = settings.CLIENT_SECRET
-
-GOOGLE_IDP = settings.GOOGLE_IDP
-FB_IDP = settings.FB_IDP
-LNKD_IDP = settings.LNKD_IDP
-SAML_IDP = settings.SAML_IDP
-
-BASE_TITLE = settings.BASE_TITLE if settings.BASE_TITLE is not None else 'API Products Demo'
-BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None else '/static/img/okta-brand/logo/okta32x32.png'
-DEFAULT_BACKGROUND = '/static/img/okta-brand/background/SFbayBridge.jpg'
-BACKGROUND_IMAGE = settings.BACKGROUND_IMAGE_DEFAULT
-BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
-BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
-BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
-
-DEFAULT_PORT = '8000'
-if settings.DEFAULT_PORT and settings.DEFAULT_PORT != 'None':
-    DEFAULT_PORT = settings.DEFAULT_PORT
-
-REDIRECT_URI = 'http://localhost:{}/oauth2/callback'.format(DEFAULT_PORT)
-AUTH_GROUPADMIN_REDIRECT_URI = 'http://localhost:{}/admin'.format(DEFAULT_PORT)
-
-if settings.REDIRECT_URI and settings.REDIRECT_URI != 'None':
-    REDIRECT_URI = settings.REDIRECT_URI
-
-BASE_URL = OKTA_ORG
-if CUSTOM_LOGIN_URL and CUSTOM_LOGIN_URL != 'None':
-    BASE_URL = CUSTOM_LOGIN_URL
-
-scopes = None
-if settings.DEFAULT_SCOPES and settings.DEFAULT_SCOPES != 'None':
-    scopes = settings.DEFAULT_SCOPES
-
-# Option: IDP Discovery setting
-IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
-LOGIN_NOPROMPT_BOOKMARK = settings.LOGIN_NOPROMPT_BOOKMARK
-
-# Option: Do Impersonation with SAML
-IMPERSONATION_DEFAULT_VER=3
-IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION != 'None' else IMPERSONATION_DEFAULT_VER
-IMPERSONATION_ORG = settings.IMPERSONATION_ORG
-IMPERSONATION_ORG_AUTH_SERVER_ID = settings.IMPERSONATION_ORG_AUTH_SERVER_ID
-IMPERSONATION_ORG_OIDC_CLIENT_ID = settings.IMPERSONATION_ORG_OIDC_CLIENT_ID
-IMPERSONATION_ORG_REDIRECT_IDP_ID = settings.IMPERSONATION_ORG_REDIRECT_IDP_ID
-IMPERSONATION_SAML_APP_ID = settings.IMPERSONATION_SAML_APP_ID
-if IMPERSONATION_ORG and IMPERSONATION_ORG != 'None' \
-        and IMPERSONATION_ORG_AUTH_SERVER_ID and IMPERSONATION_ORG_AUTH_SERVER_ID != 'None' \
-        and IMPERSONATION_ORG_OIDC_CLIENT_ID and IMPERSONATION_ORG_OIDC_CLIENT_ID != 'None' \
-        and IMPERSONATION_ORG_REDIRECT_IDP_ID and IMPERSONATION_ORG_REDIRECT_IDP_ID != 'None' \
-        and IMPERSONATION_SAML_APP_ID and IMPERSONATION_SAML_APP_ID != 'None':
-    allow_impersonation = True
-else:
-    allow_impersonation = False
-IMPERSONATION_V2_SAML_APP_ID = settings.IMPERSONATION_V2_SAML_APP_ID
-IMPERSONATION_V2_ORG_API_KEY = settings.IMPERSONATION_V2_ORG_API_KEY
-IMPERSONATION_V2_ORG = settings.IMPERSONATION_V2_ORG
-IMPERSONATION_V2_SAML_APP_EMBED_LINK = settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK
-if not allow_impersonation\
-    and IMPERSONATION_V2_ORG and IMPERSONATION_V2_ORG != 'None'\
-    and IMPERSONATION_V2_SAML_APP_ID and IMPERSONATION_V2_SAML_APP_ID != 'None'\
-    and IMPERSONATION_V2_ORG_API_KEY and IMPERSONATION_V2_ORG_API_KEY != 'None'\
-    and IMPERSONATION_V2_SAML_APP_EMBED_LINK and IMPERSONATION_V2_SAML_APP_EMBED_LINK != 'None':
-    allow_impersonation = True
-
-DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
-
-c = {
-    "org": BASE_URL,
-    "iss": ISSUER,
-    "aud": CLIENT_ID,
-    "redirect_uri": REDIRECT_URI,
-    "base_title": BASE_TITLE,
-    "base_icon": BASE_ICON,
-    "background": BACKGROUND_IMAGE if BACKGROUND_IMAGE is not None else DEFAULT_BACKGROUND,
-    "background_css": BACKGROUND_IMAGE_CSS if BACKGROUND_IMAGE_CSS is not None else DEFAULT_BACKGROUND,
-    "background_authjs": BACKGROUND_IMAGE_AUTHJS if BACKGROUND_IMAGE_AUTHJS is not None else DEFAULT_BACKGROUND,
-    "background_idp": BACKGROUND_IMAGE_IDP if BACKGROUND_IMAGE_IDP is not None else DEFAULT_BACKGROUND,
-    "idp_disco_page": IDP_DISCO_PAGE if IDP_DISCO_PAGE is not None else 'None',
-    "app_permissions_claim": APP_PERMISSIONS_CLAIM,
-    "api_permissions_claim": API_PERMISSIONS_CLAIM,
-    "allow_impersonation": allow_impersonation,
-    "delegation_service_endpoint": DELEGATION_SERVICE_ENDPOINT
-}
-
-url_map = {}
-pages_js = {}
+# url_map = {}
+config = Config()
 
 
 def view_home(request):
@@ -123,68 +34,82 @@ def not_authorized(request):
 
 
 def view_profile(request):
+    conf = _get_config(request)
     if is_logged_in(request):
-        if 'entry_page' in pages_js:
-            # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
-            page = pages_js['entry_page']
-        else:
-            page = 'login'
+        # if 'entry_page' in request.session:
+        #     page = request.session['entry_page']
+        # # if 'entry_page' in pages_js:
+        # #     page = pages_js['entry_page']
+        # else:
+        #     page = 'login'
 
-        if page in url_map:
-            url_js = url_map[page]
-        else:
-            url_js = '/js/oidc_base.js'
+        # if page in url_map:
+        #     url_js = url_map[page]
+        # else:
+        #     url_js = '/js/oidc_base.js'
 
-        p = {'profile': json.dumps(get_profile(request)),
-             "js": _do_format(request, url_js, page),
-             "srv_access_token": get_access_token(request),
-             "srv_id_token": get_id_token(request)
-             }
-        c.update(p)
+        _update_conf(request, {
+            'profile': json.dumps(get_profile(request)),
+            "srv_access_token": get_access_token(request),
+            "srv_id_token": get_id_token(request),
+            # "js": _do_format(request, url_js, page)
+        })
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
-    return render(request, 'profile.html', c)
+
+    return render(request, 'profile.html', conf)
 
 
 def edit_profile(request):
+    conf = _get_config(request)
     if is_logged_in(request):
-        if 'entry_page' in pages_js:
-            # page = 'login' if pages_js['entry_page'] == 'login_css' else pages_js['entry_page']
-            page = pages_js['entry_page']
-        else:
-            page = 'login'
-
-        if page in url_map:
-            url_js = url_map[page]
-        else:
-            url_js = '/js/oidc_base.js'
-
-        p = {'profile': get_profile(request),
-             "js": _do_format(request, url_js, page)
-             }
-        c.update(p)
+        conf.update({
+            'profile': json.dumps(get_profile(request)),
+            "srv_access_token": get_access_token(request),
+            "srv_id_token": get_id_token(request)
+        })
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
-    return render(request, 'edit-profile.html', c)
+    return render(request, 'edit-profile.html', conf)
 
 
 def view_tokens(request):
-    return render(request, 'tokens.html', c)
+    conf = _get_config(request)
+    return render(request, 'tokens.html', conf)
+
+
+def _get_config(request):
+    if 'config' in request.session:
+        print('################## already configured ###################')
+        return request.session['config']
+    conf = config.get_config()
+    request.session['config'] = conf
+    return conf
+
+
+def _update_conf(request, obj):
+    conf = request.session['config']
+    conf.update(obj)
+    request.session['config'] = conf
 
 
 @csrf_exempt
 def view_login(request, recoveryToken=None):
+    conf = _get_config(request)
     unused = recoveryToken
     page = 'login'
-    pages_js['entry_page'] = page
+    # pages_js['entry_page'] = page
+    request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        c.update({"js": _do_format(request, '/js/oidc_base.js', page)})
-    return render(request, 'index.html', c)
+        # conf.update({"js": _do_format(request, '/js/oidc_base.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
+    return render(request, 'index.html', conf)
 
 
 def view_auth_groupadmin(request):
+    conf = _get_config(request)
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
@@ -195,46 +120,52 @@ def view_auth_groupadmin(request):
         referrer = request.GET['from']
 
     if referrer and referrer != '':
-        pages_js['entry_page'] = referrer
+        request.session['entry_page'] = referrer
 
-    c.update({"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
-    return render(request, 'index_get_without_prompt.html', c)
+    # cfg.update({"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
+    _update_conf(request, {"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
+    return render(request, 'index_get_without_prompt.html', conf)
 
 
 def view_login_auto(request):
+    conf = _get_config(request)
     page = 'login_noprompt'
 
     referrer = ''
     if 'from' in request.GET:
         referrer = request.GET['from']
-
     if referrer and referrer != '':
-        pages_js['entry_page'] = referrer
+        request.session['entry_page'] = referrer
 
-    c.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    conf.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    # _update_conf(request, {"js": _do_format(request, '/js/get_without_prompt.js', page)})
 
-    # Lets ensure everything is cleared out and refreshed.
+    saved_entry_page = request.session['entry_page']
     logout(request)
-    return render(request, 'index_get_without_prompt.html', c)
+    request.session['entry_page'] = saved_entry_page
+    return render(request, 'index_get_without_prompt.html', conf)
 
 
-def _do_refresh(request, key, redirect=None):
+def _do_refresh(request, page, redirect=None):
+    key = 'pages_js_{}'.format(page)
     if redirect:
         reverse_to = redirect
     else:
-        reverse_to = key
+        reverse_to = page
 
     if 'Update' not in request.POST:
-        if key in pages_js:
-            del pages_js[key]
-            print('javascript {} reset'.format(key))
+        if key in request.session:
+            del request.session[key]
+        # if key in pages_js:
+        #     del pages_js[key]
         return HttpResponseRedirect(reverse(reverse_to))
 
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
-        pages_js[key] = text
-        print('javascript {} updated'.format(key))
+        # pages_js[key] = text
+        request.session[key] = text
+        print('js {0} updated'.format(key))
         return HttpResponseRedirect(reverse(reverse_to))
     return HttpResponseRedirect('/')
 
@@ -251,18 +182,25 @@ def _request_url_root(request):
     return values
 
 
-def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIENT_ID,
-               idps='[]', btns='[]', embed_link=None):
-    url_map.update({key: url})
+def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
+    key = 'pages_js_{}'.format(page)
+    cfg = _get_config(request)
+    org_url = cfg['base_url']
+    issuer = cfg['iss']
+    print('issuer={}'.format(issuer))
+    audience = cfg['aud']
+
+    # url_map.update({page: url})
 
     list_scopes = ['openid', 'profile', 'email']
-    if scopes:
-        list_scopes = scopes.split(',')
+    if cfg['scopes']:
+        list_scopes = cfg['scopes'].split(',')
     scps = ''.join("'" + s + "', " for s in list_scopes)
     scps = '[' + scps[:-2] + ']'
 
-    if key in pages_js:
-        return pages_js[key]
+    if key in request.session:
+        print('found {}'.format(key))
+        return request.session[key]
     else:
         s = requests.session()
         a = requests.adapters.HTTPAdapter(max_retries=2)
@@ -276,121 +214,136 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
             .replace("{", "{{").replace("}", "}}") \
             .replace("[[", "{").replace("]]", "}") \
             .format(org=org_url,
-                    base_org=OKTA_ORG,
+                    base_org=cfg['org'],
                     iss=issuer,
                     aud=audience,
-                    redirect=REDIRECT_URI,
-                    auth_groupadmin_redirect=AUTH_GROUPADMIN_REDIRECT_URI,
+                    redirect=cfg['redirect_uri'],
+                    auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
                     scopes=scps,
                     idps=idps,
                     btns=btns,
-                    idp_disco=embed_link,
-                    impersonation_org=IMPERSONATION_ORG,
-                    impersonation_org_auth_server_id=IMPERSONATION_ORG_AUTH_SERVER_ID,
-                    impersonation_org_oidc_client_id=IMPERSONATION_ORG_OIDC_CLIENT_ID,
-                    impersonation_org_redirect_idp_id=IMPERSONATION_ORG_REDIRECT_IDP_ID,
-                    impersonation_app_embed_link=IMPERSONATION_V2_SAML_APP_EMBED_LINK)
-        pages_js[key] = text
+                    idp_disco=embed_link)
+        request.session[key] = text
         return text
 
 
 @csrf_exempt
 def view_login_css(request):
+    conf = _get_config(request)
     page = 'login_css'
-    pages_js['entry_page'] = page
+    request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page, page)
     else:
-        c.update({"js": _do_format(request, '/js/oidc_css.js', page)})
-    return render(request, 'index_css.html', c)
+        # conf.update({"js": _do_format(request, '/js/oidc_css.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
+
+    return render(request, 'index_css.html', conf)
 
 
 @csrf_exempt
 def view_login_custom(request):
+    conf = _get_config(request)
     page = 'login_custom'
-    pages_js['entry_page'] = page
+    request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        c.update({"js": _do_format(request, '/js/custom_ui.js', page)})
-    return render(request, 'index_login-form.html', c);
+        # conf.update({"js": _do_format(request, '/js/custom_ui.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
+    return render(request, 'index_login-form.html', conf);
 
 
 @csrf_exempt
 def okta_hosted_login(request):
+    conf = _get_config(request)
     page = 'okta_hosted_login'
-    pages_js['entry_page'] = page
-    c.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
-    return render(request, 'customized-okta-hosted.html', c)
+    request.session['entry_page'] = page
+    # conf.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
+    _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
+    return render(request, 'customized-okta-hosted.html', conf)
 
 
 @csrf_exempt
 def view_login_idp(request):
+    conf = _get_config(request)
     idps = '['
-    if GOOGLE_IDP:
-        if GOOGLE_IDP != 'None':
-            idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(GOOGLE_IDP)
-        if FB_IDP != 'None':
-            idps += "\n      {{type: 'FACEBOOK', id: '{}'}},".format(FB_IDP)
-        if LNKD_IDP != 'None':
-            idps += "\n      {{type: 'LINKEDIN', id: '{}'}},".format(LNKD_IDP)
+    if conf['google_idp'] is not None:
+        idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(conf['google_idp'])
+    if conf['fb_idp'] is not None:
+        idps += "\n      {{type: 'FACEBOOK', id: '{}'}},".format(conf['fb_idp'])
+    if conf['lnkd_idp'] is not None:
+        idps += "\n      {{type: 'LINKEDIN', id: '{}'}},".format(conf['lnkd_idp'])
     idps += ']'
 
     btns = '['
-    if SAML_IDP:
-        if SAML_IDP != 'None':
+    if conf['saml_idp']:
+        if conf['saml_idp'] is not None:
             btns += "{title: 'Login SAML Idp',\n" \
                     + "        className: 'btn-customAuth',\n" \
                     + "        click: function() {\n" \
                     + "          var link =  '{issuer}/v1/authorize'\n".format(
-                issuer='https://' + OKTA_ORG + '/oauth2/' + ISSUER) \
+                issuer='https://' + conf['org'] + '/oauth2/' + conf['iss']) \
                     + "          + '?response_type=code'\n" \
-                    + "          + '&client_id={client_id}'\n".format(client_id=CLIENT_ID) \
+                    + "          + '&client_id={client_id}'\n".format(client_id=conf['aud']) \
                     + "          + '&scope=openid+email+profile'\n" \
-                    + "          + '&redirect_uri={redirect}'\n".format(redirect=REDIRECT_URI) \
+                    + "          + '&redirect_uri={redirect}'\n".format(redirect=conf['redirect_uri']) \
                     + "          + '&state=foo'\n" \
                     + "          + '&nonce=foo'\n" \
-                    + "          + '&idp={idp_id}'\n".format(idp_id=SAML_IDP) \
+                    + "          + '&idp={idp_id}'\n".format(idp_id=conf['saml_idp']) \
                     + "          window.location.href = link;\n" \
                     + "        }\n" \
                     + "    }"
     btns += ']'
 
     page = 'login_idp'
-    pages_js['entry_page'] = page
+    request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        c.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
-    return render(request, 'index_idp.html', c)
+        # conf.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
+    return render(request, 'index_idp.html', conf)
 
 
 # Demo: IdP discovery
 @csrf_exempt
 def view_login_disco(request):
+    conf = _get_config(request)
     page = 'login_idp_disco'
-    pages_js['entry_page'] = page
+    request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        c.update({"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=IDP_DISCO_PAGE)})
-    return render(request, 'index_idp_disco.html', c)
+        # conf.update({"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=cfg['idp_disco_page'])})
+        _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
+    return render(request, 'index_idp_disco.html', conf)
 
 
 def view_admin(request):
+    conf = _get_config(request)
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
-    c.update({"js": _do_format(request, '/js/impersonate-delegate.js', 'admin')})
-    c.update({"srv_id_token": get_id_token(request)})
+    # conf.update({
+    #     # "profile": json.dumps(get_profile(request)),
+    #     "srv_access_token": get_access_token(request),
+    #     "srv_id_token": get_id_token(request),
+    #     "js": ""
+    # })
+    #
+    # _update_conf({
+    #     'profile': json.dumps(get_profile(request)),
+    #     "srv_access_token": get_access_token(request),
+    #     "srv_id_token": get_id_token(request),
+    #     # "js": _do_format(request, url_js, page)
+    # })
 
     if can_delegate(request):
-        c.update({"impersonation_version": "3"})
-        c.update({"allow_impersonation": True})
-    else:
-        c.update({"impersonation_version": IMPERSONATION_VERSION})
+        # conf.update({"allow_impersonation": True})
+        _update_conf(request, {"allow_impersonation": True, "js": ""})
 
-    return render(request, 'admin.html', c)
+    return render(request, 'admin.html', conf)
 
 
 def view_debug(request):
@@ -398,29 +351,30 @@ def view_debug(request):
 
 
 def view_logout(request):
-    logout(request)
-
-    if 'entry_page' in pages_js:
-        page = 'login' if pages_js['entry_page'] == 'okta_hosted_login' else pages_js['entry_page']
+    conf = _get_config(request)
+    if 'entry_page' in request.session:
+        page = 'login' if request.session['entry_page'] == 'okta_hosted_login' else request.session['entry_page']
     else:
         page = 'login'
-    print('logout back to page {}'.format(page))
-    print('url = {}'.format(reverse(page)))
-    c.update({"page": reverse(page)})
 
-    # Reset the base variables in case there was impersonation event
-    c.update({"org": BASE_URL})
-    c.update({"iss": ISSUER})
-    c.update({"aud": CLIENT_ID})
-    c.update({"srv_access_token": ''})
-    c.update({"srv_id_token": ''})
-    c.update({"profile": ''})
+    # Reset the base variables in case there was impersonation event (Deprecated)
+    # conf.update({"org": cfg['base_url']})
+    # conf.update({"iss": cfg['iss']})
+    # conf.update({"aud": cfg['aud']})
+    # conf.update({"srv_access_token": ''})
+    # conf.update({"srv_id_token": ''})
+    # conf.update({"profile": ''})
 
-    return render(request, 'logged_out.html', c)
+    logout(request)
+
+    conf.update({"page": reverse(page)})
+    print('logout back to page {}'.format(conf['page']))
+    return render(request, 'logged_out.html', conf)
 
 
 # Sample custom registration form
 def registration_view(request):
+    cfg = _get_config(request)
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -439,7 +393,7 @@ def registration_view(request):
                     "password": {"value": pw}
                 }
             }
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client = UsersClient('https://' + cfg['org'], config.get_api_key())
             client.create_user(user=user, activate="false")
 
         try:
@@ -457,6 +411,7 @@ def registration_view(request):
 
 
 def registration_view2(request):
+    cfg = _get_config(request)
     if request.method == 'POST':
         form = RegistrationForm2(request.POST)
         if form.is_valid():
@@ -471,7 +426,7 @@ def registration_view2(request):
                     "login": email
                 }
             }
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client = UsersClient('https://' + cfg['org'], config.get_api_key())
             client.create_user(user=user, activate="false")
         try:
             print('create user {0} {1}'.format(fn, ln))
@@ -485,11 +440,12 @@ def registration_view2(request):
 
 
 def activation_view(request, slug):
+    cfg = _get_config(request)
     name = None
     username = None
     user_id = None
     if slug:
-        auth = AuthClient('https://' + OKTA_ORG)
+        auth = AuthClient('https://' + cfg['org'])
         response = auth.recovery(slug)
         if response.status_code == 200:
             user = json.loads(response.content)['_embedded']['user']
@@ -512,12 +468,12 @@ def activation_view(request, slug):
                         "password": {"value": pw}
                     }
                 }
-                client = UsersClient('https://' + OKTA_ORG, API_KEY)
+                client = UsersClient('https://' + cfg['org'], config.get_api_key())
                 client.set_password(user_id=user_id, user=user)
                 res = auth.authn(username, pw)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://' + OKTA_ORG + LOGIN_NOPROMPT_BOOKMARK + '?sessionToken={}'.format(session_token))
+                    return redirect('https://' + cfg['org'] + cfg['login_noprompt_bookmark'] + '?sessionToken={}'.format(session_token))
 
             return HttpResponseRedirect(reverse('registration_success'))
         except Exception as e:
@@ -530,6 +486,7 @@ def activation_view(request, slug):
 
 # A custom registration flow where user is created STAGED. Then an OTP is sent via Email to activate the account
 def activation_wo_token_view(request):
+    cfg = _get_config(request)
     state = None
     if request.method == 'POST':
         form = ActivationWithEmailForm(request.POST)
@@ -543,7 +500,7 @@ def activation_wo_token_view(request):
             password1 = form.cleaned_data['password1']
             password2 = form.cleaned_data['password2']
 
-            client = UsersClient('https://' + OKTA_ORG, API_KEY)
+            client = UsersClient('https://' + cfg['org'], config.get_api_key())
             user = json.loads(client.get_user(email))
 
             if state == 'verify-email':
@@ -578,11 +535,11 @@ def activation_wo_token_view(request):
                 }
                 setpassword = client.set_password(user_id=request.session['verification_user_id'], user=payload)
                 activate = client.activate(user_id=request.session['verification_user_id'])
-                auth = AuthClient('https://' + OKTA_ORG)
+                auth = AuthClient('https://' + cfg['org'])
                 res = auth.authn(request.session['verification_username'], password1)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://' + OKTA_ORG + IDP_DISCO_PAGE + '?sessionToken={}'.format(session_token))
+                    return redirect('https://' + cfg['org'] + cfg['idp_disco_page'] + '?sessionToken={}'.format(session_token))
         else:
             print('invalid form')
     else:
@@ -607,6 +564,7 @@ def oauth2_callback(request):
 
 @csrf_exempt
 def oauth2_post(request):
+    conf = _get_config(request)
     access_token = None
     id_token = None
     code = None
@@ -618,39 +576,26 @@ def oauth2_post(request):
             access_token = request.POST['access_token']
         if 'id_token' in request.POST:
             id_token = request.POST['id_token']
-
-        # special impersonation logic overrides the org variables
-        if 'org' in request.POST:
-            if request.POST['org'] == IMPERSONATION_ORG:
-                c.update({'org': request.POST['org']})
-                c.update({'aud': IMPERSONATION_ORG_OIDC_CLIENT_ID})
-                c.update({'iss': IMPERSONATION_ORG_AUTH_SERVER_ID})
-
     elif request.method == 'GET':
         print('GET request: {}'.format(request.GET))
-        # print('state={}'.format(request.COOKIES["okta-oauth-state"]))
-        # print('nonce={}'.format(request.COOKIES["okta-oauth-nonce"]))
-
         if 'code' in request.GET:
             code = request.GET['code']
         if 'state' in request.GET:
             state = request.GET['state']
 
     if code:
-        client = OAuth2Client('https://' + OKTA_ORG, CLIENT_ID, CLIENT_SECRET)
-        tokens = client.token(code, REDIRECT_URI, ISSUER)
+        client = OAuth2Client('https://' + conf['org'], conf['aud'], config.get_client_secret())
+        tokens = client.token(code, conf['redirect_uri'], conf['iss'])
         print('Tokens from the code retrieval {}'.format(tokens))
         if tokens['access_token']:
             access_token = tokens['access_token']
-
         if tokens['id_token']:
             id_token = tokens['id_token']
 
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
         print('access_token = {}'.format(access_token))
-
-        client = OAuth2Client('https://' + OKTA_ORG)
+        client = OAuth2Client('https://' + conf['org'])
         profile = client.profile(access_token)
         set_profile(request, profile)
         set_access_token(request, access_token)
@@ -664,38 +609,45 @@ def oauth2_post(request):
 
 
 # IMPERSONATION Demo
-def login_delegate(request):
-    if 'profile' in request.session:
-        del request.session['profile']
-    for key in list(request.session.keys()):
-        del request.session[key]
-
-    c.update({"js": _do_format(request, '/js/login-delegate.js', 'login_delegate')})
-    return render(request, 'login_delegate.html', c)
-
-
-# IMPERSONATION Demo
 @csrf_exempt
 def delegate_init(request):
+    cfg = _get_config(request)
     if request.method == 'POST':
-        client = OktadelegateClient(DELEGATION_SERVICE_ENDPOINT,
+        client = OktadelegateClient(cfg['delegation_service_endpoint'],
                                     request.META["HTTP_AUTHORIZATION"].split(" ")[1],
-                                    API_KEY)
+                                    config.get_api_key())
         result = client.delegate_init(json.loads(request.body)["delegation_target"])
         return JsonResponse(json.loads(result.content))
 
 
 @csrf_exempt
 def process_creds(request):
-    print('#####################################PROCESS CREDS#####################################')
+    print('#####################################PROCESS CREDS START#####################################')
     print(request.POST)
-    print('#####################################PROCESS CREDS#####################################')
+    time_to_sleep = 5
+    start = time.ctime()
+    print("Start : %s" % start)
+    time.sleep(time_to_sleep)
+    end = time.ctime()
+    print("End : %s" % end)
+    print('#####################################PROCESS CREDS END#####################################')
 
     response = HttpResponse()
-    response.content = 'OK!'
+    response.content = 'Slept for {0} seconds. Start time: {1} - End time: {2}'.format(time_to_sleep, start, end)
     response.status_code = 200
     return response
 
+
+# IMPERSONATION Demo (Deprecated)
+# def login_delegate(request):
+#     cfg = _get_config(request)
+#     if 'profile' in request.session:
+#         del request.session['profile']
+#     for key in list(request.session.keys()):
+#         del request.session[key]
+#
+#     cfg.update({"js": _do_format(request, '/js/login-delegate.js', 'login_delegate')})
+#     return render(request, 'login_delegate.html', cfg)
 
 # def view_login_baybridge(request):
 #     return render(request, 'z-login-baybridge.html');

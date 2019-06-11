@@ -53,16 +53,17 @@ class OAuth2Client(object):
         except Exception as e:
             print('exception: {}'.format(e))
 
-        # IMPERSONATION Hack: Get the profile from the "Other" issuer
-        if profile == {} and settings.IMPERSONATION_ORG and settings.IMPERSONATION_ORG != 'None'\
-                and settings.IMPERSONATION_ORG_AUTH_SERVER_ID and settings.IMPERSONATION_ORG_AUTH_SERVER_ID != 'None':
-            url = 'https://{0}/oauth2/{1}/v1/userinfo'.format(settings.IMPERSONATION_ORG, settings.IMPERSONATION_ORG_AUTH_SERVER_ID)
-            print('userinfo url={}'.format(url))
-            try:
-                response = requests.post(url, headers=headers, verify=False)
-                profile = response.json()
-            except Exception as e2:
-                print('exception2: {}'.format(e2))
+        # (Deprecated)
+        # # IMPERSONATION Hack: Get the profile from the "Other" issuer
+        # if profile == {} and settings.IMPERSONATION_ORG and settings.IMPERSONATION_ORG != 'None'\
+        #         and settings.IMPERSONATION_ORG_AUTH_SERVER_ID and settings.IMPERSONATION_ORG_AUTH_SERVER_ID != 'None':
+        #     url = 'https://{0}/oauth2/{1}/v1/userinfo'.format(settings.IMPERSONATION_ORG, settings.IMPERSONATION_ORG_AUTH_SERVER_ID)
+        #     print('userinfo url={}'.format(url))
+        #     try:
+        #         response = requests.post(url, headers=headers, verify=False)
+        #         profile = response.json()
+        #     except Exception as e2:
+        #         print('exception2: {}'.format(e2))
 
         return profile
 
