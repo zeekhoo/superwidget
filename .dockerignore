@@ -1,5 +1,12 @@
-**/env.conf
+**/*.conf
 **/.env*
 **/.git
 **/.gitignore
 **/venv
+
+remote-docker
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+.git
+.gitignore

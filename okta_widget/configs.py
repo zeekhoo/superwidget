@@ -34,19 +34,19 @@ class Config(object):
         self.BASE_TITLE = settings.BASE_TITLE if settings.BASE_TITLE is not None and settings.BASE_TITLE else 'API Products Demo'
         self.BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None and settings.BASE_ICON else static('/img/okta-brand/logo/okta32x32.png')
         self.DEFAULT_BACKGROUND = static('/img/okta-brand/background/SFbayBridge.jpg')
-        if re.match('^/static/', settings.BACKGROUND_IMAGE_DEFAULT):
+        if settings.BACKGROUND_IMAGE_DEFAULT and re.match('^/static/', settings.BACKGROUND_IMAGE_DEFAULT):
             self.BACKGROUND_IMAGE = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_DEFAULT).group(0))
         else:
             self.BACKGROUND_IMAGE = static(settings.BACKGROUND_IMAGE_DEFAULT)
-        if re.match('^/static/', settings.BACKGROUND_IMAGE_CSS):
+        if settings.BACKGROUND_IMAGE_CSS and re.match('^/static/', settings.BACKGROUND_IMAGE_CSS):
             self.BACKGROUND_IMAGE_CSS = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_CSS).group(0))
         else:
             self.BACKGROUND_IMAGE_CSS = static(settings.BACKGROUND_IMAGE_CSS)
-        if re.match('^/static/', settings.BACKGROUND_IMAGE_AUTHJS):
+        if settings.BACKGROUND_IMAGE_AUTHJS and re.match('^/static/', settings.BACKGROUND_IMAGE_AUTHJS):
             self.BACKGROUND_IMAGE_AUTHJS = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_AUTHJS).group(0))
         else:
             self.BACKGROUND_IMAGE_AUTHJS = static(settings.BACKGROUND_IMAGE_AUTHJS)
-        if re.match('^/static/', settings.BACKGROUND_IMAGE_IDP):
+        if settings.BACKGROUND_IMAGE_IDP and re.match('^/static/', settings.BACKGROUND_IMAGE_IDP):
             self.BACKGROUND_IMAGE_IDP = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_IDP).group(0))
         else:
             self.BACKGROUND_IMAGE_IDP = static(settings.BACKGROUND_IMAGE_IDP)
