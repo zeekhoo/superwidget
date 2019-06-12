@@ -2,7 +2,6 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from .authx import *
 import re
 
-DEFAULT_PORT = settings.DEFAULT_PORT if settings.DEFAULT_PORT is not None and settings.DEFAULT_PORT else '8000'
 
 
 class Config(object):
@@ -19,8 +18,9 @@ class Config(object):
         self.BASE_URL = self.CUSTOM_LOGIN_URL if self.CUSTOM_LOGIN_URL is not None and self.CUSTOM_LOGIN_URL else self.OKTA_ORG
 
         # Derive the Redirect URIs
-        self.REDIRECT_URI = settings.REDIRECT_URI if settings.REDIRECT_URI is not None and settings.REDIRECT_URI else 'http://localhost:{}/oauth2/callback'.format(DEFAULT_PORT)
-        self.AUTH_GROUPADMIN_REDIRECT_URI = 'http://localhost:{}/admin'.format(DEFAULT_PORT)
+        self.DEFAULT_PORT = settings.DEFAULT_PORT
+        self.REDIRECT_URI = settings.REDIRECT_URI if settings.REDIRECT_URI is not None and settings.REDIRECT_URI else '[[host]]/oauth2/callback'
+        self.AUTH_GROUPADMIN_REDIRECT_URI = '[[host]]/admin'
 
         self.SCOPES = settings.DEFAULT_SCOPES
 
@@ -80,6 +80,7 @@ class Config(object):
             "iss": self.ISSUER,
             "aud": self.CLIENT_ID,
             "scopes": self.SCOPES,
+            "default_port": self.DEFAULT_PORT,
             "redirect_uri": self.REDIRECT_URI,
             "auth_groupadmin_redirect_uri": self.AUTH_GROUPADMIN_REDIRECT_URI,
             "google_idp": self.GOOGLE_IDP,

@@ -34,7 +34,7 @@ def not_authorized(request):
 
 
 def view_profile(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'profile')
     if is_logged_in(request):
         # if 'entry_page' in request.session:
         #     page = request.session['entry_page']
@@ -61,7 +61,7 @@ def view_profile(request):
 
 
 def edit_profile(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'editProfile')
     if is_logged_in(request):
         conf.update({
             'profile': json.dumps(get_profile(request)),
@@ -74,15 +74,16 @@ def edit_profile(request):
 
 
 def view_tokens(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'viewTokens')
     return render(request, 'tokens.html', conf)
 
 
-def _get_config(request):
+def _get_config(request, calledFrom=None):
     if 'config' in request.session:
-        print('################## already configured ###################')
+        print('################## already configured {} ###################'.format(calledFrom))
         return request.session['config']
     conf = config.get_config()
+    print('##### set config #####')
     request.session['config'] = conf
     return conf
 
@@ -95,7 +96,7 @@ def _update_conf(request, obj):
 
 @csrf_exempt
 def view_login(request, recoveryToken=None):
-    conf = _get_config(request)
+    conf = _get_config(request, 'default')
     unused = recoveryToken
     page = 'login'
     # pages_js['entry_page'] = page
@@ -109,7 +110,7 @@ def view_login(request, recoveryToken=None):
 
 
 def view_auth_groupadmin(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'groupadmin')
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
@@ -128,7 +129,7 @@ def view_auth_groupadmin(request):
 
 
 def view_login_auto(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'auto')
     page = 'login_noprompt'
 
     referrer = ''
@@ -146,48 +147,50 @@ def view_login_auto(request):
     return render(request, 'index_get_without_prompt.html', conf)
 
 
-def _do_refresh(request, page, redirect=None):
+def _do_refresh(request, page):
     key = 'pages_js_{}'.format(page)
-    if redirect:
-        reverse_to = redirect
-    else:
-        reverse_to = page
-
     if 'Update' not in request.POST:
         if key in request.session:
             del request.session[key]
-        # if key in pages_js:
-        #     del pages_js[key]
-        return HttpResponseRedirect(reverse(reverse_to))
+        return HttpResponseRedirect(reverse(page))
 
     form = TextForm(request.POST)
     if form.is_valid():
         text = form.cleaned_data['myText']
-        # pages_js[key] = text
         request.session[key] = text
         print('js {0} updated'.format(key))
-        return HttpResponseRedirect(reverse(reverse_to))
+        return HttpResponseRedirect(reverse(page))
     return HttpResponseRedirect('/')
 
 
-def _request_url_root(request):
+def _resolve_host(request):
     scheme = request.scheme
-    host = request.get_host().split(':')[0]
-    meta = request.META
-    port = meta['SERVER_PORT'] if 'SERVER_PORT' in meta else DEFAULT_PORT
+    print('scheme: {}'.format(scheme))
 
-    values = ['']*2
-    values[0] = (scheme + '://' + host + ':' + port)
-    values[1] = (scheme + '://' + host)
-    return values
+    get_host = request.get_host()
+    print('get_host: {}'.format(get_host))
+
+    host = get_host.split(':')[0]
+    host_string = scheme + '://' + host
+
+    cfg = _get_config(request, '_resolve_host')
+    defafult_port = cfg['default_port']
+    if defafult_port is not None:
+        host_string = host_string + ':' + defafult_port
+    else:
+        meta = request.META
+        port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
+        host_string = host_string + port
+
+    print('host_string = {}'.format(host_string))
+    return host_string
 
 
 def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
     key = 'pages_js_{}'.format(page)
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'doFormat')
     org_url = cfg['base_url']
     issuer = cfg['iss']
-    print('issuer={}'.format(issuer))
     audience = cfg['aud']
 
     # url_map.update({page: url})
@@ -202,13 +205,21 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
         print('found {}'.format(key))
         return request.session[key]
     else:
+        host = _resolve_host(request)
         s = requests.session()
         a = requests.adapters.HTTPAdapter(max_retries=2)
         s.mount('http://', a)
-        try:
-            response = s.get(_request_url_root(request)[0] + static(url))
-        except Exception as e:
-            response = s.get(_request_url_root(request)[1] + static(url))
+        response = s.get(host + static(url))
+
+        cfg_redirect_uri = cfg['redirect_uri'] \
+            .replace("[[", "{") \
+            .replace("]]", "}") \
+            .format(host=host)
+
+        cfg_groupadmin_redirect = cfg['auth_groupadmin_redirect_uri'] \
+            .replace("[[", "{") \
+            .replace("]]", "}") \
+            .format(host=host)
 
         text = str(response.content, 'utf-8') \
             .replace("{", "{{").replace("}", "}}") \
@@ -217,8 +228,8 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
                     base_org=cfg['org'],
                     iss=issuer,
                     aud=audience,
-                    redirect=cfg['redirect_uri'],
-                    auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
+                    redirect=cfg_redirect_uri,
+                    auth_groupadmin_redirect=cfg_groupadmin_redirect,
                     scopes=scps,
                     idps=idps,
                     btns=btns,
@@ -229,11 +240,11 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
 
 @csrf_exempt
 def view_login_css(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'css')
     page = 'login_css'
     request.session['entry_page'] = page
     if request.method == 'POST':
-        return _do_refresh(request, page, page)
+        return _do_refresh(request, page)
     else:
         # conf.update({"js": _do_format(request, '/js/oidc_css.js', page)})
         _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
@@ -243,7 +254,7 @@ def view_login_css(request):
 
 @csrf_exempt
 def view_login_custom(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'custom')
     page = 'login_custom'
     request.session['entry_page'] = page
     if request.method == 'POST':
@@ -256,7 +267,7 @@ def view_login_custom(request):
 
 @csrf_exempt
 def okta_hosted_login(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'hosted')
     page = 'okta_hosted_login'
     request.session['entry_page'] = page
     # conf.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
@@ -266,7 +277,7 @@ def okta_hosted_login(request):
 
 @csrf_exempt
 def view_login_idp(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'idp')
     idps = '['
     if conf['google_idp'] is not None:
         idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(conf['google_idp'])
@@ -309,7 +320,7 @@ def view_login_idp(request):
 # Demo: IdP discovery
 @csrf_exempt
 def view_login_disco(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'disco')
     page = 'login_idp_disco'
     request.session['entry_page'] = page
     if request.method == 'POST':
@@ -321,7 +332,7 @@ def view_login_disco(request):
 
 
 def view_admin(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'admin')
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
@@ -351,7 +362,7 @@ def view_debug(request):
 
 
 def view_logout(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'logout')
     if 'entry_page' in request.session:
         page = 'login' if request.session['entry_page'] == 'okta_hosted_login' else request.session['entry_page']
     else:
@@ -374,7 +385,7 @@ def view_logout(request):
 
 # Sample custom registration form
 def registration_view(request):
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'reg')
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -411,7 +422,7 @@ def registration_view(request):
 
 
 def registration_view2(request):
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'reg2')
     if request.method == 'POST':
         form = RegistrationForm2(request.POST)
         if form.is_valid():
@@ -440,7 +451,7 @@ def registration_view2(request):
 
 
 def activation_view(request, slug):
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'activate')
     name = None
     username = None
     user_id = None
@@ -486,7 +497,7 @@ def activation_view(request, slug):
 
 # A custom registration flow where user is created STAGED. Then an OTP is sent via Email to activate the account
 def activation_wo_token_view(request):
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'activate2')
     state = None
     if request.method == 'POST':
         form = ActivationWithEmailForm(request.POST)
@@ -564,7 +575,7 @@ def oauth2_callback(request):
 
 @csrf_exempt
 def oauth2_post(request):
-    conf = _get_config(request)
+    conf = _get_config(request, 'oauth2')
     access_token = None
     id_token = None
     code = None
@@ -611,7 +622,7 @@ def oauth2_post(request):
 # IMPERSONATION Demo
 @csrf_exempt
 def delegate_init(request):
-    cfg = _get_config(request)
+    cfg = _get_config(request, 'delegate')
     if request.method == 'POST':
         client = OktadelegateClient(cfg['delegation_service_endpoint'],
                                     request.META["HTTP_AUTHORIZATION"].split(" ")[1],
