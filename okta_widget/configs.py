@@ -18,6 +18,7 @@ class Config(object):
         self.BASE_URL = self.CUSTOM_LOGIN_URL if self.CUSTOM_LOGIN_URL is not None and self.CUSTOM_LOGIN_URL else self.OKTA_ORG
 
         # Derive the Redirect URIs
+        self.URL = settings.URL
         self.DEFAULT_PORT = settings.DEFAULT_PORT
         self.REDIRECT_URI = settings.REDIRECT_URI if settings.REDIRECT_URI is not None and settings.REDIRECT_URI else '[[host]]/oauth2/callback'
         self.AUTH_GROUPADMIN_REDIRECT_URI = '[[host]]/admin'
@@ -80,6 +81,7 @@ class Config(object):
             "iss": self.ISSUER,
             "aud": self.CLIENT_ID,
             "scopes": self.SCOPES,
+            "url": self.URL,
             "default_port": self.DEFAULT_PORT,
             "redirect_uri": self.REDIRECT_URI,
             "auth_groupadmin_redirect_uri": self.AUTH_GROUPADMIN_REDIRECT_URI,

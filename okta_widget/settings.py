@@ -34,6 +34,7 @@ if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
 UNIDEMO_API = os.environ.get('UNIDEMO_API')
+URL = os.environ.get('URL')
 DEFAULT_PORT = os.environ.get('DEFAULT_PORT')
 OKTA_ORG = os.environ.get('OKTA_ORG')
 AUTH_SERVER_ID = os.environ.get('AUTH_SERVER_ID')

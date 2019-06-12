@@ -164,23 +164,28 @@ def _do_refresh(request, page):
 
 
 def _resolve_host(request):
-    scheme = request.scheme
-    print('scheme: {}'.format(scheme))
-
-    get_host = request.get_host()
-    print('get_host: {}'.format(get_host))
-
-    host = get_host.split(':')[0]
-    host_string = scheme + '://' + host
-
+    host_string = None
     cfg = _get_config(request, '_resolve_host')
-    defafult_port = cfg['default_port']
-    if defafult_port is not None:
-        host_string = host_string + ':' + defafult_port
+    url = cfg['url']
+    if url is not None:
+        host_string = url
     else:
-        meta = request.META
-        port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
-        host_string = host_string + port
+        scheme = request.scheme
+        print('scheme: {}'.format(scheme))
+
+        get_host = request.get_host()
+        print('get_host: {}'.format(get_host))
+
+        host = get_host.split(':')[0]
+        host_string = scheme + '://' + host
+
+        defafult_port = cfg['default_port']
+        if defafult_port is not None:
+            host_string = host_string + ':' + defafult_port
+        else:
+            meta = request.META
+            port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
+            host_string = host_string + port
 
     print('host_string = {}'.format(host_string))
     return host_string
