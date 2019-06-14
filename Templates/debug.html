@@ -11,12 +11,13 @@
     <div class="row">
         <p></p>
     </div>
-    <div class="row">
+    <div class="row" id="vueapp-meta">
         <div class="panel panel-default">
             <div class="panel-heading">META</div>
             <div class="panel-body">
+                <div id="meta" style="display:none;">{{ meta }}</div>
                 <h3>Admins get to see http request metadata...</h3>
-                <textarea class="form-control" id="id_token" readonly rows="30" cols="100%">{{ meta }}</textarea>
+                <textarea class="form-control" id="meta-pretty" readonly rows="30" cols="100%">[[ pretty ]]</textarea>
             </div>
         </div>
     </div>
@@ -24,5 +25,17 @@
 {% endblock %}
 
 {% block page_js %}
+<script>
+var metaApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-meta',
+    computed: {
+        pretty: function () {
+            var meta = $("#meta").html();
+            return meta;
+        }
+    }
+})
+</script>
 {% endblock %}
 

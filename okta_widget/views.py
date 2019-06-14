@@ -78,13 +78,77 @@ def view_tokens(request):
     return render(request, 'tokens.html', conf)
 
 
+# def _resolve_host(request):
+#     cfg = _get_config(request, '_resolve_host')
+#     url = cfg['url']
+#     if url is not None:
+#         host_string = url
+#     else:
+#         scheme = request.scheme
+#         print('scheme: {}'.format(scheme))
+#
+#         get_host = request.get_host()
+#         print('get_host: {}'.format(get_host))
+#
+#         host = get_host.split(':')[0]
+#         host_string = scheme + '://' + host
+#
+#         defafult_port = cfg['default_port']
+#         if defafult_port is not None:
+#             host_string = host_string + ':' + defafult_port
+#         else:
+#             meta = request.META
+#             port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
+#             host_string = host_string + port
+#
+#     print('host_string = {}'.format(host_string))
+#     return host_string
+
+
+def _resolve_redirect_uri(redirect_uri, host_string):
+    return redirect_uri \
+        .replace("[[", "{") \
+        .replace("]]", "}") \
+        .format(host=host_string)
+
+
 def _get_config(request, calledFrom=None):
     if 'config' in request.session:
         print('################## already configured {} ###################'.format(calledFrom))
-        return request.session['config']
-    conf = config.get_config()
-    print('##### set config #####')
-    request.session['config'] = conf
+        conf = request.session['config']
+    else:
+        conf = config.get_config()
+        print('##### set config #####')
+        request.session['config'] = conf
+
+    if 'host' not in conf:
+        url = conf['url']
+        if url is not None:
+            host_string = url
+        else:
+            scheme = request.scheme
+            print('scheme: {}'.format(scheme))
+
+            get_host = request.get_host()
+            print('get_host: {}'.format(get_host))
+
+            host = get_host.split(':')[0]
+            host_string = scheme + '://' + host
+
+            defafult_port = conf['default_port']
+            if defafult_port is not None:
+                host_string = host_string + ':' + defafult_port
+            else:
+                meta = request.META
+                port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
+                host_string = host_string + port
+
+        print('host_string = {}'.format(host_string))
+        _update_conf(request,
+                     {"host": host_string,
+                      "redirect_uri": _resolve_redirect_uri(conf['redirect_uri'], host),
+                      "auth_groupadmin_redirect_uri": _resolve_redirect_uri(conf['auth_groupadmin_redirect_uri'], host)
+                      })
     return conf
 
 
@@ -163,46 +227,20 @@ def _do_refresh(request, page):
     return HttpResponseRedirect('/')
 
 
-def _resolve_host(request):
-    host_string = None
-    cfg = _get_config(request, '_resolve_host')
-    url = cfg['url']
-    if url is not None:
-        host_string = url
-    else:
-        scheme = request.scheme
-        print('scheme: {}'.format(scheme))
-
-        get_host = request.get_host()
-        print('get_host: {}'.format(get_host))
-
-        host = get_host.split(':')[0]
-        host_string = scheme + '://' + host
-
-        defafult_port = cfg['default_port']
-        if defafult_port is not None:
-            host_string = host_string + ':' + defafult_port
-        else:
-            meta = request.META
-            port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
-            host_string = host_string + port
-
-    print('host_string = {}'.format(host_string))
-    return host_string
 
 
 def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
     key = 'pages_js_{}'.format(page)
-    cfg = _get_config(request, 'doFormat')
-    org_url = cfg['base_url']
-    issuer = cfg['iss']
-    audience = cfg['aud']
+    conf = _get_config(request, 'doFormat')
+    org_url = conf['base_url']
+    issuer = conf['iss']
+    audience = conf['aud']
 
     # url_map.update({page: url})
 
     list_scopes = ['openid', 'profile', 'email']
-    if cfg['scopes']:
-        list_scopes = cfg['scopes'].split(',')
+    if conf['scopes']:
+        list_scopes = conf['scopes'].split(',')
     scps = ''.join("'" + s + "', " for s in list_scopes)
     scps = '[' + scps[:-2] + ']'
 
@@ -210,31 +248,20 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
         print('found {}'.format(key))
         return request.session[key]
     else:
-        host = _resolve_host(request)
         s = requests.session()
         a = requests.adapters.HTTPAdapter(max_retries=2)
         s.mount('http://', a)
-        response = s.get(host + static(url))
-
-        cfg_redirect_uri = cfg['redirect_uri'] \
-            .replace("[[", "{") \
-            .replace("]]", "}") \
-            .format(host=host)
-
-        cfg_groupadmin_redirect = cfg['auth_groupadmin_redirect_uri'] \
-            .replace("[[", "{") \
-            .replace("]]", "}") \
-            .format(host=host)
+        response = s.get(conf['host'] + static(url))
 
         text = str(response.content, 'utf-8') \
             .replace("{", "{{").replace("}", "}}") \
             .replace("[[", "{").replace("]]", "}") \
             .format(org=org_url,
-                    base_org=cfg['org'],
+                    base_org=conf['org'],
                     iss=issuer,
                     aud=audience,
-                    redirect=cfg_redirect_uri,
-                    auth_groupadmin_redirect=cfg_groupadmin_redirect,
+                    redirect=conf['redirect_uri'],
+                    auth_groupadmin_redirect=conf['auth_groupadmin_redirect_uri'],
                     scopes=scps,
                     idps=idps,
                     btns=btns,
