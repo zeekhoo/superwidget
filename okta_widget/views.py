@@ -146,8 +146,8 @@ def _get_config(request, calledFrom=None):
         print('host_string = {}'.format(host_string))
         _update_conf(request,
                      {"host": host_string,
-                      "redirect_uri": _resolve_redirect_uri(conf['redirect_uri'], host),
-                      "auth_groupadmin_redirect_uri": _resolve_redirect_uri(conf['auth_groupadmin_redirect_uri'], host)
+                      "redirect_uri": _resolve_redirect_uri(conf['redirect_uri'], host_string),
+                      "auth_groupadmin_redirect_uri": _resolve_redirect_uri(conf['auth_groupadmin_redirect_uri'], host_string)
                       })
     return conf
 
