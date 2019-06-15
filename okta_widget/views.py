@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.core.urlresolvers import reverse
-import requests
 import time
 
 from .client.oauth2_client import OAuth2Client
@@ -13,7 +12,6 @@ from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm
 from .configs import *
 
 
-# url_map = {}
 config = Config()
 
 
@@ -36,23 +34,10 @@ def not_authorized(request):
 def view_profile(request):
     conf = _get_config(request, 'profile')
     if is_logged_in(request):
-        # if 'entry_page' in request.session:
-        #     page = request.session['entry_page']
-        # # if 'entry_page' in pages_js:
-        # #     page = pages_js['entry_page']
-        # else:
-        #     page = 'login'
-
-        # if page in url_map:
-        #     url_js = url_map[page]
-        # else:
-        #     url_js = '/js/oidc_base.js'
-
         _update_conf(request, {
             'profile': json.dumps(get_profile(request)),
             "srv_access_token": get_access_token(request),
-            "srv_id_token": get_id_token(request),
-            # "js": _do_format(request, url_js, page)
+            "srv_id_token": get_id_token(request)
         })
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
@@ -86,42 +71,8 @@ def _resolve_redirect_uri(redirect_uri, host):
 
 
 def _get_config(request, calledFrom=None):
-    if 'config' in request.session:
-        print('################## already configured {} ###################'.format(calledFrom))
-        conf = request.session['config']
-    else:
-        conf = config.get_config()
-        print('##### set config #####')
-        request.session['config'] = conf
-
-    if 'host' not in conf:
-        url = conf['url']
-        if url is not None:
-            host_string = url
-        else:
-            scheme = request.scheme
-            print('scheme: {}'.format(scheme))
-
-            get_host = request.get_host()
-            print('get_host: {}'.format(get_host))
-
-            host = get_host.split(':')[0]
-            host_string = scheme + '://' + host
-
-            defafult_port = conf['default_port']
-            if defafult_port is not None:
-                host_string = host_string + ':' + defafult_port
-            else:
-                meta = request.META
-                port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
-                host_string = host_string + port
-
-        print('host_string = {}'.format(host_string))
-        _update_conf(request,
-                     {"host": host_string,
-                      "redirect_uri": _resolve_redirect_uri(conf['redirect_uri'], host_string),
-                      "auth_groupadmin_redirect_uri": _resolve_redirect_uri(conf['auth_groupadmin_redirect_uri'], host_string)
-                      })
+    print('################## getConfig from {}'.format(calledFrom))
+    conf = config.get_config(request)
     return conf
 
 
@@ -136,12 +87,10 @@ def view_login(request, recoveryToken=None):
     conf = _get_config(request, 'default')
     unused = recoveryToken
     page = 'login'
-    # pages_js['entry_page'] = page
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        # conf.update({"js": _do_format(request, '/js/oidc_base.js', page)})
         _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
     return render(request, 'index.html', conf)
 
@@ -160,7 +109,6 @@ def view_auth_groupadmin(request):
     if referrer and referrer != '':
         request.session['entry_page'] = referrer
 
-    # cfg.update({"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
     _update_conf(request, {"js": _do_format(request, '/js/groupadmin_delegate.js', page)})
     return render(request, 'index_get_without_prompt.html', conf)
 
@@ -176,7 +124,6 @@ def view_login_auto(request):
         request.session['entry_page'] = referrer
 
     conf.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
-    # _update_conf(request, {"js": _do_format(request, '/js/get_without_prompt.js', page)})
 
     saved_entry_page = request.session['entry_page']
     logout(request)
@@ -200,42 +147,12 @@ def _do_refresh(request, page):
     return HttpResponseRedirect('/')
 
 
-# def _resolve_host(request):
-#     host_string = None
-#     cfg = _get_config(request, '_resolve_host')
-#     url = cfg['url']
-#     if url is not None:
-#         host_string = url
-#     else:
-#         scheme = request.scheme
-#         print('scheme: {}'.format(scheme))
-#
-#         get_host = request.get_host()
-#         print('get_host: {}'.format(get_host))
-#
-#         host = get_host.split(':')[0]
-#         host_string = scheme + '://' + host
-#
-#         defafult_port = cfg['default_port']
-#         if defafult_port is not None:
-#             host_string = host_string + ':' + defafult_port
-#         else:
-#             meta = request.META
-#             port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
-#             host_string = host_string + port
-#
-#     print('host_string = {}'.format(host_string))
-#     return host_string
-
-
 def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
     key = 'pages_js_{}'.format(page)
     cfg = _get_config(request, 'doFormat')
     org_url = cfg['base_url']
     issuer = cfg['iss']
     audience = cfg['aud']
-
-    # url_map.update({page: url})
 
     list_scopes = ['openid', 'profile', 'email']
     if cfg['scopes']:
@@ -277,7 +194,6 @@ def view_login_css(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        # conf.update({"js": _do_format(request, '/js/oidc_css.js', page)})
         _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
 
     return render(request, 'index_css.html', conf)
@@ -291,7 +207,6 @@ def view_login_custom(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        # conf.update({"js": _do_format(request, '/js/custom_ui.js', page)})
         _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
     return render(request, 'index_login-form.html', conf);
 
@@ -301,7 +216,6 @@ def okta_hosted_login(request):
     conf = _get_config(request, 'hosted')
     page = 'okta_hosted_login'
     request.session['entry_page'] = page
-    # conf.update({"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     return render(request, 'customized-okta-hosted.html', conf)
 
@@ -343,7 +257,6 @@ def view_login_idp(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        # conf.update({"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
         _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
     return render(request, 'index_idp.html', conf)
 
@@ -357,7 +270,6 @@ def view_login_disco(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        # conf.update({"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=cfg['idp_disco_page'])})
         _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
     return render(request, 'index_idp_disco.html', conf)
 
@@ -367,22 +279,7 @@ def view_admin(request):
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
-    # conf.update({
-    #     # "profile": json.dumps(get_profile(request)),
-    #     "srv_access_token": get_access_token(request),
-    #     "srv_id_token": get_id_token(request),
-    #     "js": ""
-    # })
-    #
-    # _update_conf({
-    #     'profile': json.dumps(get_profile(request)),
-    #     "srv_access_token": get_access_token(request),
-    #     "srv_id_token": get_id_token(request),
-    #     # "js": _do_format(request, url_js, page)
-    # })
-
     if can_delegate(request):
-        # conf.update({"allow_impersonation": True})
         _update_conf(request, {"allow_impersonation": True, "js": ""})
 
     return render(request, 'admin.html', conf)
@@ -398,14 +295,6 @@ def view_logout(request):
         page = 'login' if request.session['entry_page'] == 'okta_hosted_login' else request.session['entry_page']
     else:
         page = 'login'
-
-    # Reset the base variables in case there was impersonation event (Deprecated)
-    # conf.update({"org": cfg['base_url']})
-    # conf.update({"iss": cfg['iss']})
-    # conf.update({"aud": cfg['aud']})
-    # conf.update({"srv_access_token": ''})
-    # conf.update({"srv_id_token": ''})
-    # conf.update({"profile": ''})
 
     logout(request)
 

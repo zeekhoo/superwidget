@@ -1,6 +1,7 @@
 from django.conf import settings
 import json
 import base64
+import re
 
 
 # Option: Admin Functions
@@ -63,8 +64,9 @@ def set_profile(request, prof):
 
 def logout(request):
     for key in list(request.session.keys()):
-        print('deleting {}'.format(key))
-        del request.session[key]
+        if not re.match('^^pages_js_', key) and key not in ('config', 'subdomain'):
+            print('deleting {}'.format(key))
+            del request.session[key]
 
 
 def is_admin(request):

@@ -1,7 +1,8 @@
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from .authx import *
 import re
-
+import requests
+import json
 
 
 class Config(object):
@@ -74,34 +75,107 @@ class Config(object):
         #         and settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK and settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK is not None):
         #     self.ALLOW_IMPERSONATION = True
 
-    def get_config(self):
-        config = {
-            "base_url": self.BASE_URL,
-            "org": self.OKTA_ORG,
-            "iss": self.ISSUER,
-            "aud": self.CLIENT_ID,
-            "scopes": self.SCOPES,
-            "url": self.URL,
-            "default_port": self.DEFAULT_PORT,
-            "redirect_uri": self.REDIRECT_URI,
-            "auth_groupadmin_redirect_uri": self.AUTH_GROUPADMIN_REDIRECT_URI,
-            "google_idp": self.GOOGLE_IDP,
-            "fb_idp": self.FB_IDP,
-            "lnkd_idp": self.LNKD_IDP,
-            "saml_idp": self.SAML_IDP,
-            "base_title": self.BASE_TITLE,
-            "base_icon": self.BASE_ICON,
-            "background": self.BACKGROUND_IMAGE if self.BACKGROUND_IMAGE is not None else self.DEFAULT_BACKGROUND,
-            "background_css": self.BACKGROUND_IMAGE_CSS if self.BACKGROUND_IMAGE_CSS is not None else self.DEFAULT_BACKGROUND,
-            "background_authjs": self.BACKGROUND_IMAGE_AUTHJS if self.BACKGROUND_IMAGE_AUTHJS is not None else self.DEFAULT_BACKGROUND,
-            "background_idp": self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
-            "idp_disco_page": self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
-            "login_noprompt_bookmark": self.LOGIN_NOPROMPT_BOOKMARK,
-            "app_permissions_claim": APP_PERMISSIONS_CLAIM,
-            "api_permissions_claim": API_PERMISSIONS_CLAIM,
-            "allow_impersonation": self.ALLOW_IMPERSONATION,
-            "delegation_service_endpoint": self.DELEGATION_SERVICE_ENDPOINT
-        }
+    def get_config(self, request):
+        meta = request.META
+        scheme = request.scheme
+        print('scheme: {}'.format(scheme))
+        get_host = request.get_host()
+        print('get_host: {}'.format(get_host))
+        metahost = meta['HTTP_HOST'].split('.')
+        subdomain = metahost[0]
+
+        if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
+            print('################## already configured ###################')
+            config = request.session['config']
+        else:
+            url = self.URL
+            if url is not None:
+                host_string = url
+            else:
+                host = get_host.split(':')[0]
+                host_string = scheme + '://' + host
+
+                if self.DEFAULT_PORT is not None:
+                    host_string = host_string + ':' + self.DEFAULT_PORT
+                elif host == 'localhost':
+                    port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
+                    host_string = host_string + port
+            print('host_string = {}'.format(host_string))
+
+            config = {
+                'host': host_string,
+                'subdomain': subdomain,
+                'base_url': self.BASE_URL,
+                'org': self.OKTA_ORG,
+                'iss': self.ISSUER,
+                'aud': self.CLIENT_ID,
+                'scopes': self.SCOPES,
+                'url': self.URL,
+                'default_port': self.DEFAULT_PORT,
+                'redirect_uri': _resolve_redirect_uri(self.REDIRECT_URI, host_string),
+                'auth_groupadmin_redirect_uri': _resolve_redirect_uri(self.AUTH_GROUPADMIN_REDIRECT_URI, host_string),
+                'google_idp': self.GOOGLE_IDP,
+                'fb_idp': self.FB_IDP,
+                'lnkd_idp': self.LNKD_IDP,
+                'saml_idp': self.SAML_IDP,
+                'base_title': self.BASE_TITLE,
+                'base_icon': self.BASE_ICON,
+                'background': self.BACKGROUND_IMAGE if self.BACKGROUND_IMAGE is not None else self.DEFAULT_BACKGROUND,
+                'background_css': self.BACKGROUND_IMAGE_CSS if self.BACKGROUND_IMAGE_CSS is not None else self.DEFAULT_BACKGROUND,
+                'background_authjs': self.BACKGROUND_IMAGE_AUTHJS if self.BACKGROUND_IMAGE_AUTHJS is not None else self.DEFAULT_BACKGROUND,
+                'background_idp': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
+                'idp_disco_page': self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
+                'login_noprompt_bookmark': self.LOGIN_NOPROMPT_BOOKMARK,
+                'app_permissions_claim': APP_PERMISSIONS_CLAIM,
+                'api_permissions_claim': API_PERMISSIONS_CLAIM,
+                'allow_impersonation': self.ALLOW_IMPERSONATION,
+                'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT
+            }
+
+            try:
+                demoapp = metahost[1]
+                url = 'https://safe-escarpment-74832.herokuapp.com/api/configs/{0}/{1}/.well-known/default-setting'.format(subdomain, demoapp)
+                response = requests.get(url)
+                udp = json.loads(response.content)['config']
+                print(udp)
+                config.update({
+                    'base_url': udp['base_url'],
+                    'org': udp['base_url'],
+                    'iss': udp['issuer'],
+                    'aud': udp['client_id']
+                })
+                if 'settings' in udp:
+                    udp_settings = udp['settings']
+                    if 'scopes' in udp_settings:
+                        config.update({'scopes': udp_settings['scopes']})
+                    if 'google_idp' in udp_settings:
+                        config.update({'google_idp': udp_settings['google_idp']})
+                    if 'fb_idp' in udp_settings:
+                        config.update({'fb_idp': udp_settings['fb_idp']})
+                    if 'lnkd_idp' in udp_settings:
+                        config.update({'lnkd_idp': udp_settings['lnkd_idp']})
+                    if 'saml_idp' in udp_settings:
+                        config.update({'saml_idp': udp_settings['saml_idp']})
+                    if 'base_title' in udp_settings:
+                        config.update({'base_title': udp_settings['base_title']})
+                    if 'base_icon' in udp_settings:
+                        config.update({'base_icon': udp_settings['base_icon']})
+                    if 'background' in udp_settings:
+                        config.update({'background': udp_settings['background']})
+                    if 'background_css' in udp_settings:
+                        config.update({'background_css': udp_settings['background_css']})
+                    if 'background_authjs' in udp_settings:
+                        config.update({'background_authjs': udp_settings['background_authjs']})
+                    if 'background_idp' in udp_settings:
+                        config.update({'background_idp': udp_settings['background_idp']})
+                    if 'idp_disco_page' in udp_settings:
+                        config.update({'idp_disco_page': udp_settings['idp_disco_page']})
+            except Exception as e:
+                print(e)
+
+            print('################## INIT CONFIG ###################')
+            request.session['config'] = config
+            request.session['subdomain'] = subdomain
         return config
 
     def get_api_key(self):
@@ -109,3 +183,10 @@ class Config(object):
 
     def get_client_secret(self):
         return self.CLIENT_SECRET
+
+
+def _resolve_redirect_uri(redirect_uri, host):
+    return redirect_uri\
+        .replace('[[', '{') \
+        .replace(']]', '}') \
+        .format(host=host)

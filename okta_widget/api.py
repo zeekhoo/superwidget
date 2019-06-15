@@ -12,9 +12,6 @@ from django.http import HttpResponse
 from .authx import api_access_admin, api_access_company_admin, parse_bearer_token
 
 
-# cfg = config.get_config()
-
-
 @access_token_required
 def list_users(request, token):
     conf = _get_config(request)
