@@ -84,8 +84,12 @@ class Config(object):
     def get_config(self, request):
         meta = request.META
         scheme = request.scheme
-        meta_http_host = meta['HTTP_HOST'].split('.')
-        subdomain = meta_http_host[0]
+        http_host = meta['HTTP_HOST']
+        print('http_host: {}'.format(http_host))
+        http_host_parts = http_host.split('.')
+        print('http_host_parts: {}'.format(http_host_parts))
+        # meta_http_host = ['zeekhoo', 'super', 'unidemo', 'online']
+        subdomain = http_host_parts[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
             print('{0}################## already configured {1}###################'.format(time.time(), request.session.session_key))
@@ -94,12 +98,14 @@ class Config(object):
             url = self.URL
             if url is not None:
                 host_string = url
+                print('host_string1 = {}'.format(host_string))
             else:
                 if self.DEFAULT_PORT is not None:
                     host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
+                    print('host_string2 = {}'.format(host_string))
                 else:
-                    host_string = '{0}://{1}'.format(scheme, meta['HTTP_HOST'])
-            print('host_string = {}'.format(host_string))
+                    host_string = '{0}://{1}'.format(scheme, http_host)
+                    print('host_string3 = {}'.format(host_string))
 
             config = {
                 'host': host_string,
@@ -132,11 +138,11 @@ class Config(object):
             }
 
             try:
-                demoapp = meta_http_host[1]
+                demoapp = http_host_parts[1]
                 url = '{0}/api/configs/{1}/{2}/.well-known/default-setting'.format(self.udp_base_url, subdomain, demoapp)
                 response = requests.get(url)
                 udp = json.loads(response.content)['config']
-                print(udp)
+                # print(udp)
                 config.update({
                     'base_url': udp['base_url'].replace('https://', '').replace('http://', ''),
                     'org': udp['base_url'].replace('https://', '').replace('http://', ''),
