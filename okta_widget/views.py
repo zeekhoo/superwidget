@@ -71,7 +71,7 @@ def _resolve_redirect_uri(redirect_uri, host):
 
 
 def _get_config(request, calledFrom=None):
-    print('################## getConfig from {}'.format(calledFrom))
+    print('{0}################## getConfig from {1}'.format(time.time(), calledFrom))
     conf = config.get_config(request)
     return conf
 

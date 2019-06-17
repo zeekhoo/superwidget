@@ -5,6 +5,7 @@ import requests
 import json
 from io import StringIO
 from dotenv import dotenv_values
+import time
 
 
 class Config(object):
@@ -87,7 +88,7 @@ class Config(object):
         subdomain = meta_http_host[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
-            print('################## already configured {}###################'.format(request.session.session_key))
+            print('{0}################## already configured {1}###################'.format(time.time(), request.session.session_key))
             config = request.session['config']
         else:
             url = self.URL
@@ -173,7 +174,7 @@ class Config(object):
             except Exception as e:
                 print(e)
 
-            print('################## INIT CONFIG {}###################'.format(request.session.session_key))
+            print('{0}################## INIT CONFIG {1}###################'.format(time.time(), request.session.session_key))
             request.session['config'] = config
             request.session['subdomain'] = subdomain
         return config
@@ -186,8 +187,8 @@ class Config(object):
             demoapp = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
             response = requests.get(url)
-            print(response)
-            fileLike = StringIO(response)
+            print(response.content)
+            fileLike = StringIO(response.content)
             fileLike.seek(0)
             parsed = dotenv_values(stream=fileLike)
             print(parsed)
@@ -204,8 +205,8 @@ class Config(object):
             demoapp = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
             response = requests.get(url)
-            print(response)
-            fileLike = StringIO(response)
+            print(response.content)
+            fileLike = StringIO(response.content)
             fileLike.seek(0)
             parsed = dotenv_values(stream=fileLike)
             print(parsed)
