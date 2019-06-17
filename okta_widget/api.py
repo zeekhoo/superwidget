@@ -20,7 +20,7 @@ def list_users(request, token):
     if 'startsWith' in get:
         starts_with = get['startsWith']
 
-    client = UsersClient('https://' + conf['org'], config.get_api_key())
+    client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
     is_org_token = False
     try:
@@ -56,7 +56,7 @@ def list_user(request, token):
     user_id = None
     if 'user' in get:
         user_id = get['user']
-    client = UsersClient('https://' + conf['org'], config.get_api_key())
+    client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
     if api_access_admin(token) or api_access_company_admin(token):
         users = client.list_user(user_id)
@@ -101,7 +101,7 @@ def add_users(request, token):
             role = req['role']
         if 'activate' in req:
             activate = req['activate']
-        client = UsersClient('https://' + conf['org'], config.get_api_key())
+        client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
         user = {
             "profile": {
@@ -159,7 +159,7 @@ def update_user(request, token):
                 deactivate = req['deactivate']
             if 'companyName' in req:
                 company_name = req['companyName']
-            client = UsersClient('https://' + conf['org'], config.get_api_key())
+            client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
             user = {
                 "profile": {
@@ -197,7 +197,7 @@ def list_groups(request, token):
         company_name = profile_dict.get('companyName')
 
     if api_access_company_admin(token):
-        client = GroupsClient('https://' + conf['org'], config.get_api_key())
+        client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
         response.content = client.list_groups(15, company_name)
     else:
         return not_authorized(request)
@@ -216,7 +216,7 @@ def get_group(request, token):
     group_id = None
     if 'group_id' in get:
         group_id = get['group_id']
-    client = GroupsClient('https://' + conf['org'], config.get_api_key())
+    client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
 
     if api_access_company_admin(token):
         response.content = client.get_group_by_id(group_id)
@@ -234,7 +234,7 @@ def app_schema(request, token):
     response.status_code = 200
 
     if api_access_company_admin(token):
-        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
+        client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
         schema = client.get_schema()
         response.content = schema
     else:
@@ -252,7 +252,7 @@ def list_perms(request, token):
     response.status_code = 200
 
     if api_access_company_admin(token):
-        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
+        client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
 
         group_id = None
         if 'group_id' in get:
@@ -296,7 +296,7 @@ def update_perm(request, token):
             }
         }
 
-        client = AppsClient('https://' + conf['org'], config.get_api_key(), conf['aud'])
+        client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
         perms = client.update_app_group(group_id, perm)
         response.content = perms
     else:
@@ -327,7 +327,7 @@ def add_group(request, token):
             if prefix:
                 group_name = prefix + '_' + group_name
 
-            client = GroupsClient('https://' + conf['org'], config.get_api_key())
+            client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
 
             group = {
                 "profile": {

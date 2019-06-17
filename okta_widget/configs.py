@@ -3,10 +3,15 @@ from .authx import *
 import re
 import requests
 import json
+from io import StringIO
+from dotenv import dotenv_values
 
 
 class Config(object):
     def __init__(self):
+        # UDP
+        self.udp_base_url = 'https://safe-escarpment-74832.herokuapp.com'
+
         # Base settings
         self.API_KEY = settings.API_KEY
         self.OKTA_ORG = settings.OKTA_ORG
@@ -78,11 +83,8 @@ class Config(object):
     def get_config(self, request):
         meta = request.META
         scheme = request.scheme
-        print('scheme: {}'.format(scheme))
-        get_host = request.get_host()
-        print('get_host: {}'.format(get_host))
-        metahost = meta['HTTP_HOST'].split('.')
-        subdomain = metahost[0]
+        meta_http_host = meta['HTTP_HOST'].split('.')
+        subdomain = meta_http_host[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
             print('################## already configured {}###################'.format(request.session.session_key))
@@ -92,14 +94,10 @@ class Config(object):
             if url is not None:
                 host_string = url
             else:
-                host = get_host.split(':')[0]
-                host_string = scheme + '://' + host
-
                 if self.DEFAULT_PORT is not None:
-                    host_string = host_string + ':' + self.DEFAULT_PORT
-                elif host == 'localhost':
-                    port = ':{}'.format(meta['SERVER_PORT']) if 'SERVER_PORT' in meta else ''
-                    host_string = host_string + port
+                    host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
+                else:
+                    host_string = '{0}://{1}'.format(scheme, meta['HTTP_HOST'])
             print('host_string = {}'.format(host_string))
 
             config = {
@@ -133,15 +131,15 @@ class Config(object):
             }
 
             try:
-                demoapp = metahost[1]
-                url = 'https://safe-escarpment-74832.herokuapp.com/api/configs/{0}/{1}/.well-known/default-setting'.format(subdomain, demoapp)
+                demoapp = meta_http_host[1]
+                url = '{0}/api/configs/{1}/{2}/.well-known/default-setting'.format(self.udp_base_url, subdomain, demoapp)
                 response = requests.get(url)
                 udp = json.loads(response.content)['config']
                 print(udp)
                 config.update({
                     'base_url': udp['base_url'].replace('https://', '').replace('http://', ''),
                     'org': udp['base_url'].replace('https://', '').replace('http://', ''),
-                    'iss': udp['issuer'],
+                    'iss': udp['issuer'].split('/oauth2/')[1],
                     'aud': udp['client_id']
                 })
                 if 'settings' in udp:
@@ -180,10 +178,40 @@ class Config(object):
             request.session['subdomain'] = subdomain
         return config
 
-    def get_api_key(self):
+    def get_api_key(self, request):
+        try:
+            meta = request.META
+            meta_http_host = meta['HTTP_HOST'].split('.')
+            subdomain = meta_http_host[0]
+            demoapp = meta_http_host[1]
+            url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
+            response = requests.get(url)
+            print(response)
+            fileLike = StringIO(response)
+            fileLike.seek(0)
+            parsed = dotenv_values(stream=fileLike)
+            print(parsed)
+            return parsed['OKTA_API_TOKEN']
+        except Exception as e:
+            print(e)
         return self.API_KEY
 
-    def get_client_secret(self):
+    def get_client_secret(self, request):
+        try:
+            meta = request.META
+            meta_http_host = meta['HTTP_HOST'].split('.')
+            subdomain = meta_http_host[0]
+            demoapp = meta_http_host[1]
+            url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
+            response = requests.get(url)
+            print(response)
+            fileLike = StringIO(response)
+            fileLike.seek(0)
+            parsed = dotenv_values(stream=fileLike)
+            print(parsed)
+            return parsed['CLIENT_SECRET']
+        except Exception as e:
+            print(e)
         return self.CLIENT_SECRET
 
 

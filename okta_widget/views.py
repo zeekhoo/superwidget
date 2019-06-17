@@ -164,25 +164,28 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
         print('found {}'.format(key))
         return request.session[key]
     else:
-        s = requests.session()
-        a = requests.adapters.HTTPAdapter(max_retries=2)
-        s.mount('http://', a)
-        response = s.get(cfg['host'] + static(url))
+        try:
+            s = requests.session()
+            a = requests.adapters.HTTPAdapter(max_retries=2)
+            s.mount('http://', a)
+            response = s.get(cfg['host'] + static(url))
 
-        text = str(response.content, 'utf-8') \
-            .replace("{", "{{").replace("}", "}}") \
-            .replace("[[", "{").replace("]]", "}") \
-            .format(org=org_url,
-                    base_org=cfg['org'],
-                    iss=issuer,
-                    aud=audience,
-                    redirect=cfg['redirect_uri'],
-                    auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
-                    scopes=scps,
-                    idps=idps,
-                    btns=btns,
-                    idp_disco=embed_link)
-        request.session[key] = text
+            text = str(response.content, 'utf-8') \
+                .replace("{", "{{").replace("}", "}}") \
+                .replace("[[", "{").replace("]]", "}") \
+                .format(org=org_url,
+                        base_org=cfg['org'],
+                        iss=issuer,
+                        aud=audience,
+                        redirect=cfg['redirect_uri'],
+                        auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
+                        scopes=scps,
+                        idps=idps,
+                        btns=btns,
+                        idp_disco=embed_link)
+            request.session[key] = text
+        except Exception as e:
+            text = e
         return text
 
 
@@ -324,7 +327,7 @@ def registration_view(request):
                     "password": {"value": pw}
                 }
             }
-            client = UsersClient('https://' + cfg['org'], config.get_api_key())
+            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
             client.create_user(user=user, activate="false")
 
         try:
@@ -357,7 +360,7 @@ def registration_view2(request):
                     "login": email
                 }
             }
-            client = UsersClient('https://' + cfg['org'], config.get_api_key())
+            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
             client.create_user(user=user, activate="false")
         try:
             print('create user {0} {1}'.format(fn, ln))
@@ -399,7 +402,7 @@ def activation_view(request, slug):
                         "password": {"value": pw}
                     }
                 }
-                client = UsersClient('https://' + cfg['org'], config.get_api_key())
+                client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
                 client.set_password(user_id=user_id, user=user)
                 res = auth.authn(username, pw)
                 if res.status_code == 200:
@@ -431,7 +434,7 @@ def activation_wo_token_view(request):
             password1 = form.cleaned_data['password1']
             password2 = form.cleaned_data['password2']
 
-            client = UsersClient('https://' + cfg['org'], config.get_api_key())
+            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
             user = json.loads(client.get_user(email))
 
             if state == 'verify-email':
@@ -515,7 +518,7 @@ def oauth2_post(request):
             state = request.GET['state']
 
     if code:
-        client = OAuth2Client('https://' + conf['org'], conf['aud'], config.get_client_secret())
+        client = OAuth2Client('https://' + conf['org'], conf['aud'], config.get_client_secret(request))
         tokens = client.token(code, conf['redirect_uri'], conf['iss'])
         print('Tokens from the code retrieval {}'.format(tokens))
         if tokens['access_token']:
@@ -546,7 +549,7 @@ def delegate_init(request):
     if request.method == 'POST':
         client = OktadelegateClient(cfg['delegation_service_endpoint'],
                                     request.META["HTTP_AUTHORIZATION"].split(" ")[1],
-                                    config.get_api_key())
+                                    config.get_api_key(request))
         result = client.delegate_init(json.loads(request.body)["delegation_target"])
         return JsonResponse(json.loads(result.content))
 
