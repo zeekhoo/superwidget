@@ -39,19 +39,19 @@ class Config(object):
         if settings.BACKGROUND_IMAGE_DEFAULT and re.match('^/static/', settings.BACKGROUND_IMAGE_DEFAULT):
             self.BACKGROUND_IMAGE = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_DEFAULT).group(0))
         else:
-            self.BACKGROUND_IMAGE = static(settings.BACKGROUND_IMAGE_DEFAULT)
+            self.BACKGROUND_IMAGE = settings.BACKGROUND_IMAGE_DEFAULT
         if settings.BACKGROUND_IMAGE_CSS and re.match('^/static/', settings.BACKGROUND_IMAGE_CSS):
             self.BACKGROUND_IMAGE_CSS = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_CSS).group(0))
         else:
-            self.BACKGROUND_IMAGE_CSS = static(settings.BACKGROUND_IMAGE_CSS)
+            self.BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
         if settings.BACKGROUND_IMAGE_AUTHJS and re.match('^/static/', settings.BACKGROUND_IMAGE_AUTHJS):
             self.BACKGROUND_IMAGE_AUTHJS = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_AUTHJS).group(0))
         else:
-            self.BACKGROUND_IMAGE_AUTHJS = static(settings.BACKGROUND_IMAGE_AUTHJS)
+            self.BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
         if settings.BACKGROUND_IMAGE_IDP and re.match('^/static/', settings.BACKGROUND_IMAGE_IDP):
             self.BACKGROUND_IMAGE_IDP = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_IDP).group(0))
         else:
-            self.BACKGROUND_IMAGE_IDP = static(settings.BACKGROUND_IMAGE_IDP)
+            self.BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
 
         # Option: IDP Discovery setting
         self.IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
@@ -85,7 +85,7 @@ class Config(object):
         subdomain = metahost[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
-            print('################## already configured ###################')
+            print('################## already configured {}###################'.format(request.session.session_key))
             config = request.session['config']
         else:
             url = self.URL
@@ -139,13 +139,15 @@ class Config(object):
                 udp = json.loads(response.content)['config']
                 print(udp)
                 config.update({
-                    'base_url': udp['base_url'],
-                    'org': udp['base_url'],
+                    'base_url': udp['base_url'].replace('https://', '').replace('http://', ''),
+                    'org': udp['base_url'].replace('https://', '').replace('http://', ''),
                     'iss': udp['issuer'],
                     'aud': udp['client_id']
                 })
                 if 'settings' in udp:
                     udp_settings = udp['settings']
+                    if 'org' in udp_settings:
+                        config.update({'org': udp_settings['org']})
                     if 'scopes' in udp_settings:
                         config.update({'scopes': udp_settings['scopes']})
                     if 'google_idp' in udp_settings:
@@ -173,7 +175,7 @@ class Config(object):
             except Exception as e:
                 print(e)
 
-            print('################## INIT CONFIG ###################')
+            print('################## INIT CONFIG {}###################'.format(request.session.session_key))
             request.session['config'] = config
             request.session['subdomain'] = subdomain
         return config
