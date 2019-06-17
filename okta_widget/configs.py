@@ -172,7 +172,7 @@ class Config(object):
                     if 'idp_disco_page' in udp_settings:
                         config.update({'idp_disco_page': udp_settings['idp_disco_page']})
             except Exception as e:
-                print(e)
+                print('Exception in get_config: {}'.format(e))
 
             print('{0}################## INIT CONFIG {1}###################'.format(time.time(), request.session.session_key))
             request.session['config'] = config
@@ -187,14 +187,12 @@ class Config(object):
             demoapp = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
             response = requests.get(url)
-            print(response.content)
-            fileLike = StringIO(response.content)
+            fileLike = StringIO(str(response.content, 'utf-8'))
             fileLike.seek(0)
             parsed = dotenv_values(stream=fileLike)
-            print(parsed)
             return parsed['OKTA_API_TOKEN']
         except Exception as e:
-            print(e)
+            print('Exception in get_api_key: {}'.format(e))
         return self.API_KEY
 
     def get_client_secret(self, request):
@@ -205,14 +203,12 @@ class Config(object):
             demoapp = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
             response = requests.get(url)
-            print(response.content)
-            fileLike = StringIO(response.content)
+            fileLike = StringIO(str(response.content, 'utf-8'))
             fileLike.seek(0)
             parsed = dotenv_values(stream=fileLike)
-            print(parsed)
             return parsed['CLIENT_SECRET']
         except Exception as e:
-            print(e)
+            print('Exception in get_client_secret: {}'.format(e))
         return self.CLIENT_SECRET
 
 
