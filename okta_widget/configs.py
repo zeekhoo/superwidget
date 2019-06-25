@@ -83,7 +83,9 @@ class Config(object):
 
     def get_config(self, request):
         meta = request.META
-        scheme = request.scheme
+        scheme = 'http'
+        if request.scheme == 'https' or meta['HTTP_X_FORWARDED_PROTO'] == 'https':
+            scheme = 'https'
         http_host = meta['HTTP_HOST']
         print('http_host: {}'.format(http_host))
         http_host_parts = http_host.split('.')
