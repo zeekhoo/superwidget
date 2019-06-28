@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.core.urlresolvers import reverse
-import time
+from django.urls import reverse
 
 from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient
@@ -226,17 +225,19 @@ def okta_hosted_login(request):
 @csrf_exempt
 def view_login_idp(request):
     conf = _get_config(request, 'idp')
+    print('length={}'.format(len(conf['fb_idp'])))
+
     idps = '['
-    if conf['google_idp'] is not None:
+    if conf['google_idp'] is not None and (len(conf['google_idp'])>0):
         idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(conf['google_idp'])
-    if conf['fb_idp'] is not None:
+    if conf['fb_idp'] is not None and (len(conf['fb_idp'])>0):
         idps += "\n      {{type: 'FACEBOOK', id: '{}'}},".format(conf['fb_idp'])
-    if conf['lnkd_idp'] is not None:
+    if conf['lnkd_idp'] is not None and (len(conf['lnkd_idp'])>0):
         idps += "\n      {{type: 'LINKEDIN', id: '{}'}},".format(conf['lnkd_idp'])
     idps += ']'
 
     btns = '['
-    if conf['saml_idp']:
+    if conf['saml_idp'] and (len(conf['saml_idp'])>0):
         if conf['saml_idp'] is not None:
             btns += "{title: 'Login SAML Idp',\n" \
                     + "        className: 'btn-customAuth',\n" \
@@ -518,8 +519,8 @@ def oauth2_post(request):
             state = request.GET['state']
 
     if code:
-        client = OAuth2Client('https://' + conf['org'], conf['aud'], config.get_client_secret(request))
-        tokens = client.token(code, conf['redirect_uri'], conf['iss'])
+        client = OAuth2Client('https://' + conf['org'], conf['iss'], conf['aud'], config.get_client_secret(request))
+        tokens = client.token(code, conf['redirect_uri'])
         print('Tokens from the code retrieval {}'.format(tokens))
         if tokens['access_token']:
             access_token = tokens['access_token']
@@ -529,7 +530,7 @@ def oauth2_post(request):
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
         print('access_token = {}'.format(access_token))
-        client = OAuth2Client('https://' + conf['org'])
+        client = OAuth2Client('https://' + conf['org'], conf['iss'])
         profile = client.profile(access_token)
         set_profile(request, profile)
         set_access_token(request, access_token)

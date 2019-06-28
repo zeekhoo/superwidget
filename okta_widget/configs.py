@@ -179,6 +179,11 @@ class Config(object):
                         config.update({'background_idp': udp_settings['background_idp']})
                     if 'idp_disco_page' in udp_settings:
                         config.update({'idp_disco_page': udp_settings['idp_disco_page']})
+                    if 'login_noprompt_bookmark' in udp_settings:
+                        config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
+                    if 'delegation_service_endpoint' in udp_settings:
+                        config.update({'delegation_service_endpoint': udp_settings['delegation_service_endpoint']})
+
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
 

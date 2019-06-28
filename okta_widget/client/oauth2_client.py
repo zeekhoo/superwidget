@@ -5,8 +5,9 @@ from django.conf import settings
 
 
 class OAuth2Client(object):
-    def __init__(self, base_url, client_id=None, client_secret=None):
+    def __init__(self, base_url, auth_server, client_id=None, client_secret=None):
         self.base_url = base_url
+        self.auth_server = auth_server
         self.client_id = client_id
         self.client_secret = client_secret
         self.basic = None
@@ -15,12 +16,8 @@ class OAuth2Client(object):
             basic = base64.b64encode(enc.encode('ascii'))
             self.basic = str(basic, 'utf-8')
 
-    def token(self, code, redirect_uri, server_id=None):
-        if server_id:
-            server_id += '/'
-        else:
-            server_id = ''
-        url = self.base_url + '/oauth2/{}v1/token'.format(server_id)
+    def token(self, code, redirect_uri):
+        url = self.base_url + '/oauth2/{}/v1/token'.format(self.auth_server)
         payload = {
             'grant_type': 'authorization_code',
             'redirect_uri': redirect_uri,
@@ -35,12 +32,7 @@ class OAuth2Client(object):
         return tokens
 
     def profile(self, token):
-        iss = 'https://{0}/oauth2/{1}'.format(settings.OKTA_ORG, settings.AUTH_SERVER_ID)
-        #iss = _tokenIssuer(token)
-        if iss:
-            url = iss + '/v1/userinfo'
-        else:
-            url = self.base_url + '/oauth2/v1/userinfo'
+        url = '{0}/oauth2/{1}/v1/userinfo'.format(self.base_url, self.auth_server)
         print('userinfo url={}'.format(url))
 
         headers = {'Authorization': 'Bearer ' + token}

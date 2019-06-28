@@ -20,7 +20,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(7g9#++b(_&6#(la7we*xrx6&z=d#g7)oe7+lyrq&vsv6$b33#'
+SECRET_KEY = 'not_a_secret_for_dev#!@12345'
+if os.environ.get('SECRET_KEY') is not None:
+    SECRET_KEY = os.environ['SECRET_KEY']
+
 if os.environ.get('SECRET_KEY') is not None:
     SECRET_KEY = os.environ['SECRET_KEY']
 
@@ -28,8 +31,7 @@ DEBUG = True
 if os.environ.get('DEBUG') is not None:
     DEBUG = os.environ.get('DEBUG')
 
-ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]',
-                 'unidemo-superwidget-docker-dev.us-west-2.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]']
 if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
