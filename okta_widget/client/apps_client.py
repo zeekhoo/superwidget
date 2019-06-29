@@ -15,9 +15,14 @@ class AppsClient(object):
     def get_login_disco_url(self):
         name = 'LoginDisco_{}'.format(self.client_id)
         url = self.base_url + '/api/v1/apps?q={0}'.format(name)
-        print('url={}'.format(url))
-        response = requests.get(url, headers=self.headers)
-        return json.loads(response.content)[0]['_links']['appLinks'][0]['href'].split('.com')[1]
+        try:
+            response = requests.get(url, headers=self.headers)
+            result = json.loads(response.content)[0]['_links']['appLinks'][0]['href'].split('.com')[1]
+        except Exception as e:
+            print('get_login_disco_url exception {}'.format(e))
+            print('url={}'.format(url))
+            result = ''
+        return result
 
     def set_name_id(self, login, nameId):
         url = self.base_url + '/api/v1/apps/{0}/users/{1}'.format(self.client_id, login)
