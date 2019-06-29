@@ -225,8 +225,6 @@ def okta_hosted_login(request):
 @csrf_exempt
 def view_login_idp(request):
     conf = _get_config(request, 'idp')
-    print('length={}'.format(len(conf['fb_idp'])))
-
     idps = '['
     if conf['google_idp'] is not None and (len(conf['google_idp'])>0):
         idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(conf['google_idp'])
