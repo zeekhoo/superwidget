@@ -1,5 +1,6 @@
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from .authx import *
+from .client.apps_client import AppsClient
 import re
 import requests
 import json
@@ -179,6 +180,12 @@ class Config(object):
                         config.update({'background_idp': udp_settings['background_idp']})
                     if 'idp_disco_page' in udp_settings:
                         config.update({'idp_disco_page': udp_settings['idp_disco_page']})
+                    else:
+                        client = AppsClient('https://{}'.format(config['org']),
+                                            self.get_api_key(request),
+                                            config['aud'])
+                        config.update({'idp_disco_page': client.get_login_disco_url()})
+
                     if 'login_noprompt_bookmark' in udp_settings:
                         config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
                     if 'delegation_service_endpoint' in udp_settings:
