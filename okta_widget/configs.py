@@ -184,7 +184,9 @@ class Config(object):
                         client = AppsClient('https://{}'.format(config['org']),
                                             self.get_api_key(request),
                                             config['aud'])
-                        config.update({'idp_disco_page': client.get_login_disco_url()})
+                        idp_disco_page = client.get_login_disco_url()
+                        if idp_disco_page and len(idp_disco_page) > 0:
+                            config.update({'idp_disco_page': idp_disco_page})
 
                     if 'login_noprompt_bookmark' in udp_settings:
                         config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
