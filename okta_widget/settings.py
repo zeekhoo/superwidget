@@ -37,6 +37,7 @@ if os.environ.get('ALLOWED_HOSTS') is not None:
 
 # UNIDEMO_API = os.environ.get('UNIDEMO_API')
 UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
+UDP_KEY = os.environ.get('UDP_KEY')
 URL = os.environ.get('URL')
 DEFAULT_PORT = os.environ.get('DEFAULT_PORT')
 OKTA_ORG = os.environ.get('OKTA_ORG')

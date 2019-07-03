@@ -13,7 +13,7 @@ class Config(object):
     def __init__(self):
         # UDP
         self.UDP_BASE_URL = settings.UDP_BASE_URL
-        self.UDP_KEY = ''
+        self.UDP_KEY = settings.UDP_KEY
 
         # Base settings
         self.API_KEY = settings.API_KEY
@@ -212,8 +212,12 @@ class Config(object):
             meta_http_host = meta['HTTP_HOST'].split('.')
             subdomain = meta_http_host[0]
             url = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
-            response = requests.get(url, headers={'Authorization': 'Bearer {}'.format(self.UDP_KEY)})
-            return json.loads(response.content)['okta_api_token']
+            headers = {
+                'Authorization': 'Bearer {}'.format(self.UDP_KEY),
+                'Content-Type': 'application/json'
+            }
+            response = requests.get(url, headers=headers)
+            return response.json()['okta_api_token']
             # fileLike = StringIO(str(response.content, 'utf-8'))
             # fileLike.seek(0)
             # parsed = dotenv_values(stream=fileLike)
@@ -229,7 +233,11 @@ class Config(object):
             subdomain = meta_http_host[0]
             app = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
-            response = requests.get(url, headers={'Authorization': 'Bearer {}'.format(self.UDP_KEY)})
+            headers = {
+                'Authorization': 'Bearer {}'.format(self.UDP_KEY),
+                'Content-Type': 'application/json'
+            }
+            response = requests.get(url, headers=headers)
             return json.loads(response.content)['client_secret']
             # fileLike = StringIO(str(response.content, 'utf-8'))
             # fileLike.seek(0)
