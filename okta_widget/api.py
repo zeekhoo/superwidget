@@ -13,7 +13,7 @@ from .authx import api_access_admin, api_access_company_admin, parse_bearer_toke
 
 
 @access_token_required
-def list_users(request, token):
+def list_users(request, access_token):
     conf = _get_config(request)
     get = request.GET
     starts_with = None
@@ -24,21 +24,21 @@ def list_users(request, token):
 
     is_org_token = False
     try:
-        token_obj = parse_bearer_token(token)
+        token_obj = parse_bearer_token(access_token)
         if token_obj['iss'] == 'https://{0}'.format(conf['org']):
             is_org_token = True
     except Exception as e:
         print(e)
 
     if is_org_token:
-        client.set_bearer_token(token)
+        client.set_bearer_token(access_token)
         users = client.list_users(15, starts_with)
     else:
         profile_dict = request.session['profile']
         company_name = profile_dict.get('companyName')
-        if api_access_admin(token):
+        if api_access_admin(access_token):
             users = client.list_users(15, starts_with)
-        elif api_access_company_admin(token):
+        elif api_access_company_admin(access_token):
             users = client.list_users_scoped(15, company_name, starts_with)
         else:
             return not_authorized(request)
@@ -50,7 +50,7 @@ def list_users(request, token):
 
 
 @access_token_required
-def list_user(request, token):
+def list_user(request, access_token):
     conf = _get_config(request)
     get = request.GET
     user_id = None
@@ -58,7 +58,7 @@ def list_user(request, token):
         user_id = get['user']
     client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
-    if api_access_admin(token) or api_access_company_admin(token):
+    if api_access_admin(access_token) or api_access_company_admin(access_token):
         users = client.list_user(user_id)
     else:
         return not_authorized(request)
@@ -71,7 +71,7 @@ def list_user(request, token):
 
 @csrf_exempt
 @access_token_required
-def add_users(request, token):
+def add_users(request, access_token):
     conf = _get_config(request)
 
     response = HttpResponse()
@@ -114,9 +114,9 @@ def add_users(request, token):
             }
         }
 
-        if api_access_admin(token):
+        if api_access_admin(access_token):
             users = client.create_user(user=user, activate=activate)
-        elif api_access_company_admin(token):
+        elif api_access_company_admin(access_token):
             users = client.create_user(user=user, activate=activate)
         else:
             return not_authorized(request)
@@ -128,7 +128,7 @@ def add_users(request, token):
 
 @csrf_exempt
 @access_token_required
-def update_user(request, token):
+def update_user(request, access_token):
     conf = _get_config(request)
 
     response = HttpResponse()
@@ -172,7 +172,7 @@ def update_user(request, token):
                 }
             }
 
-            if api_access_admin(token):
+            if api_access_admin(access_token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
             elif api_access_company_admin(token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
@@ -185,7 +185,7 @@ def update_user(request, token):
 
 
 @access_token_required
-def list_groups(request, token):
+def list_groups(request, access_token):
     conf = _get_config(request)
 
     response = HttpResponse()
@@ -196,7 +196,7 @@ def list_groups(request, token):
     if 'companyName' in profile_dict:
         company_name = profile_dict.get('companyName')
 
-    if api_access_company_admin(token):
+    if api_access_company_admin(access_token):
         client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
         response.content = client.list_groups(15, company_name)
     else:
@@ -206,7 +206,7 @@ def list_groups(request, token):
 
 
 @access_token_required
-def get_group(request, token):
+def get_group(request, access_token):
     conf = _get_config(request)
 
     get = request.GET
@@ -218,7 +218,7 @@ def get_group(request, token):
         group_id = get['group_id']
     client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
 
-    if api_access_company_admin(token):
+    if api_access_company_admin(access_token):
         response.content = client.get_group_by_id(group_id)
     else:
         return not_authorized(request)
@@ -227,13 +227,13 @@ def get_group(request, token):
 
 
 @access_token_required
-def app_schema(request, token):
+def app_schema(request, access_token):
     conf = _get_config(request)
 
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(token):
+    if api_access_company_admin(access_token):
         client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
         schema = client.get_schema()
         response.content = schema
@@ -244,14 +244,14 @@ def app_schema(request, token):
 
 
 @access_token_required
-def list_perms(request, token):
+def list_perms(request, access_token):
     conf = _get_config(request)
 
     get = request.GET
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(token):
+    if api_access_company_admin(access_token):
         client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
 
         group_id = None
@@ -268,7 +268,7 @@ def list_perms(request, token):
 
 @csrf_exempt
 @access_token_required
-def update_perm(request, token):
+def update_perm(request, access_token):
     conf = _get_config(request)
 
     req = request.POST
@@ -284,7 +284,7 @@ def update_perm(request, token):
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(token) and group_id and group_id and perms:
+    if api_access_company_admin(access_token) and group_id and group_id and perms:
         if perms[-1:] == ',':
             perms = perms[:-1]
         perms = perms.split(',')
@@ -306,7 +306,7 @@ def update_perm(request, token):
 
 @csrf_exempt
 @access_token_required
-def add_group(request, token):
+def add_group(request, access_token):
     conf = _get_config(request)
 
     response = HttpResponse()
@@ -335,9 +335,9 @@ def add_group(request, token):
                 }
             }
 
-            if api_access_admin(token):
+            if api_access_admin(access_token):
                 response.content = client.create_group(group)
-            elif api_access_company_admin(token):
+            elif api_access_company_admin(access_token):
                 response.content = client.create_group(group)
             else:
                 return not_authorized(request)

@@ -149,9 +149,6 @@ def _do_refresh(request, page):
 def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
     key = 'pages_js_{}'.format(page)
     cfg = _get_config(request, 'doFormat')
-    org_url = cfg['base_url']
-    issuer = cfg['iss']
-    audience = cfg['aud']
 
     list_scopes = ['openid', 'profile', 'email']
     if cfg['scopes']:
@@ -172,10 +169,10 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
             text = str(response.content, 'utf-8') \
                 .replace("{", "{{").replace("}", "}}") \
                 .replace("[[", "{").replace("]]", "}") \
-                .format(org=org_url,
-                        base_org=cfg['org'],
-                        iss=issuer,
-                        aud=audience,
+                .format(org=cfg['base_url'],
+                        base_org=cfg['org'],  # FIXME: base_org is not used anywhere
+                        iss=cfg['iss'],
+                        aud=cfg['aud'],
                         redirect=cfg['redirect_uri'],
                         auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
                         scopes=scps,

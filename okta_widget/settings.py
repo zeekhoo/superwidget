@@ -35,7 +35,8 @@ ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]']
 if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
-UNIDEMO_API = os.environ.get('UNIDEMO_API')
+# UNIDEMO_API = os.environ.get('UNIDEMO_API')
+UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
 URL = os.environ.get('URL')
 DEFAULT_PORT = os.environ.get('DEFAULT_PORT')
 OKTA_ORG = os.environ.get('OKTA_ORG')

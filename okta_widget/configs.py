@@ -12,7 +12,8 @@ import time
 class Config(object):
     def __init__(self):
         # UDP
-        self.udp_base_url = 'https://safe-escarpment-74832.herokuapp.com'
+        self.UDP_BASE_URL = settings.UDP_BASE_URL
+        self.UDP_KEY = ''
 
         # Base settings
         self.API_KEY = settings.API_KEY
@@ -91,7 +92,6 @@ class Config(object):
         print('http_host: {}'.format(http_host))
         http_host_parts = http_host.split('.')
         print('http_host_parts: {}'.format(http_host_parts))
-        # meta_http_host = ['zeekhoo', 'super', 'unidemo', 'online']
         subdomain = http_host_parts[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
@@ -141,21 +141,26 @@ class Config(object):
             }
 
             try:
-                demoapp = http_host_parts[1]
-                url = '{0}/api/configs/{1}/{2}/.well-known/default-setting'.format(self.udp_base_url, subdomain, demoapp)
-                response = requests.get(url)
-                udp = json.loads(response.content)['config']
-                # print(udp)
+                app = http_host_parts[1]
+                url_get_subdomains = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
+                udp_subdomain = json.loads(requests.get(url_get_subdomains).content)
+
+                url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
+                udp = json.loads(requests.get(url_get_configs).content)
+
+
                 config.update({
-                    'base_url': udp['base_url'].replace('https://', '').replace('http://', ''),
-                    'org': udp['base_url'].replace('https://', '').replace('http://', ''),
+                    'org':      udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'base_url': udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
                     'iss': udp['issuer'].split('/oauth2/')[1],
                     'aud': udp['client_id']
                 })
                 if 'settings' in udp:
                     udp_settings = udp['settings']
-                    if 'org' in udp_settings:
-                        config.update({'org': udp_settings['org']})
+
+                    # FIXME: base_url may be different from org if custom domain is configured.
+                    # if 'org' in udp_settings:
+                    #     config.update({'org': udp_settings['org']})
                     if 'scopes' in udp_settings:
                         config.update({'scopes': udp_settings['scopes']})
                     if 'google_idp' in udp_settings:
@@ -206,13 +211,13 @@ class Config(object):
             meta = request.META
             meta_http_host = meta['HTTP_HOST'].split('.')
             subdomain = meta_http_host[0]
-            demoapp = meta_http_host[1]
-            url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
-            response = requests.get(url)
-            fileLike = StringIO(str(response.content, 'utf-8'))
-            fileLike.seek(0)
-            parsed = dotenv_values(stream=fileLike)
-            return parsed['OKTA_API_TOKEN']
+            url = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
+            response = requests.get(url, headers={'Authorization': 'Bearer {}'.format(self.UDP_KEY)})
+            return json.loads(response.content)['okta_api_token']
+            # fileLike = StringIO(str(response.content, 'utf-8'))
+            # fileLike.seek(0)
+            # parsed = dotenv_values(stream=fileLike)
+            # return parsed['OKTA_API_TOKEN']
         except Exception as e:
             print('Exception in get_api_key: {}'.format(e))
         return self.API_KEY
@@ -222,13 +227,14 @@ class Config(object):
             meta = request.META
             meta_http_host = meta['HTTP_HOST'].split('.')
             subdomain = meta_http_host[0]
-            demoapp = meta_http_host[1]
-            url = '{0}/api/configs/{1}/{2}/secret'.format(self.udp_base_url, subdomain, demoapp)
-            response = requests.get(url)
-            fileLike = StringIO(str(response.content, 'utf-8'))
-            fileLike.seek(0)
-            parsed = dotenv_values(stream=fileLike)
-            return parsed['CLIENT_SECRET']
+            app = meta_http_host[1]
+            url = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
+            response = requests.get(url, headers={'Authorization': 'Bearer {}'.format(self.UDP_KEY)})
+            return json.loads(response.content)['client_secret']
+            # fileLike = StringIO(str(response.content, 'utf-8'))
+            # fileLike.seek(0)
+            # parsed = dotenv_values(stream=fileLike)
+            # return parsed['CLIENT_SECRET']
         except Exception as e:
             print('Exception in get_client_secret: {}'.format(e))
         return self.CLIENT_SECRET
