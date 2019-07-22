@@ -156,6 +156,7 @@ class Config(object):
 
                 url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
                 udp = json.loads(requests.get(url_get_configs).content)
+                print('udp: {}'.format(udp))
 
                 config.update({
                     'base_url': udp['okta_org_name'].replace('https://', '').replace('http://', ''),
