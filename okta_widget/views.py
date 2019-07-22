@@ -169,7 +169,8 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
             text = str(response.content, 'utf-8') \
                 .replace("{", "{{").replace("}", "}}") \
                 .replace("[[", "{").replace("]]", "}") \
-                .format(base_url=cfg['base_url'],
+                .format(base_icon=cfg['base_icon'],
+                        base_url=cfg['base_url'],
                         org=cfg['org'],
                         iss=cfg['iss'],
                         aud=cfg['aud'],

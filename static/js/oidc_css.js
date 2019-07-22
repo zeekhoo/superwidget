@@ -16,7 +16,7 @@ var oktaSignIn = new OktaSignIn({
         //smsRecovery: true,
     	//callRecovery: true,
     },
-    logo: '/static/img/gear_half.png', //more:[logo_widgico.png, gear_logo.png, gear_half.png]
+    logo: '[[base_icon]]', //more:[logo_widgico.png, gear_logo.png, gear_half.png]
     language: 'en', //more: [fr, de, es, ja, zh-CN] Full list here: https://github.com/okta/okta-signin-widget#language-and-text
     i18n: {
         'en': {

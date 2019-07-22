@@ -18,7 +18,7 @@ var oktaSignIn = new OktaSignIn({ // Caution editing this section as you may bre
     	//callRecovery: true,                  // Enable voice call-based account recovery
     },
     // Look and feel changes
-    logo: '/static/img/gear_half.png',         // This demo includes other logos. Try: [logo_widgico.png, gear_logo.png, gear_half.png]
+    logo: '[[base_icon]]',         // This demo includes other logos. Try: [logo_widgico.png, gear_logo.png, gear_half.png]
     language: 'en',                            // Try: [fr, de, es, ja, zh-CN] Full list: https://github.com/okta/okta-signin-widget#language-and-text
     i18n: {
         //Overrides default text when using English. Override other languages by adding additional sections.
