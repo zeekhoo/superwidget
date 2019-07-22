@@ -1,6 +1,6 @@
 var id_token_str = srv_id_token || '';
 var access_token_str = srv_access_token || '';
-var url = 'https://' + org;
+var baseUrl = 'https://' + base_url;
 
 var navbarApp = new Vue({
     delimiters: ['[[', ']]'],
@@ -74,11 +74,11 @@ Vue.filter('formatKey', function(value) {
 });
 
 var oktaSignIn = new OktaSignIn({
-    baseUrl: url,
+    baseUrl: baseUrl,
     clientId: aud,
     redirectUri: redirect_uri,
     authParams: {
-        issuer: url + '/oauth2/' + iss
+        issuer: baseUrl + '/oauth2/' + iss
     }
 });
 
@@ -244,7 +244,7 @@ function determinePermissions() {
 function showMyAppLinks(userId) {
     if (userId != null && userId != '') {
         $.ajax({
-            url: url + "/api/v1/users/" + userId + "/appLinks",
+            url: "https://" + org + "/api/v1/users/" + userId + "/appLinks",
             type: "GET",
             dataType: 'json',
             crossDomain: true,

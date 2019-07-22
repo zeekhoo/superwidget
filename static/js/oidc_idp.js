@@ -1,9 +1,9 @@
 var oktaSignIn = new OktaSignIn({
-    baseUrl: 'https://[[org]]',
+    baseUrl: 'https://[[base_url]]',
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
     authParams: {
-        issuer: 'https://[[org]]/oauth2/[[iss]]',
+        issuer: 'https://[[base_url]]/oauth2/[[iss]]',
         display: 'popup',
         responseType: ['id_token', 'token'],
         scopes: [[scopes]],

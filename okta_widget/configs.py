@@ -22,9 +22,8 @@ class Config(object):
         self.CLIENT_ID = settings.CLIENT_ID
         self.CLIENT_SECRET = settings.CLIENT_SECRET
 
-        # Vanity url settings
-        self.CUSTOM_LOGIN_URL = settings.CUSTOM_LOGIN_URL
-        self.BASE_URL = self.CUSTOM_LOGIN_URL if self.CUSTOM_LOGIN_URL is not None and self.CUSTOM_LOGIN_URL else self.OKTA_ORG
+        # Custom url settings
+        self.BASE_URL = settings.CUSTOM_LOGIN_URL if settings.CUSTOM_LOGIN_URL is not None and settings.CUSTOM_LOGIN_URL else self.OKTA_ORG
 
         # Derive the Redirect URIs
         self.URL = settings.URL
@@ -38,11 +37,13 @@ class Config(object):
         self.GOOGLE_IDP = settings.GOOGLE_IDP
         self.FB_IDP = settings.FB_IDP
         self.LNKD_IDP = settings.LNKD_IDP
+        self.MSFT_IDP = settings.MSFT_IDP
         self.SAML_IDP = settings.SAML_IDP
 
         # Static
         self.BASE_TITLE = settings.BASE_TITLE if settings.BASE_TITLE is not None and settings.BASE_TITLE else 'API Products Demo'
-        self.BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None and settings.BASE_ICON else static('/img/okta-brand/logo/okta32x32.png')
+        self.BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None and settings.BASE_ICON else static(
+            '/img/okta-brand/logo/okta32x32.png')
         self.DEFAULT_BACKGROUND = static('/img/okta-brand/background/SFbayBridge.jpg')
         if settings.BACKGROUND_IMAGE_DEFAULT and re.match('^/static/', settings.BACKGROUND_IMAGE_DEFAULT):
             self.BACKGROUND_IMAGE = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_DEFAULT).group(0))
@@ -53,13 +54,19 @@ class Config(object):
         else:
             self.BACKGROUND_IMAGE_CSS = settings.BACKGROUND_IMAGE_CSS
         if settings.BACKGROUND_IMAGE_AUTHJS and re.match('^/static/', settings.BACKGROUND_IMAGE_AUTHJS):
-            self.BACKGROUND_IMAGE_AUTHJS = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_AUTHJS).group(0))
+            self.BACKGROUND_IMAGE_AUTHJS = static(
+                re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_AUTHJS).group(0))
         else:
             self.BACKGROUND_IMAGE_AUTHJS = settings.BACKGROUND_IMAGE_AUTHJS
         if settings.BACKGROUND_IMAGE_IDP and re.match('^/static/', settings.BACKGROUND_IMAGE_IDP):
             self.BACKGROUND_IMAGE_IDP = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_IDP).group(0))
         else:
             self.BACKGROUND_IMAGE_IDP = settings.BACKGROUND_IMAGE_IDP
+        if settings.BACKGROUND_IMAGE_IDP_DISCO and re.match('^/static/', settings.BACKGROUND_IMAGE_IDP_DISCO):
+            self.BACKGROUND_IMAGE_IDP_DISCO = static(
+                re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_IDP_DISCO).group(0))
+        else:
+            self.BACKGROUND_IMAGE_IDP_DISCO = settings.BACKGROUND_IMAGE_IDP_DISCO
 
         # Option: IDP Discovery setting
         self.IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
@@ -86,29 +93,29 @@ class Config(object):
     def get_config(self, request):
         meta = request.META
         scheme = 'http'
-        if request.scheme == 'https' or ('HTTP_X_FORWARDED_PROTO' in meta and meta['HTTP_X_FORWARDED_PROTO']) == 'https':
+        if request.scheme == 'https' or (
+                'HTTP_X_FORWARDED_PROTO' in meta and meta['HTTP_X_FORWARDED_PROTO']) == 'https':
             scheme = 'https'
         http_host = meta['HTTP_HOST']
-        print('http_host: {}'.format(http_host))
         http_host_parts = http_host.split('.')
-        print('http_host_parts: {}'.format(http_host_parts))
+        print('http_host split: {}'.format(http_host_parts))
         subdomain = http_host_parts[0]
 
         if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
-            print('{0}################## already configured {1}###################'.format(time.time(), request.session.session_key))
+            print('{0}################## already configured {1}###################'.format(time.time(),
+                                                                                           request.session.session_key))
             config = request.session['config']
         else:
             url = self.URL
             if url is not None:
                 host_string = url
                 print('host_string1 = {}'.format(host_string))
+            elif self.DEFAULT_PORT is not None:
+                host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
+                print('host_string2 = {}'.format(host_string))
             else:
-                if self.DEFAULT_PORT is not None:
-                    host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
-                    print('host_string2 = {}'.format(host_string))
-                else:
-                    host_string = '{0}://{1}'.format(scheme, http_host)
-                    print('host_string3 = {}'.format(host_string))
+                host_string = '{0}://{1}'.format(scheme, http_host)
+                print('host_string3 = {}'.format(host_string))
 
             config = {
                 'host': host_string,
@@ -125,6 +132,7 @@ class Config(object):
                 'google_idp': self.GOOGLE_IDP,
                 'fb_idp': self.FB_IDP,
                 'lnkd_idp': self.LNKD_IDP,
+                'msft_idp': self.MSFT_IDP,
                 'saml_idp': self.SAML_IDP,
                 'base_title': self.BASE_TITLE,
                 'base_icon': self.BASE_ICON,
@@ -148,19 +156,17 @@ class Config(object):
                 url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
                 udp = json.loads(requests.get(url_get_configs).content)
 
-
                 config.update({
-                    'org':      udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
                     'base_url': udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
-                    'iss': udp['issuer'].split('/oauth2/')[1],
-                    'aud': udp['client_id']
+                    'org':      udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'iss':      udp['issuer'].split('/oauth2/')[1],
+                    'aud':      udp['client_id']
                 })
                 if 'settings' in udp:
                     udp_settings = udp['settings']
 
-                    # FIXME: base_url may be different from org if custom domain is configured.
-                    # if 'org' in udp_settings:
-                    #     config.update({'org': udp_settings['org']})
+                    if 'custom_login_url' in udp_settings:
+                        config.update({'base_url': udp_settings['custom_login_url']})
                     if 'scopes' in udp_settings:
                         config.update({'scopes': udp_settings['scopes']})
                     if 'google_idp' in udp_settings:
@@ -169,6 +175,8 @@ class Config(object):
                         config.update({'fb_idp': udp_settings['fb_idp']})
                     if 'lnkd_idp' in udp_settings:
                         config.update({'lnkd_idp': udp_settings['lnkd_idp']})
+                    if 'msft_idp' in udp_settings:
+                        config.update({'msft_idp': udp_settings['msft_idp']})
                     if 'saml_idp' in udp_settings:
                         config.update({'saml_idp': udp_settings['saml_idp']})
                     if 'base_title' in udp_settings:
@@ -183,6 +191,8 @@ class Config(object):
                         config.update({'background_authjs': udp_settings['background_authjs']})
                     if 'background_idp' in udp_settings:
                         config.update({'background_idp': udp_settings['background_idp']})
+                    if 'background_idp_disco' in udp_settings:
+                        config.update({'background_idp_disco': udp_settings['background_idp_disco']})
                     if 'idp_disco_page' in udp_settings:
                         config.update({'idp_disco_page': udp_settings['idp_disco_page']})
                     else:
@@ -201,7 +211,8 @@ class Config(object):
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
 
-            print('{0}################## INIT CONFIG {1}###################'.format(time.time(), request.session.session_key))
+            print('{0}################## INIT CONFIG {1}###################'.format(time.time(),
+                                                                                    request.session.session_key))
             request.session['config'] = config
             request.session['subdomain'] = subdomain
         return config
@@ -249,7 +260,7 @@ class Config(object):
 
 
 def _resolve_redirect_uri(redirect_uri, host):
-    return redirect_uri\
+    return redirect_uri \
         .replace('[[', '{') \
         .replace(']]', '}') \
         .format(host=host)

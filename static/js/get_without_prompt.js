@@ -1,10 +1,8 @@
-var org = 'https://[[org]]';
-
 var options = {
-    url: org,
+    url: 'https://[[base_url]]',
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
-    issuer: org + '/oauth2/[[iss]]'
+    issuer: 'https://[[base_url]]/oauth2/[[iss]]'
 }
 
 var authClient = new OktaAuth(options);

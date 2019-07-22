@@ -1,5 +1,4 @@
-var org = 'https://[[org]]';
-var redirect = org + '/oauth2/v1/authorize'
+var redirect = 'https://[[base_url]]/oauth2/v1/authorize'
     + '?response_type=token'
     + '&client_id=[[aud]]'
     + '&scope=okta.users.read'

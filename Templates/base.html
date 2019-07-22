@@ -23,9 +23,9 @@
 
       <link href="{% static 'css/demo.css' %}" rel="stylesheet">
 
-      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/js/okta-sign-in.min.js" type="text/javascript"></script>
-      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
-      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.19.0/css/okta-theme.css" type="text/css" rel="stylesheet">
+      <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.21.0/js/okta-sign-in.min.js" type="text/javascript"></script>
+      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.21.0/css/okta-sign-in.min.css" type="text/css" rel="stylesheet">
+      <link href="https://ok1static.oktacdn.com/assets/js/sdk/okta-signin-widget/2.21.0/css/okta-theme.css" type="text/css" rel="stylesheet">
       <script src="https://ok1static.oktacdn.com/assets/js/sdk/okta-auth-js/1.17.0/okta-auth-js.min.js" type="text/javascript"></script>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" type="text/javascript"></script>
@@ -36,7 +36,8 @@
     {% block head_js %}{% endblock head_js %}
 
       <script>
-        var org = '{{ base_url }}';
+        var org = '{{ org }}';
+        var base_url = '{{ base_url }}'
         var aud = '{{ aud }}';
         var iss = '{{ iss }}';
         var redirect_uri = '{{ redirect_uri }}';

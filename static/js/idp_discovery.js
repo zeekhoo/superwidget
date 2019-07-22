@@ -1,5 +1,5 @@
 var oktaSignIn = new OktaSignIn({
-    baseUrl: 'https://[[org]]',
+    baseUrl: 'https://[[base_url]]',
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
     idpDiscovery: {

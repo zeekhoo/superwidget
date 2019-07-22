@@ -1,9 +1,9 @@
 function do_login(un, pw) {
     var authClient = new OktaAuth({
-        url: 'https://[[org]]',
+        url: 'https://[[base_url]]',
         clientId: '[[aud]]',
         redirectUri: '[[redirect]]',
-        issuer: 'https://[[org]]/oauth2/[[iss]]'
+        issuer: 'https://[[base_url]]/oauth2/[[iss]]'
     });
 
     authClient.signIn({

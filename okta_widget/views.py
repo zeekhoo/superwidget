@@ -169,8 +169,8 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
             text = str(response.content, 'utf-8') \
                 .replace("{", "{{").replace("}", "}}") \
                 .replace("[[", "{").replace("]]", "}") \
-                .format(org=cfg['base_url'],
-                        base_org=cfg['org'],  # FIXME: base_org is not used anywhere
+                .format(base_url=cfg['base_url'],
+                        org=cfg['org'],
                         iss=cfg['iss'],
                         aud=cfg['aud'],
                         redirect=cfg['redirect_uri'],
@@ -403,7 +403,8 @@ def activation_view(request, slug):
                 res = auth.authn(username, pw)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://' + cfg['org'] + cfg['login_noprompt_bookmark'] + '?sessionToken={}'.format(session_token))
+                    return redirect('https://{0}{1}?sessionToken={2}'.format(cfg['org'], cfg['login_noprompt_bookmark'], session_token))
+                    # FIXME: login_noprompt_bookmark is deprecated
 
             return HttpResponseRedirect(reverse('registration_success'))
         except Exception as e:
@@ -469,7 +470,9 @@ def activation_wo_token_view(request):
                 res = auth.authn(request.session['verification_username'], password1)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://' + cfg['org'] + cfg['idp_disco_page'] + '?sessionToken={}'.format(session_token))
+                    return redirect('https://{0}{1}?sessionToken={2}'.format(cfg['org'], cfg['idp_disco_page'], session_token))
+                    # FIXME: idp_disco_page is deprecated
+
         else:
             print('invalid form')
     else:
