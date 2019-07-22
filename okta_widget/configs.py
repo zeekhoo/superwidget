@@ -151,15 +151,15 @@ class Config(object):
 
             try:
                 app = http_host_parts[1]
-                url_get_subdomains = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
-                udp_subdomain = json.loads(requests.get(url_get_subdomains).content)
+                # url_get_subdomains = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
+                # udp_subdomain = json.loads(requests.get(url_get_subdomains).content)
 
                 url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
                 udp = json.loads(requests.get(url_get_configs).content)
 
                 config.update({
-                    'base_url': udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
-                    'org':      udp_subdomain['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'base_url': udp['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'org':      udp['okta_org_name'].replace('https://', '').replace('http://', ''),
                     'iss':      udp['issuer'].split('/oauth2/')[1],
                     'aud':      udp['client_id']
                 })
