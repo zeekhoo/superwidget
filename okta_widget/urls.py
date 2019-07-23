@@ -14,9 +14,12 @@ urlpatterns = [
     url(r'^login$', view_login, name='login'),
     url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
     url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
-    url(r'^logout$', view_logout, name='logout'),
     url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
     url(r'^auth-groupadmin', view_auth_groupadmin, name='auth_groupadmin'),
+
+    # login
+    url(r'^logout$', view_logout, name='logout'),
+    url(r'^clear-session', clear_session, name='clear_session'),
 
     # profile page
     url(r'^profile$', view_profile, name='profile'),

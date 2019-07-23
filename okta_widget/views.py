@@ -303,6 +303,12 @@ def view_logout(request):
     return render(request, 'logged_out.html', conf)
 
 
+def clear_session(request):
+    conf = _get_config(request, 'logout')
+    logout_all(request)
+    return render(request, 'logged_out.html', conf)
+
+
 # Sample custom registration form
 def registration_view(request):
     cfg = _get_config(request, 'reg')

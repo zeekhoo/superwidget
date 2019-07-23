@@ -69,6 +69,11 @@ def logout(request):
             del request.session[key]
 
 
+def logout_all(request):
+    for key in list(request.session.keys()):
+        del request.session[key]
+
+
 def is_admin(request):
     if can_delegate(request):
         return True
