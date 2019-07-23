@@ -169,8 +169,10 @@ class Config(object):
                     if 'settings' in udp:
                         udp_settings = udp['settings']
 
-                        if 'custom_login_url' in udp_settings:
+                        if 'custom_login_url' in udp_settings \
+                                and len(udp_settings['custom_login_url']) > 0:
                             config.update({'base_url': udp_settings['custom_login_url']})
+
                         if 'scopes' in udp_settings:
                             config.update({'scopes': udp_settings['scopes']})
                         if 'google_idp' in udp_settings:
