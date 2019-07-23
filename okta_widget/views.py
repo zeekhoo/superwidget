@@ -94,7 +94,7 @@ def view_login(request, recoveryToken=None):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
     return render(request, 'index.html', conf)
 
 
@@ -198,7 +198,7 @@ def view_login_css(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
 
     return render(request, 'index_css.html', conf)
 
@@ -211,15 +211,16 @@ def view_login_custom(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        conf = _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
+        _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
     return render(request, 'index_login-form.html', conf);
 
 
 @csrf_exempt
 def okta_hosted_login(request):
+    conf = _get_config(request, 'okta_hosted')
     page = 'okta_hosted_login'
     request.session['entry_page'] = page
-    conf = _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
+    _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     return render(request, 'customized-okta-hosted.html', conf)
 
 
@@ -260,7 +261,7 @@ def view_login_idp(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
+        _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
     return render(request, 'index_idp.html', conf)
 
 
@@ -273,7 +274,7 @@ def view_login_disco(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        conf = _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
+        _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
     return render(request, 'index_idp_disco.html', conf)
 
 
@@ -285,6 +286,11 @@ def view_admin(request):
     if can_delegate(request):
         _update_conf(request, {"allow_impersonation": True, "js": ""})
 
+    _update_conf(request, {
+        'profile': json.dumps(get_profile(request)),
+        "srv_access_token": get_access_token(request),
+        "srv_id_token": get_id_token(request)
+    })
     return render(request, 'admin.html', conf)
 
 

@@ -5,7 +5,7 @@ $("#sw").keyup(function(event) {
 });
 
 
-var authClient = new OktaAuth({url: 'https://{{ base_url }}'});
+var authClient = new OktaAuth({url: 'https://' + base_url});
 var accessToken = '';
 if (srv_access_token != '') {
     //get the accessToken from session if it exists

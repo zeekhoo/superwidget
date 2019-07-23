@@ -4,7 +4,6 @@ from .views import *
 
 
 urlpatterns = [
-    url(r'^admin/', view_admin, name='admin'),
     url(r'^edit-profile/', edit_profile, name='edit-profile'),
 
     # home
@@ -24,6 +23,7 @@ urlpatterns = [
     url(r'^profile$', view_profile, name='profile'),
 
     # admin/crud
+    url(r'^admin/', view_admin, name='admin'),
     url(r'^list-users', list_users, name='list_users'),
     url(r'^list-user', list_user, name='list_user'),
     url(r'^add-users', add_users, name='add_users'),

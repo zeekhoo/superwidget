@@ -112,7 +112,6 @@ function showToken() {
         profileApp.idTokenHeader = prettyPrint(window.atob(id_token_parts[0]));
         profileApp.idTokenBody = prettyPrint(window.atob(id_token_parts[1]));
     }
-
     profileApp.prfl = profileOverride();
     navbarApp.nameLabel = profileApp.prfl.name;
 
@@ -127,7 +126,6 @@ function showToken() {
 
     if (profileApp.accessToken.user_context && profileApp.idToken.preferred_username != profileApp.accessToken.user_context.login)
         profileApp.impersonationMode = true;
-
 
     // After setting showAdminButton, we can set showDelegateButton
     if (!profileApp.impersonationMode) {
