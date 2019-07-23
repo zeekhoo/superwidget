@@ -97,9 +97,9 @@ class Config(object):
         http_host = meta['HTTP_HOST']
         http_host_parts = http_host.split('.')
         print('http_host split: {}'.format(http_host_parts))
-        ok_to_read = True
-        if re.match('^localhost:[0-9]+$', http_host_parts[0]) or re.match('^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$', http_host_parts[0]):
-            ok_to_read = False
+        read_the_config = True
+        if re.match('^localhost:[0-9]+$', http_host_parts[0]) or re.match('^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$', http_host):
+            read_the_config = False
 
         subdomain = http_host_parts[0]
 
@@ -153,7 +153,7 @@ class Config(object):
                 'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT
             }
 
-            if ok_to_read:
+            if read_the_config:
                 try:
                     app = http_host_parts[1]
                     url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
