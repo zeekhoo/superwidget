@@ -126,7 +126,7 @@ def view_login_auto(request):
     if referrer and referrer != '':
         request.session['entry_page'] = referrer
 
-    conf.update({"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    _update_conf(request, {"js": _do_format(request, '/js/get_without_prompt.js', page)})
 
     saved_entry_page = request.session['entry_page']
     logout(request)
