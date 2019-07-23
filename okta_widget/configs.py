@@ -4,9 +4,7 @@ from .client.apps_client import AppsClient
 import re
 import requests
 import json
-from io import StringIO
-from dotenv import dotenv_values
-import time
+from datetime import datetime
 
 
 class Config(object):
@@ -101,9 +99,11 @@ class Config(object):
         print('http_host split: {}'.format(http_host_parts))
         subdomain = http_host_parts[0]
 
-        if 'config' in request.session and 'subdomain' in request.session and request.session['subdomain'] == subdomain:
-            print('{0}################## already configured {1}###################'.format(time.time(),
-                                                                                           request.session.session_key))
+        session_key = request.session.session_key
+        if 1 ==2 and 'config' in request.session \
+                and 'subdomain' in request.session \
+                and request.session['subdomain'] == subdomain:
+            print('{0}################## already configured {1}###################'.format(datetime.now(), session_key))
             config = request.session['config']
         else:
             url = self.URL
@@ -151,9 +151,6 @@ class Config(object):
 
             try:
                 app = http_host_parts[1]
-                # url_get_subdomains = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
-                # udp_subdomain = json.loads(requests.get(url_get_subdomains).content)
-
                 url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
                 udp = json.loads(requests.get(url_get_configs).content)
                 print('udp: {}'.format(udp))
@@ -213,8 +210,7 @@ class Config(object):
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
 
-            print('{0}################## INIT CONFIG {1}###################'.format(time.time(),
-                                                                                    request.session.session_key))
+            print('{0}################## INIT CONFIG {1}###################'.format(datetime.now(), session_key))
             request.session['config'] = config
             request.session['subdomain'] = subdomain
         return config
@@ -231,10 +227,6 @@ class Config(object):
             }
             response = requests.get(url, headers=headers)
             return response.json()['okta_api_token']
-            # fileLike = StringIO(str(response.content, 'utf-8'))
-            # fileLike.seek(0)
-            # parsed = dotenv_values(stream=fileLike)
-            # return parsed['OKTA_API_TOKEN']
         except Exception as e:
             print('Exception in get_api_key: {}'.format(e))
         return self.API_KEY
@@ -252,10 +244,6 @@ class Config(object):
             }
             response = requests.get(url, headers=headers)
             return json.loads(response.content)['client_secret']
-            # fileLike = StringIO(str(response.content, 'utf-8'))
-            # fileLike.seek(0)
-            # parsed = dotenv_values(stream=fileLike)
-            # return parsed['CLIENT_SECRET']
         except Exception as e:
             print('Exception in get_client_secret: {}'.format(e))
         return self.CLIENT_SECRET

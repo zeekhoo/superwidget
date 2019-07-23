@@ -5,7 +5,6 @@ from .views import *
 
 urlpatterns = [
     url(r'^admin/', view_admin, name='admin'),
-    url(r'^debug/', view_debug, name='debug'),
     url(r'^edit-profile/', edit_profile, name='edit-profile'),
 
     # home

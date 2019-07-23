@@ -70,7 +70,7 @@ def _resolve_redirect_uri(redirect_uri, host):
 
 
 def _get_config(request, calledFrom=None):
-    print('{0}################## getConfig from {1}'.format(time.time(), calledFrom))
+    print('{0}################## getConfig from {1}'.format(datetime.now(), calledFrom))
     conf = config.get_config(request)
     return conf
 
@@ -79,6 +79,7 @@ def _update_conf(request, obj):
     conf = request.session['config']
     conf.update(obj)
     request.session['config'] = conf
+    return conf
 
 
 @csrf_exempt
@@ -90,7 +91,7 @@ def view_login(request, recoveryToken=None):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
+        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_base.js', page)})
     return render(request, 'index.html', conf)
 
 
@@ -194,7 +195,7 @@ def view_login_css(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
+        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_css.js', page)})
 
     return render(request, 'index_css.html', conf)
 
@@ -207,16 +208,15 @@ def view_login_custom(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
+        conf = _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
     return render(request, 'index_login-form.html', conf);
 
 
 @csrf_exempt
 def okta_hosted_login(request):
-    conf = _get_config(request, 'hosted')
     page = 'okta_hosted_login'
     request.session['entry_page'] = page
-    _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
+    conf = _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     return render(request, 'customized-okta-hosted.html', conf)
 
 
@@ -257,7 +257,7 @@ def view_login_idp(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
+        conf = _update_conf(request, {"js": _do_format(request, '/js/oidc_idp.js', page, idps=idps, btns=btns)})
     return render(request, 'index_idp.html', conf)
 
 
@@ -270,7 +270,7 @@ def view_login_disco(request):
     if request.method == 'POST':
         return _do_refresh(request, page)
     else:
-        _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
+        conf = _update_conf(request, {"js": _do_format(request, '/js/idp_discovery.js', page, embed_link=conf['idp_disco_page'])})
     return render(request, 'index_idp_disco.html', conf)
 
 
@@ -283,10 +283,6 @@ def view_admin(request):
         _update_conf(request, {"allow_impersonation": True, "js": ""})
 
     return render(request, 'admin.html', conf)
-
-
-def view_debug(request):
-    return render(request, 'debug.html', {'meta': request.META})
 
 
 def view_logout(request):
@@ -650,3 +646,6 @@ def process_creds(request):
 #     response.content = content
 #
 #     return response
+
+# def view_debug(request):
+#     return render(request, 'debug.html', {'meta': request.META})
