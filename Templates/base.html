@@ -62,7 +62,7 @@
           <div class="container-fluid">
               <div class="navbar-header">
                   {% if 'profile' not in request.session %}
-                  <a class="navbar-brand" href="{% url 'login' %}">Home</a>
+                  <a class="navbar-brand" href="{% url 'login_default' %}">Home</a>
                   {% else %}
                   <a class="navbar-brand" href="{% url 'profile' %}">Welcome, [[ nameLabel ]]!</a>
                   {% endif %}
@@ -76,7 +76,7 @@
                   <ul class="nav navbar-nav">
                       {% if 'profile' not in request.session %}
                       <li><a href="{% url 'login_css' %}">Example Custom css</a></li>
-                      <li><a href="{% url 'okta_hosted_login' %}">OnClick > Redirect</a></li>
+                      <li><a href="{% url 'login_okta_hosted' %}">OnClick > Redirect</a></li>
                       <li><a href="{% url 'login_custom' %}">No-widget</a></li>
                       <li><a href="{% url 'login_idp' %}">Social/IdP Login</a></li>
                       {% if idp_disco_page != 'None' %}

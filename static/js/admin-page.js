@@ -10,10 +10,12 @@ var accessToken = '';
 if (srv_access_token != '') {
     //get the accessToken from session if it exists
     accessToken = srv_access_token;
-} else if (authClient.tokenManager.get('accessToken')) {
+}
+else if (authClient.tokenManager.get('accessToken')) {
     //get the accessToken stored in local storage
     accessToken = authClient.tokenManager.get('accessToken').accessToken;
 }
+
 showToken();
 
 var adminButtonsApp = new Vue({
@@ -95,7 +97,8 @@ var idToken = '';
 if (srv_id_token != '') {
     //get the idToken from session if it exists
     idToken = srv_id_token;
-} else if (authClient.tokenManager.get('idToken')) {
+}
+else if (authClient.tokenManager.get('idToken')) {
     //get the idToken stored in local storage
     idToken = authClient.tokenManager.get('idToken').idToken;
 }

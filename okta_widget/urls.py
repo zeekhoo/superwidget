@@ -9,7 +9,7 @@ urlpatterns = [
     # home
     url(r'^$', view_home, name='home'),
     url(r'^tokens$', view_tokens, name='tokens'),
-    url(r'^login$', view_login, name='login'),
+    url(r'^login$', view_login, name='login_default'),
     url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
     url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
     url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
@@ -44,7 +44,7 @@ urlpatterns = [
 
     # alternate login pages
     url(r'^login-css$', view_login_css, name='login_css'),
-    url(r'^for-okta-hosted$', okta_hosted_login, name='okta_hosted_login'),
+    url(r'^for-okta-hosted$', okta_hosted_login, name='login_okta_hosted'),
     url(r'^login-idp$', view_login_idp, name='login_idp'),
     url(r'^login-disco', view_login_disco, name='login_idp_disco'),
     url(r'^login-form$', view_login_custom, name='login_custom'),

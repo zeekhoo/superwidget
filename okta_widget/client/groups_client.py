@@ -29,12 +29,12 @@ class GroupsClient(object):
         if search:
             url += '&q={}'.format(search)
 
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         return requests.get(url, headers=self.headers).content
 
     def get_group_by_id(self, group_id):
         url = self.base_url + '/api/v1/groups/{0}'.format(group_id)
 
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         return requests.get(url, headers=self.headers).content
 

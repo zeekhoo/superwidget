@@ -40,14 +40,14 @@ class AppsClient(object):
             return {}
 
         url = self.base_url + '/api/v1/apps/{0}/groups/{1}'.format(self.client_id, group_id)
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content
 
     def update_app_group(self, group_id=None, perms=[]):
         url = self.base_url + '/api/v1/apps/{0}/groups/{1}'.format(self.client_id, group_id)
 
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         if group_id is None:
             return {}
         else:
@@ -56,6 +56,6 @@ class AppsClient(object):
 
     def get_schema(self):
         url = self.base_url + '/api/v1/meta/schemas/apps/{}/default'.format(self.client_id)
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content

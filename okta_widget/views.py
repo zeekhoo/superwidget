@@ -9,6 +9,7 @@ from .client.users_client import UsersClient
 from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from .configs import *
+import time
 
 
 config = Config()
@@ -76,13 +77,17 @@ def _resolve_redirect_uri(redirect_uri, host):
 def _get_config(request, calledFrom=None):
     start = datetime.now()
     print('{0}################## getConfig from {1}'.format(start, calledFrom))
-    if calledFrom == 'doFormat':
+    try:
+        if calledFrom.startswith('login_') or calledFrom.startswith('reg_'):
+            conf = config.get_config(request)
+        else:
+            conf = request.session['config']
+    except Exception as e:
+        print(e)
         conf = request.session['config']
-    else:
-        conf = config.get_config(request)
     end = datetime.now()
     diff = end - start
-    print('{0}################## done ({1})'.format(end, diff))
+    print('{0}################## time:({1})'.format(end, diff))
     return conf
 
 
@@ -95,9 +100,10 @@ def _update_conf(request, obj):
 
 @csrf_exempt
 def view_login(request, recoveryToken=None):
-    conf = _get_config(request, 'default')
     unused = recoveryToken
-    page = 'login'
+
+    page = 'login_default'
+    conf = _get_config(request, page)
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
@@ -107,11 +113,11 @@ def view_login(request, recoveryToken=None):
 
 
 def view_auth_groupadmin(request):
-    conf = _get_config(request, 'groupadmin')
+    page = 'groupadmin'
+    conf = _get_config(request, page)
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
-    page = 'login_groupadmin'
 
     referrer = ''
     if 'from' in request.GET:
@@ -125,12 +131,17 @@ def view_auth_groupadmin(request):
 
 
 def view_login_auto(request):
-    conf = _get_config(request, 'auto')
     page = 'login_noprompt'
 
     referrer = ''
     if 'from' in request.GET:
         referrer = request.GET['from']
+        # redirected here from 'Idp-disco' or 'get fresh tokens'. The config is already in session
+        conf = _get_config(request, 'auto')
+    else:
+        # navigated here manually so load the config from UDP
+        conf = _get_config(request, page)
+
     if referrer and referrer != '':
         request.session['entry_page'] = referrer
 
@@ -200,8 +211,8 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
 
 @csrf_exempt
 def view_login_css(request):
-    conf = _get_config(request, 'css')
     page = 'login_css'
+    conf = _get_config(request, page)
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
@@ -213,8 +224,8 @@ def view_login_css(request):
 
 @csrf_exempt
 def view_login_custom(request):
-    conf = _get_config(request, 'custom')
     page = 'login_custom'
+    conf = _get_config(request, page)
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
@@ -225,8 +236,8 @@ def view_login_custom(request):
 
 @csrf_exempt
 def okta_hosted_login(request):
-    conf = _get_config(request, 'okta_hosted')
-    page = 'okta_hosted_login'
+    page = 'login_okta_hosted'
+    conf = _get_config(request, page)
     request.session['entry_page'] = page
     _update_conf(request, {"js": _do_format(request, '/js/default-okta-signin-pg.js', page)})
     return render(request, 'customized-okta-hosted.html', conf)
@@ -234,7 +245,8 @@ def okta_hosted_login(request):
 
 @csrf_exempt
 def view_login_idp(request):
-    conf = _get_config(request, 'idp')
+    page = 'login_idp'
+    conf = _get_config(request, page)
     idps = '['
     if conf['google_idp'] is not None and (len(conf['google_idp'])>0):
         idps += "\n      {{type: 'GOOGLE', id: '{}'}},".format(conf['google_idp'])
@@ -264,7 +276,6 @@ def view_login_idp(request):
                     + "    }"
     btns += ']'
 
-    page = 'login_idp'
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
@@ -276,8 +287,8 @@ def view_login_idp(request):
 # Demo: IdP discovery
 @csrf_exempt
 def view_login_disco(request):
-    conf = _get_config(request, 'disco')
     page = 'login_idp_disco'
+    conf = _get_config(request, page)
     request.session['entry_page'] = page
     if request.method == 'POST':
         return _do_refresh(request, page)
@@ -292,7 +303,7 @@ def view_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     if can_delegate(request):
-        _update_conf(request, {"allow_impersonation": True, "js": ""})
+        _update_conf(request, {"allow_impersonation": True})
 
     _update_conf(request, {
         'profile': json.dumps(get_profile(request)),
@@ -305,9 +316,9 @@ def view_admin(request):
 def view_logout(request):
     conf = _get_config(request, 'logout')
     if 'entry_page' in request.session:
-        page = 'login' if request.session['entry_page'] == 'okta_hosted_login' else request.session['entry_page']
+        page = 'login_default' if request.session['entry_page'] == 'login_okta_hosted' else request.session['entry_page']
     else:
-        page = 'login'
+        page = 'login_default'
 
     logout(request)
 
@@ -324,7 +335,7 @@ def clear_session(request):
 
 # Sample custom registration form
 def registration_view(request):
-    cfg = _get_config(request, 'reg')
+    conf = _get_config(request, 'reg_1')
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -343,7 +354,7 @@ def registration_view(request):
                     "password": {"value": pw}
                 }
             }
-            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
+            client = UsersClient('https://' + conf['org'], config.get_api_key(request))
             client.create_user(user=user, activate="false")
 
         try:
@@ -361,7 +372,7 @@ def registration_view(request):
 
 
 def registration_view2(request):
-    cfg = _get_config(request, 'reg2')
+    conf = _get_config(request, 'reg_2')
     if request.method == 'POST':
         form = RegistrationForm2(request.POST)
         if form.is_valid():
@@ -376,7 +387,7 @@ def registration_view2(request):
                     "login": email
                 }
             }
-            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
+            client = UsersClient('https://' + conf['org'], config.get_api_key(request))
             client.create_user(user=user, activate="false")
         try:
             print('create user {0} {1}'.format(fn, ln))
@@ -390,12 +401,12 @@ def registration_view2(request):
 
 
 def activation_view(request, slug):
-    cfg = _get_config(request, 'activate')
+    conf = _get_config(request, 'reg_activate')
     name = None
     username = None
     user_id = None
     if slug:
-        auth = AuthClient('https://' + cfg['org'])
+        auth = AuthClient('https://' + conf['org'])
         response = auth.recovery(slug)
         if response.status_code == 200:
             user = json.loads(response.content)['_embedded']['user']
@@ -418,12 +429,12 @@ def activation_view(request, slug):
                         "password": {"value": pw}
                     }
                 }
-                client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
+                client = UsersClient('https://' + conf['org'], config.get_api_key(request))
                 client.set_password(user_id=user_id, user=user)
                 res = auth.authn(username, pw)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://{0}{1}?sessionToken={2}'.format(cfg['org'], cfg['login_noprompt_bookmark'], session_token))
+                    return redirect('https://{0}{1}?sessionToken={2}'.format(conf['org'], conf['login_noprompt_bookmark'], session_token))
                     # FIXME: login_noprompt_bookmark is deprecated
 
             return HttpResponseRedirect(reverse('registration_success'))
@@ -437,7 +448,7 @@ def activation_view(request, slug):
 
 # A custom registration flow where user is created STAGED. Then an OTP is sent via Email to activate the account
 def activation_wo_token_view(request):
-    cfg = _get_config(request, 'activate2')
+    conf = _get_config(request, 'reg_activate2')
     state = None
     if request.method == 'POST':
         form = ActivationWithEmailForm(request.POST)
@@ -451,7 +462,7 @@ def activation_wo_token_view(request):
             password1 = form.cleaned_data['password1']
             password2 = form.cleaned_data['password2']
 
-            client = UsersClient('https://' + cfg['org'], config.get_api_key(request))
+            client = UsersClient('https://' + conf['org'], config.get_api_key(request))
             user = json.loads(client.get_user(email))
 
             if state == 'verify-email':
@@ -486,11 +497,11 @@ def activation_wo_token_view(request):
                 }
                 setpassword = client.set_password(user_id=request.session['verification_user_id'], user=payload)
                 activate = client.activate(user_id=request.session['verification_user_id'])
-                auth = AuthClient('https://' + cfg['org'])
+                auth = AuthClient('https://' + conf['org'])
                 res = auth.authn(request.session['verification_username'], password1)
                 if res.status_code == 200:
                     session_token = json.loads(res.content)['sessionToken']
-                    return redirect('https://{0}{1}?sessionToken={2}'.format(cfg['org'], cfg['idp_disco_page'], session_token))
+                    return redirect('https://{0}{1}?sessionToken={2}'.format(conf['org'], conf['idp_disco_page'], session_token))
                     # FIXME: idp_disco_page is deprecated
 
         else:
@@ -522,7 +533,7 @@ def oauth2_post(request):
     id_token = None
     code = None
     if request.method == 'POST':
-        print('POST request: {}'.format(request.POST))
+        # print('POST request: {}'.format(request.POST))
         if 'code' in request.POST:
             code = request.POST['code']
         if 'access_token' in request.POST:
@@ -530,7 +541,7 @@ def oauth2_post(request):
         if 'id_token' in request.POST:
             id_token = request.POST['id_token']
     elif request.method == 'GET':
-        print('GET request: {}'.format(request.GET))
+        # print('GET request: {}'.format(request.GET))
         if 'code' in request.GET:
             code = request.GET['code']
         if 'state' in request.GET:

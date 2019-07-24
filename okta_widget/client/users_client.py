@@ -18,7 +18,7 @@ class UsersClient(object):
 
     def create_user(self, user, activate=False):
         url = self.base_url + '/api/v1/users?activate={}'.format(activate)
-        print('url = {}'.format(url))
+        # print('url = {}'.format(url))
         response = requests.post(url, headers=self.headers, data=json.dumps(user))
         return response
 
@@ -58,7 +58,7 @@ class UsersClient(object):
         if search is not None:
             url += '&search=profile.login sw "{0}"'.format(search)
 
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
         response = requests.get(url, headers=self.headers)
         return response.content.decode('utf-8')
 
@@ -68,7 +68,7 @@ class UsersClient(object):
 
         url = self.base_url + '/api/v1/users/{0}'.format(user_id)
         response = requests.get(url, headers=self.headers)
-        print('url={0}, status={1}'.format(url, response.status_code))
+        # print('url={0}, status={1}'.format(url, response.status_code))
         if response.status_code != 200:
             print(response.content)
         return response.content.decode('utf-8')
@@ -86,7 +86,7 @@ class UsersClient(object):
         if s != '':
             url += '&search={}'.format(s)
 
-        print('url={}'.format(url))
+        # print('url={}'.format(url))
 
         response = requests.get(url, headers=self.headers)
         return response.content.decode('utf-8')

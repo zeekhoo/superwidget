@@ -1,7 +1,7 @@
 import requests
 import json
 import base64
-from django.conf import settings
+import urllib3
 
 
 class OAuth2Client(object):
@@ -28,18 +28,18 @@ class OAuth2Client(object):
             auth = {'Authorization': 'Basic ' + self.basic}
         response = requests.post(url, data=payload, headers=auth)
         tokens = response.json()
-        print('tokens = {}'.format(tokens))
+        # print('tokens = {}'.format(tokens))
         return tokens
 
     def profile(self, token):
         url = '{0}/oauth2/{1}/v1/userinfo'.format(self.base_url, self.auth_server)
-        print('userinfo url={}'.format(url))
+        # print('userinfo url={}'.format(url))
 
         headers = {'Authorization': 'Bearer ' + token}
         profile = {}
         try:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             response = requests.post(url, headers=headers, verify=False)
-            print('response = {}'.format(response))
             if response.status_code == 200:
                 profile = response.json()
         except Exception as e:
@@ -67,12 +67,12 @@ def _tokenIssuer(token):
         payload = parts[1]
         payload += '=' * (-len(payload) % 4)
         decoded = base64.b64decode(payload)
-        print('payload = {}'.format(decoded))
+        # print('payload = {}'.format(decoded))
         iss = json.loads(decoded)['iss']
     except Exception as e:
         print('there was an exception: {}'.format(e))
         return None
-    print('iss = {}'.format(iss))
+    # print('iss = {}'.format(iss))
     return iss
 
 
