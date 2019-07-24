@@ -67,4 +67,7 @@ urlpatterns = [
     # error pages
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
     url(r'^not-authorized/$', not_authorized, name='not_authorized'),
+
+    # health check
+    url(r'^health/$', health_check, name='health_check'),
 ]

@@ -14,6 +14,10 @@ from .configs import *
 config = Config()
 
 
+def health_check(request):
+    return render(request, 'health_check.html')
+
+
 def view_home(request):
     if is_logged_in(request):
         return HttpResponseRedirect(reverse('profile'))
@@ -531,7 +535,7 @@ def oauth2_post(request):
     if code:
         client = OAuth2Client('https://' + conf['org'], conf['iss'], conf['aud'], config.get_client_secret(request))
         tokens = client.token(code, conf['redirect_uri'])
-        print('Tokens from the code retrieval {}'.format(tokens))
+        # print('Tokens from the code retrieval {}'.format(tokens))
         if tokens['access_token']:
             access_token = tokens['access_token']
         if tokens['id_token']:
@@ -539,7 +543,7 @@ def oauth2_post(request):
 
     if access_token:
         # In the real world, you should validate the access_token. But this demo app is going to skip that part.
-        print('access_token = {}'.format(access_token))
+        # print('access_token = {}'.format(access_token))
         client = OAuth2Client('https://' + conf['org'], conf['iss'])
         profile = client.profile(access_token)
         set_profile(request, profile)
@@ -547,7 +551,7 @@ def oauth2_post(request):
 
     if id_token:
         # In the real world, you should validate the id_token. But this demo app is going to skip that part.
-        print('id_token = {}'.format(id_token))
+        # print('id_token = {}'.format(id_token))
         set_id_token(request, id_token)
 
     return HttpResponseRedirect(reverse('home'))
