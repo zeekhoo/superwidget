@@ -74,11 +74,15 @@ def _resolve_redirect_uri(redirect_uri, host):
 
 
 def _get_config(request, calledFrom=None):
-    print('{0}################## getConfig from {1}'.format(datetime.now(), calledFrom))
+    start = datetime.now()
+    print('{0}################## getConfig from {1}'.format(start, calledFrom))
     if calledFrom == 'doFormat':
         conf = request.session['config']
     else:
         conf = config.get_config(request)
+    end = datetime.now()
+    diff = end - start
+    print('{0}################## done ({1})'.format(end, diff))
     return conf
 
 
