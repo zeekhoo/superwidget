@@ -35,7 +35,6 @@ ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]']
 if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
-# UNIDEMO_API = os.environ.get('UNIDEMO_API')
 UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
 UDP_KEY = os.environ.get('UDP_KEY')
 URL = os.environ.get('URL')
@@ -62,11 +61,17 @@ BACKGROUND_IMAGE_IDP_DISCO = os.environ.get('BACKGROUND_IMAGE_IDP_DISCO')
 REDIRECT_URI = os.environ.get('REDIRECT_URI')
 IDP_DISCO_PAGE = os.environ.get('IDP_DISCO_PAGE')
 LOGIN_NOPROMPT_BOOKMARK = os.environ.get('LOGIN_NOPROMPT_BOOKMARK')
-
 APP_PERMISSIONS_CLAIM = os.environ.get('APP_PERMISSIONS_CLAIM')
 API_PERMISSIONS_CLAIM = os.environ.get('API_PERMISSIONS_CLAIM')
-
 DELEGATION_SERVICE_ENDPOINT = os.environ.get('DELEGATION_SERVICE_ENDPOINT')
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.environ.get('REDIS_PORT')
+if REDIS_HOST is None:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+else:
+    SESSION_ENGINE = 'redis_sessions.session'
+if REDIS_PORT is None:
+    REDIS_PORT = 6379
 
 # IMPERSONATION_VERSION = os.environ.get('IMPERSONATION_VERSION')
 # IMPERSONATION_ORG = os.environ.get('IMPERSONATION_ORG')
@@ -124,6 +129,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'okta_widget.wsgi.application'
 
+SESSION_COOKIE_AGE = 86400
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_REDIS = {
+    'host': REDIS_HOST,
+    'port': REDIS_PORT,
+    'db': 0,
+    'password': '',
+    'prefix': 'session',
+    'socket_timeout': 1
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

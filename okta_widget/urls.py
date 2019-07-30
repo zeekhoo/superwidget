@@ -70,4 +70,5 @@ urlpatterns = [
 
     # health check
     url(r'^health/$', health_check, name='health_check'),
+    url(r'^hello-redis/$', hello_redis, name='hello_redis'),
 ]

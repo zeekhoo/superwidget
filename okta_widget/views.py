@@ -10,13 +10,9 @@ from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from .configs import *
 import time
-
+import redis
 
 config = Config()
-
-
-def health_check(request):
-    return render(request, 'health_check.html')
 
 
 def view_home(request):
@@ -677,3 +673,30 @@ def process_creds(request):
 
 # def view_debug(request):
 #     return render(request, 'debug.html', {'meta': request.META})
+
+def health_check(request):
+    return render(request, 'health_check.html')
+
+
+def hello_redis(request):
+    """Example Hello Redis Program"""
+
+    # step 3: create the Redis Connection object
+    try:
+
+        # The decode_repsonses flag here directs the client to convert the responses from Redis into Python strings
+        # using the default encoding utf-8.  This is client specific.
+        r = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, password='', decode_responses=True)
+
+        # step 4: Set the hello message in Redis
+        r.set("msg:hello", "Hello Redis!!!")
+
+        # step 5: Retrieve the hello message from Redis
+        msg = r.get("msg:hello")
+        r_ctx = { 'hello_redis': msg}
+        print(msg)
+
+    except Exception as e:
+        print(e)
+
+    return render(request, 'hello_redis.html', r_ctx)
