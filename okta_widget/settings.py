@@ -30,6 +30,12 @@ if os.environ.get('SECRET_KEY') is not None:
 DEBUG = True
 if os.environ.get('DEBUG') is not None:
     DEBUG = os.environ.get('DEBUG')
+    if DEBUG == 'True':
+        DEBUG = True
+    elif DEBUG == 'False':
+        DEBUG = False
+    else:
+        DEBUG = True
 
 ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]']
 if os.environ.get('ALLOWED_HOSTS') is not None:

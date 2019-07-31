@@ -77,7 +77,11 @@ def _get_config(request, calledFrom=None):
         if calledFrom.startswith('login_') or calledFrom.startswith('reg_'):
             conf = config.get_config(request)
         else:
+            print('{0}################## get from cache id {1}'.format(datetime.now(), request.session.session_key))
             conf = request.session['config']
+            print('Debug={}'.format(settings.DEBUG))
+            if settings.DEBUG:
+                print(conf)
     except Exception as e:
         print(e)
         conf = config.get_config(request)
@@ -113,7 +117,6 @@ def view_auth_groupadmin(request):
     conf = _get_config(request, page)
     if not is_admin(request):
         return HttpResponseRedirect(reverse('not_authorized'))
-
 
     referrer = ''
     if 'from' in request.GET:
