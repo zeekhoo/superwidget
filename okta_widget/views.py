@@ -77,10 +77,8 @@ def _get_config(request, calledFrom=None):
         if calledFrom.startswith('login_') or calledFrom.startswith('reg_'):
             conf = config.get_config(request)
         else:
-            print('{0}################## get from cache id {1}'.format(datetime.now(), request.session.session_key))
+            # print('{0}################## get from cache id {1}'.format(datetime.now(), request.session.session_key))
             conf = request.session['config']
-            if settings.DEBUG:
-                print(conf)
     except Exception as e:
         print(e)
         conf = config.get_config(request)
@@ -204,6 +202,7 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
             request.session[key] = text
         except Exception as e:
             text = e
+
         return text
 
 

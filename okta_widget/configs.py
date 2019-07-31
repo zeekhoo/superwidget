@@ -102,8 +102,10 @@ class Config(object):
             read_the_config = False
 
         subdomain = http_host_parts[0]
+        app = None
 
         session_key = request.session.session_key
+
         if 1 ==2 and 'config' in request.session \
                 and 'subdomain' in request.session \
                 and request.session['subdomain'] == subdomain:
@@ -120,6 +122,10 @@ class Config(object):
             else:
                 host_string = '{0}://{1}'.format(scheme, http_host)
                 print('host_string3 = {}'.format(host_string))
+                # Debugging in localhost
+                if host_string == 'http://localhost:8000' and settings.DEBUG_SUBDOMAIN is not None and settings.DEBUG_APP is not None:
+                    subdomain = settings.DEBUG_SUBDOMAIN
+                    app = settings.DEBUG_APP
 
             config = {
                 'host': host_string,
@@ -155,7 +161,9 @@ class Config(object):
 
             if read_the_config:
                 try:
-                    app = http_host_parts[1]
+                    if not app:
+                        app = http_host_parts[1]
+
                     url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
                     udp = json.loads(requests.get(url_get_configs).content)
                     # print('udp: {}'.format(udp))
