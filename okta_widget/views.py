@@ -80,7 +80,7 @@ def _get_config(request, calledFrom=None):
             conf = request.session['config']
     except Exception as e:
         print(e)
-        conf = request.session['config']
+        conf = config.get_config(request)
     end = datetime.now()
     diff = end - start
     print('{0}################## time:({1})'.format(end, diff))
