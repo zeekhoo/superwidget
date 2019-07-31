@@ -126,6 +126,7 @@ class Config(object):
                 if host_string == 'http://localhost:8000' and settings.DEBUG_SUBDOMAIN is not None and settings.DEBUG_APP is not None:
                     subdomain = settings.DEBUG_SUBDOMAIN
                     app = settings.DEBUG_APP
+                    read_the_config = True
 
             config = {
                 'host': host_string,
@@ -163,9 +164,11 @@ class Config(object):
                 try:
                     if not app:
                         app = http_host_parts[1]
-
                     url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
+                    start = datetime.now()
                     udp = json.loads(requests.get(url_get_configs).content)
+                    end = datetime.now()
+                    print('{0}################## GET {1} ({2})'.format(end, url_get_configs, end-start))
                     # print('udp: {}'.format(udp))
 
                     config.update({
@@ -232,8 +235,13 @@ class Config(object):
     def get_api_key(self, request):
         try:
             meta = request.META
-            meta_http_host = meta['HTTP_HOST'].split('.')
-            subdomain = meta_http_host[0]
+            http_host_parts = meta['HTTP_HOST'].split('.')
+            subdomain = http_host_parts[0]
+
+            # For local development
+            if subdomain == 'localhost:8000' and settings.DEBUG_SUBDOMAIN is not None:
+                subdomain = settings.DEBUG_SUBDOMAIN
+
             url = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
             headers = {
                 'Authorization': 'Bearer {}'.format(self.UDP_KEY),
