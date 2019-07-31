@@ -79,7 +79,6 @@ def _get_config(request, calledFrom=None):
         else:
             print('{0}################## get from cache id {1}'.format(datetime.now(), request.session.session_key))
             conf = request.session['config']
-            print('Debug={}'.format(settings.DEBUG))
             if settings.DEBUG:
                 print(conf)
     except Exception as e:
