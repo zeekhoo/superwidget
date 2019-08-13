@@ -6,6 +6,7 @@ import base64
 # Option: Admin Functions
 APP_PERMISSIONS_CLAIM = settings.APP_PERMISSIONS_CLAIM
 API_PERMISSIONS_CLAIM = settings.API_PERMISSIONS_CLAIM
+API_XFER_AUTH_CLAIM = settings.API_XFER_AUTH_CLAIM
 
 if APP_PERMISSIONS_CLAIM is None or APP_PERMISSIONS_CLAIM == 'None' or APP_PERMISSIONS_CLAIM == '':
     APP_PERMISSIONS_CLAIM = 'groups'
@@ -66,6 +67,11 @@ def logout(request):
         print('deleting {}'.format(key))
         del request.session[key]
 
+def can_xfer_cash(request):
+    if APP_PERMISSIONS_CLAIM in request.session['id_token']:
+        list = _formatted_list(request.session['id_token'][APP_PERMISSIONS_CLAIM])
+        return 'xfercash' in list
+    return False
 
 def is_admin(request):
     if can_delegate(request):
@@ -111,6 +117,17 @@ def api_access_company_admin(bearer_token):
 
     return False
 
+def transfer_authorization(bearer_token):
+    print(bearer_token)
+    token = parse_bearer_token(bearer_token)
+
+    if API_XFER_AUTH_CLAIM in token:
+        print(token[API_XFER_AUTH_CLAIM])
+        return token[API_XFER_AUTH_CLAIM]
+    else:
+        return 0
+
+    return False
 
 def _formatted_list(claims_array):
     if len(claims_array) <= 0:

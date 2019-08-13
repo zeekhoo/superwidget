@@ -18,10 +18,29 @@ from okta_widget.views import not_authorized
 
 from django.http import HttpResponse
 from .authx import api_access_admin, api_access_company_admin, parse_bearer_token
+from .authx import transfer_authorization
 
 import json
 import datetime
 
+@csrf_exempt
+@access_token_required
+def transfer_money(request, token):
+    post_data = request.POST
+    authorized_amount = transfer_authorization(token)
+    requested_amount = int(post_data['amount'])
+    print('Authorized Amount: {}'.format(authorized_amount))
+    print('Requested Amount: {}'.format(requested_amount))
+    response = HttpResponse("", content_type="application/json; charset=utf-8")
+    if requested_amount <= authorized_amount:
+        retVal = '{"Status":"SUCCESS", "Message":"Success! Money has been transferred."}'
+        response.status_code = 200
+    else:
+        retVal = '{{"Status":"FAILURE", "Message":"You are unauthorized to transfer this amount of money. Requested: {}, Authorized: {}"}}'.format(requested_amount, authorized_amount)
+        response.status_code = 403
+
+    response.content = retVal
+    return response
 
 @access_token_required
 def list_users(request, token):

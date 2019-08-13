@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <p></p>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            Banking Transactions - Transfer Money (Additional Authentication May Be Required)
+          </div>
+          <div class="panel-body">
+            <div class="row">
+                <div class="col-md-3">
+                  <select class="form-control" id="from" placeholder="From Account">
+                    <option>--Choose an account--</option>
+                    <option>Jon Stillwell</option>
+                    <option>Jim Griffiths</option>
+                    <option>Stefanie Paul</option>
+                    <option>Cassie Traun</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select type="text" class="form-control" id="to" placeholder="To Account">
+                    <option>--Choose an account--</option>
+                    <option>Dan Cinnamon</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <span class="input-group-addon">$</span>
+                    <input type="number" placeholder="Amount" min="0" step="0.01" data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency" id="amount" />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <button class="btn btn-primary" id="transfer_button" type="button" onclick="post_transfer($('#amount').val())">
+                      Transfer
+                  </button>
+                </div>
+          </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Most Recent Okta Authorization Data
+      </div>
+      <div class="panel-body" id="access_token_value">
+        <div id="access_token_subject"></div>
+        <div id="access_token_xfer_auth"></div>
+        <div id="access_token_xfer_auth_message"></div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script id="theScript">{{ js|safe }}</script>
+<script>showToken()</script>
+{% endblock %}

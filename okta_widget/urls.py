@@ -3,7 +3,7 @@ from .views import not_authenticated
 from .views import not_authorized
 from .views import view_home, view_tokens, view_admin, view_debug
 from .api import list_users, list_user, setNameId, add_users, update_user
-from .api import app_schema, list_groups, list_perms, get_group, update_perm, add_group
+from .api import app_schema, list_groups, list_perms, get_group, update_perm, add_group, transfer_money
 from .views import process_creds
 from .views import view_login, view_logout, view_login_auto, view_auth_groupadmin, view_profile, edit_profile
 from .views import oauth2_post, oauth2_callback
@@ -12,6 +12,7 @@ from .views import registration_view, registration_view2, \
     activation_view, activation_wo_token_view
 from .views import view_login_css, okta_hosted_login, view_login_idp, view_login_disco, login_delegate
 from .views import view_login_custom
+from .views import view_sensitive_operations
 from .views import delegate_init
 
 urlpatterns = [
@@ -74,4 +75,8 @@ urlpatterns = [
     # error pages
     url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
     url(r'^not-authorized/$', not_authorized, name='not_authorized'),
+
+    # Sensitive Access- Step-up MFA secured.
+    url(r'^sensitive_operations/', view_sensitive_operations, name='sensitive_operations'),
+    url(r'^transfer', transfer_money, name='transfer_money'),
 ]

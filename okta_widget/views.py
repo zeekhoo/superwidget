@@ -84,6 +84,8 @@ if not allow_impersonation\
 
 DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
 
+XFER_AUTH_CLIENT_ID = settings.XFER_AUTH_CLIENT_ID
+
 c = {
     "org": BASE_URL,
     "iss": ISSUER,
@@ -289,7 +291,8 @@ def _do_format(request, url, key, org_url=BASE_URL, issuer=ISSUER, audience=CLIE
                     impersonation_org_auth_server_id=IMPERSONATION_ORG_AUTH_SERVER_ID,
                     impersonation_org_oidc_client_id=IMPERSONATION_ORG_OIDC_CLIENT_ID,
                     impersonation_org_redirect_idp_id=IMPERSONATION_ORG_REDIRECT_IDP_ID,
-                    impersonation_app_embed_link=IMPERSONATION_V2_SAML_APP_EMBED_LINK)
+                    impersonation_app_embed_link=IMPERSONATION_V2_SAML_APP_EMBED_LINK,
+                    money_xfer_oidc_client_id=XFER_AUTH_CLIENT_ID)
         pages_js[key] = text
         return text
 
@@ -392,6 +395,15 @@ def view_admin(request):
 
     return render(request, 'admin.html', c)
 
+def view_sensitive_operations(request):
+    if not can_xfer_cash(request):
+        return HttpResponseRedirect(reverse('not_authorized'))
+
+    c.update({"js": _do_format(request, '/js/sensitive_transactions.js', 'senstive_operations')})
+    c.update({"srv_id_token": get_id_token(request)})
+    c.update({"srv_access_token": get_access_token(request)})
+
+    return render(request, 'sensitive_operations.html', c)
 
 def view_debug(request):
     return render(request, 'debug.html', {'meta': request.META})

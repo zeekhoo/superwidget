@@ -8,6 +8,7 @@ var navbarApp = new Vue({
     data: {
         nameLabel: '',
         showAdminButton: false,
+        showSensitiveButton: false,
         showDelegateButton: false,
         isAdmin: false,
         isCompanyAdmin: false
@@ -123,6 +124,9 @@ function showToken() {
         navbarApp.isCompanyAdmin=true;
     } else if (groupsList.includes("admin")){
         navbarApp.showAdminButton=true;
+    }
+    if (groupsList.includes("xfercash")) {
+        navbarApp.showSensitiveButton=true;
     }
 
     if (profileApp.accessToken.user_context && profileApp.idToken.preferred_username != profileApp.accessToken.user_context.login)
