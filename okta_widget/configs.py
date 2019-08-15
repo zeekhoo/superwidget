@@ -106,130 +106,125 @@ class Config(object):
 
         session_key = request.session.session_key
 
-        if 1 ==2 and 'config' in request.session \
-                and 'subdomain' in request.session \
-                and request.session['subdomain'] == subdomain:
-            print('{0}################## already configured {1}###################'.format(datetime.now(), session_key))
-            config = request.session['config']
+        url = self.URL
+        if url is not None:
+            host_string = url
+            print('host_string1 = {}'.format(host_string))
+        elif self.DEFAULT_PORT is not None:
+            host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
+            print('host_string2 = {}'.format(host_string))
         else:
-            url = self.URL
-            if url is not None:
-                host_string = url
-                print('host_string1 = {}'.format(host_string))
-            elif self.DEFAULT_PORT is not None:
-                host_string = '{0}://{1}:{2}'.format(scheme, request.get_host().split(':')[0], self.DEFAULT_PORT)
-                print('host_string2 = {}'.format(host_string))
-            else:
-                host_string = '{0}://{1}'.format(scheme, http_host)
-                print('host_string3 = {}'.format(host_string))
-                # Debugging in localhost
-                if host_string == 'http://localhost:8000' and settings.DEBUG_SUBDOMAIN is not None and settings.DEBUG_APP is not None:
-                    subdomain = settings.DEBUG_SUBDOMAIN
-                    app = settings.DEBUG_APP
-                    read_the_config = True
+            host_string = '{0}://{1}'.format(scheme, http_host)
+            print('host_string3 = {}'.format(host_string))
+            # Debugging in localhost
+            if host_string == 'http://localhost:8000' and settings.DEBUG_SUBDOMAIN is not None and settings.DEBUG_APP is not None:
+                subdomain = settings.DEBUG_SUBDOMAIN
+                app = settings.DEBUG_APP
+                read_the_config = True
 
-            config = {
-                'host': host_string,
-                'subdomain': subdomain,
-                'base_url': self.BASE_URL,
-                'org': self.OKTA_ORG,
-                'iss': self.ISSUER,
-                'aud': self.CLIENT_ID,
-                'scopes': self.SCOPES,
-                'url': self.URL,
-                'default_port': self.DEFAULT_PORT,
-                'redirect_uri': _resolve_redirect_uri(self.REDIRECT_URI, host_string),
-                'auth_groupadmin_redirect_uri': _resolve_redirect_uri(self.AUTH_GROUPADMIN_REDIRECT_URI, host_string),
-                'google_idp': self.GOOGLE_IDP,
-                'fb_idp': self.FB_IDP,
-                'lnkd_idp': self.LNKD_IDP,
-                'msft_idp': self.MSFT_IDP,
-                'saml_idp': self.SAML_IDP,
-                'base_title': self.BASE_TITLE,
-                'base_icon': self.BASE_ICON,
-                'background': self.BACKGROUND_IMAGE if self.BACKGROUND_IMAGE is not None else self.DEFAULT_BACKGROUND,
-                'background_css': self.BACKGROUND_IMAGE_CSS if self.BACKGROUND_IMAGE_CSS is not None else self.DEFAULT_BACKGROUND,
-                'background_authjs': self.BACKGROUND_IMAGE_AUTHJS if self.BACKGROUND_IMAGE_AUTHJS is not None else self.DEFAULT_BACKGROUND,
-                'background_idp': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
-                'background_idp_disco': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
-                'idp_disco_page': self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
-                'login_noprompt_bookmark': self.LOGIN_NOPROMPT_BOOKMARK,
-                'app_permissions_claim': APP_PERMISSIONS_CLAIM,
-                'api_permissions_claim': API_PERMISSIONS_CLAIM,
-                'allow_impersonation': self.ALLOW_IMPERSONATION,
-                'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT
-            }
+        config = {
+            'host': host_string,
+            'subdomain': subdomain,
+            'base_url': self.BASE_URL,
+            'org': self.OKTA_ORG,
+            'iss': self.ISSUER,
+            'aud': self.CLIENT_ID,
+            'scopes': self.SCOPES,
+            'url': self.URL,
+            'default_port': self.DEFAULT_PORT,
+            'redirect_uri': _resolve_redirect_uri(self.REDIRECT_URI, host_string),
+            'auth_groupadmin_redirect_uri': _resolve_redirect_uri(self.AUTH_GROUPADMIN_REDIRECT_URI, host_string),
+            'google_idp': self.GOOGLE_IDP,
+            'fb_idp': self.FB_IDP,
+            'lnkd_idp': self.LNKD_IDP,
+            'msft_idp': self.MSFT_IDP,
+            'saml_idp': self.SAML_IDP,
+            'base_title': self.BASE_TITLE,
+            'base_icon': self.BASE_ICON,
+            'background': self.BACKGROUND_IMAGE if self.BACKGROUND_IMAGE is not None else self.DEFAULT_BACKGROUND,
+            'background_css': self.BACKGROUND_IMAGE_CSS if self.BACKGROUND_IMAGE_CSS is not None else self.DEFAULT_BACKGROUND,
+            'background_authjs': self.BACKGROUND_IMAGE_AUTHJS if self.BACKGROUND_IMAGE_AUTHJS is not None else self.DEFAULT_BACKGROUND,
+            'background_idp': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
+            'background_idp_disco': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
+            'idp_disco_page': self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
+            'login_noprompt_bookmark': self.LOGIN_NOPROMPT_BOOKMARK,
+            'app_permissions_claim': APP_PERMISSIONS_CLAIM,
+            'api_permissions_claim': API_PERMISSIONS_CLAIM,
+            'allow_impersonation': self.ALLOW_IMPERSONATION,
+            'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT
+        }
 
-            if read_the_config:
-                try:
-                    if not app:
-                        app = http_host_parts[1]
-                    url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
-                    start = datetime.now()
-                    udp = json.loads(requests.get(url_get_configs).content)
-                    end = datetime.now()
-                    print('{0}################## GET {1} ({2})'.format(end, url_get_configs, end-start))
-                    # print('udp: {}'.format(udp))
+        if read_the_config:
+            try:
+                if not app:
+                    app = http_host_parts[1]
+                url_get_configs = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
+                start = datetime.now()
+                udp = json.loads(requests.get(url_get_configs).content)
+                end = datetime.now()
+                print('{0}################## GET {1} ({2})'.format(end, url_get_configs, end-start))
+                # print('udp: {}'.format(udp))
 
-                    config.update({
-                        'base_url': udp['okta_org_name'].replace('https://', '').replace('http://', ''),
-                        'org':      udp['okta_org_name'].replace('https://', '').replace('http://', ''),
-                        'iss':      udp['issuer'].split('/oauth2/')[1],
-                        'aud':      udp['client_id']
-                    })
-                    if 'settings' in udp:
-                        udp_settings = udp['settings']
+                config.update({
+                    'base_url': udp['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'org':      udp['okta_org_name'].replace('https://', '').replace('http://', ''),
+                    'iss':      udp['issuer'].split('/oauth2/')[1],
+                    'aud':      udp['client_id']
+                })
+                if 'settings' in udp:
+                    udp_settings = udp['settings']
 
-                        if 'custom_login_url' in udp_settings \
-                                and len(udp_settings['custom_login_url']) > 0:
-                            config.update({'base_url': udp_settings['custom_login_url']})
+                    if 'custom_login_url' in udp_settings \
+                            and len(udp_settings['custom_login_url']) > 0:
+                        config.update({'base_url': udp_settings['custom_login_url']})
 
-                        if 'scopes' in udp_settings:
-                            config.update({'scopes': udp_settings['scopes']})
-                        if 'google_idp' in udp_settings:
-                            config.update({'google_idp': udp_settings['google_idp']})
-                        if 'fb_idp' in udp_settings:
-                            config.update({'fb_idp': udp_settings['fb_idp']})
-                        if 'lnkd_idp' in udp_settings:
-                            config.update({'lnkd_idp': udp_settings['lnkd_idp']})
-                        if 'msft_idp' in udp_settings:
-                            config.update({'msft_idp': udp_settings['msft_idp']})
-                        if 'saml_idp' in udp_settings:
-                            config.update({'saml_idp': udp_settings['saml_idp']})
-                        if 'base_title' in udp_settings:
-                            config.update({'base_title': udp_settings['base_title']})
-                        if 'base_icon' in udp_settings:
-                            config.update({'base_icon': udp_settings['base_icon']})
-                        if 'background' in udp_settings:
-                            config.update({'background': udp_settings['background']})
-                        if 'background_css' in udp_settings:
-                            config.update({'background_css': udp_settings['background_css']})
-                        if 'background_authjs' in udp_settings:
-                            config.update({'background_authjs': udp_settings['background_authjs']})
-                        if 'background_idp' in udp_settings:
-                            config.update({'background_idp': udp_settings['background_idp']})
-                        if 'background_idp_disco' in udp_settings:
-                            config.update({'background_idp_disco': udp_settings['background_idp_disco']})
-                        if 'idp_disco_page' in udp_settings:
-                            config.update({'idp_disco_page': udp_settings['idp_disco_page']})
-                        else:
-                            client = AppsClient('https://{}'.format(config['org']),
-                                                self.get_api_key(request),
-                                                config['aud'])
-                            idp_disco_page = client.get_login_disco_url()
-                            if idp_disco_page and len(idp_disco_page) > 0:
-                                config.update({'idp_disco_page': idp_disco_page})
+                    if 'scopes' in udp_settings:
+                        config.update({'scopes': udp_settings['scopes']})
+                    if 'google_idp' in udp_settings:
+                        config.update({'google_idp': udp_settings['google_idp']})
+                    if 'fb_idp' in udp_settings:
+                        config.update({'fb_idp': udp_settings['fb_idp']})
+                    if 'lnkd_idp' in udp_settings:
+                        config.update({'lnkd_idp': udp_settings['lnkd_idp']})
+                    if 'msft_idp' in udp_settings:
+                        config.update({'msft_idp': udp_settings['msft_idp']})
+                    if 'saml_idp' in udp_settings:
+                        config.update({'saml_idp': udp_settings['saml_idp']})
+                    if 'base_title' in udp_settings:
+                        config.update({'base_title': udp_settings['base_title']})
+                    if 'base_icon' in udp_settings:
+                        config.update({'base_icon': udp_settings['base_icon']})
+                    if 'background' in udp_settings:
+                        config.update({'background': udp_settings['background']})
+                    if 'background_css' in udp_settings:
+                        config.update({'background_css': udp_settings['background_css']})
+                    if 'background_authjs' in udp_settings:
+                        config.update({'background_authjs': udp_settings['background_authjs']})
+                    if 'background_idp' in udp_settings:
+                        config.update({'background_idp': udp_settings['background_idp']})
+                    if 'background_idp_disco' in udp_settings:
+                        config.update({'background_idp_disco': udp_settings['background_idp_disco']})
+                    if 'idp_disco_page' in udp_settings:
+                        config.update({'idp_disco_page': udp_settings['idp_disco_page']})
+                    else:
+                        client = AppsClient('https://{}'.format(config['org']),
+                                            self.get_api_key(request),
+                                            config['aud'])
+                        idp_disco_page = client.get_login_disco_url()
+                        if idp_disco_page and len(idp_disco_page) > 0:
+                            config.update({'idp_disco_page': idp_disco_page})
 
-                        if 'login_noprompt_bookmark' in udp_settings:
-                            config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
-                        if 'delegation_service_endpoint' in udp_settings:
-                            config.update({'delegation_service_endpoint': udp_settings['delegation_service_endpoint']})
-                except Exception as e:
-                    print('Exception in get_config: {}'.format(e))
+                    if 'login_noprompt_bookmark' in udp_settings:
+                        config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
+                    if 'delegation_service_endpoint' in udp_settings:
+                        config.update({'delegation_service_endpoint': udp_settings['delegation_service_endpoint']})
+            except Exception as e:
+                print('Exception in get_config: {}'.format(e))
 
-            print('{0}################## INIT CONFIG {1}###################'.format(datetime.now(), session_key))
-            request.session['config'] = config
-            request.session['subdomain'] = subdomain
+        print('{0}################## INIT CONFIG {1}###################'.format(datetime.now(), session_key))
+        request.session['config'] = config
+        request.session['subdomain'] = subdomain
+
         return config
 
     def get_api_key(self, request):
