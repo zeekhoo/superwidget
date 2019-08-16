@@ -29,9 +29,9 @@ var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
                                 </span>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" v-if="!orgAccessTokenString">
                             <div class="input-group">
-                                <span v-if="isCompanyAdmin" class="input-group-btn">
+                                <span class="input-group-btn">
                                     <button class="btn btn-primary" id="search-button2" type="button"
                                             onclick="listGroups()">
                                         Click to view Roles
@@ -48,7 +48,7 @@ var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
                             </div>
                         </div>
                     </div>
-                    <div v-if="isCompanyAdmin" class="row">
+                    <div v-if="isCompanyAdmin && !orgAccessTokenString" class="row">
                         <div class="col-md-12">
                             <h6>Because of your Company Admin role, your view of users is limited to active users in the {{ request.session.id_token.Department }} department.</h6>
                         </div>
@@ -74,7 +74,7 @@ var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
                             <td><label>[[ user.status ]]</label></td>
                             <td><button class="btn btn-primary btn-xs" v-bind:id=user.id onclick="listUser(this.id)">View More</button></td>
                             {% if allow_impersonation == True %}
-                            <td v-if="showDelegateButton"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="proxyLogin(this.id)">Proxy-Login</button></td>
+                            <td v-if="orgAccessTokenString"><button class="btn btn-primary btn-xs" v-bind:id=user.profile.login onclick="proxyLogin(this.id)">Proxy-Login</button></td>
                             {% endif %}
                         </tr>
                     </tbody>

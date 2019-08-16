@@ -174,7 +174,7 @@ def update_user(request, access_token):
 
             if api_access_admin(access_token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-            elif api_access_company_admin(token):
+            elif api_access_company_admin(access_token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
             else:
                 return not_authorized(request)
@@ -196,7 +196,10 @@ def list_groups(request, access_token):
     if 'companyName' in profile_dict:
         company_name = profile_dict.get('companyName')
 
-    if api_access_company_admin(access_token):
+    if api_access_admin(access_token):
+        client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
+        response.content = client.list_groups(15)
+    elif api_access_company_admin(access_token):
         client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
         response.content = client.list_groups(15, company_name)
     else:
@@ -251,7 +254,7 @@ def list_perms(request, access_token):
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(access_token):
+    if api_access_admin(access_token) or api_access_company_admin(access_token):
         client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
 
         group_id = None
@@ -284,7 +287,8 @@ def update_perm(request, access_token):
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(access_token) and group_id and group_id and perms:
+    if (api_access_admin(access_token) or api_access_company_admin(access_token))\
+            and group_id and group_id and perms:
         if perms[-1:] == ',':
             perms = perms[:-1]
         perms = perms.split(',')

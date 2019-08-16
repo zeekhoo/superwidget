@@ -18,19 +18,21 @@ else if (authClient.tokenManager.get('accessToken')) {
 
 showToken();
 
-var adminButtonsApp = new Vue({
-    delimiters: ['[[', ']]'],
-    el: '#vueapp-adminbuttons',
-    data: {
-        isCompanyAdmin: navbarApp.isCompanyAdmin
-    }
-});
-
 var getUsersapp = new Vue({
     delimiters: ['[[', ']]'],
     el: '#vueapp-users',
     data: {
         allUsers: [],
+        isCompanyAdmin: navbarApp.isCompanyAdmin,
+        showDelegateButton: navbarApp.showDelegateButton,
+        orgAccessTokenString: false
+    }
+});
+
+var adminButtonsApp = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#vueapp-adminbuttons',
+    data: {
         isCompanyAdmin: navbarApp.isCompanyAdmin,
         showDelegateButton: navbarApp.showDelegateButton,
         orgAccessTokenString: false
@@ -507,4 +509,6 @@ function getAccessTokenFragment(param) {
     }
     return false;
 }
+
 getUsersapp.orgAccessTokenString = getAccessTokenFragment(window.location.hash);
+adminButtonsApp.orgAccessTokenString = getUsersapp.orgAccessTokenString;

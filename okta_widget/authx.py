@@ -99,8 +99,8 @@ def _can_delegate(token):
 
 def api_access_admin(bearer_token):
     token = parse_bearer_token(bearer_token)
-    if _can_delegate(token):
-        return True
+    # if _can_delegate(token):
+    #     return True
 
     if API_PERMISSIONS_CLAIM in token:
         return 'admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
