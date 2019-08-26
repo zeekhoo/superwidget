@@ -145,7 +145,7 @@ class Config(object):
             'background_css': self.BACKGROUND_IMAGE_CSS if self.BACKGROUND_IMAGE_CSS is not None else self.DEFAULT_BACKGROUND,
             'background_authjs': self.BACKGROUND_IMAGE_AUTHJS if self.BACKGROUND_IMAGE_AUTHJS is not None else self.DEFAULT_BACKGROUND,
             'background_idp': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
-            'background_idp_disco': self.BACKGROUND_IMAGE_IDP if self.BACKGROUND_IMAGE_IDP is not None else self.DEFAULT_BACKGROUND,
+            'background_idp_disco': self.BACKGROUND_IMAGE_IDP_DISCO if self.BACKGROUND_IMAGE_IDP_DISCO is not None else self.DEFAULT_BACKGROUND,
             'idp_disco_page': self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
             'login_noprompt_bookmark': self.LOGIN_NOPROMPT_BOOKMARK,
             'app_permissions_claim': APP_PERMISSIONS_CLAIM,
