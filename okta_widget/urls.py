@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^login-idp$', view_login_idp, name='login_idp'),
     url(r'^login-disco', view_login_disco, name='login_idp_disco'),
     url(r'^login-form$', view_login_custom, name='login_custom'),
+    url(r'^login-custom-demo$', view_login_custom_demo, name='login_custom_demo'),
 
     # auth code postback
     url(r'^oauth2/callback', oauth2_post, name='oauth2_post'),

@@ -183,7 +183,11 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
             s = requests.session()
             a = requests.adapters.HTTPAdapter(max_retries=2)
             s.mount('http://', a)
-            response = s.get(cfg['host'] + static(url))
+            if url.startswith('http'):
+                js_url = url
+            else:
+                js_url = cfg['host'] + static(url)
+            response = s.get(js_url)
 
             text = str(response.content, 'utf-8') \
                 .replace("{", "{{").replace("}", "}}") \
@@ -228,7 +232,20 @@ def view_login_custom(request):
         return _do_refresh(request, page)
     else:
         _update_conf(request, {"js": _do_format(request, '/js/custom_ui.js', page)})
-    return render(request, 'index_login-form.html', conf);
+    return render(request, 'index_login-form.html', conf)
+
+
+@csrf_exempt
+def view_login_custom_demo(request):
+    page = 'login_custom_demo'
+    conf = _get_config(request, page)
+    request.session['entry_page'] = page
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        if 'custom_demo_page_js' in conf and conf['custom_demo_page_js'] != '':
+            _update_conf(request, {"js": _do_format(request, conf['custom_demo_page_js'], page, embed_link=conf['idp_disco_page'])})
+    return render(request, 'index_custom.html', conf)
 
 
 @csrf_exempt

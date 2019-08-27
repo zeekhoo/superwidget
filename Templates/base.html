@@ -82,6 +82,9 @@
                       {% if idp_disco_page != 'None' %}
                       <li><a href="{% url 'login_idp_disco' %}">IdP Discovery</a></li>
                       {% endif %}
+                      {% if custom_demo_page_js != 'None' %}
+                      <li><a href="{% url 'login_custom_demo' %}">Demo</a></li>
+                      {% endif %}
 
                       {% else %}
 

@@ -70,23 +70,14 @@ class Config(object):
         self.IDP_DISCO_PAGE = settings.IDP_DISCO_PAGE
         self.LOGIN_NOPROMPT_BOOKMARK = settings.LOGIN_NOPROMPT_BOOKMARK
 
+        # Custom code page
+        self.CUSTOM_DEMO_PAGE_JS = settings.CUSTOM_DEMO_PAGE_JS
+        self.CUSTOM_DEMO_PAGE_CSS = settings.CUSTOM_DEMO_PAGE_CSS
+        self.BACKGROUND_CUSTOM_DEMO = settings.BACKGROUND_CUSTOM_DEMO
+
         # Impersonation
         self.DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
         self.ALLOW_IMPERSONATION = False
-
-        # Option: Do Impersonation with SAML (Deprecated)
-        # self.IMPERSONATION_DEFAULT_VER = 3
-        # self.IMPERSONATION_VERSION = settings.IMPERSONATION_VERSION if settings.IMPERSONATION_VERSION and settings.IMPERSONATION_VERSION is not None else self.IMPERSONATION_DEFAULT_VER
-        # if (settings.IMPERSONATION_ORG and settings.IMPERSONATION_ORG is not None \
-        #     and settings.IMPERSONATION_ORG_AUTH_SERVER_ID and settings.IMPERSONATION_ORG_AUTH_SERVER_ID is not None \
-        #     and settings.IMPERSONATION_ORG_OIDC_CLIENT_ID and settings.IMPERSONATION_ORG_OIDC_CLIENT_ID is not None \
-        #     and settings.IMPERSONATION_ORG_REDIRECT_IDP_ID and settings.IMPERSONATION_ORG_REDIRECT_IDP_ID is not None \
-        #     and settings.IMPERSONATION_SAML_APP_ID and settings.IMPERSONATION_SAML_APP_ID is not None) \
-        #     or (settings.IMPERSONATION_V2_ORG and settings.IMPERSONATION_V2_ORG is not None \
-        #         and settings.IMPERSONATION_V2_SAML_APP_ID and settings.IMPERSONATION_V2_SAML_APP_ID is not None \
-        #         and settings.IMPERSONATION_V2_ORG_API_KEY and settings.IMPERSONATION_V2_ORG_API_KEY is not None \
-        #         and settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK and settings.IMPERSONATION_V2_SAML_APP_EMBED_LINK is not None):
-        #     self.ALLOW_IMPERSONATION = True
 
     def get_config(self, request):
         meta = request.META
@@ -148,6 +139,9 @@ class Config(object):
             'background_idp_disco': self.BACKGROUND_IMAGE_IDP_DISCO if self.BACKGROUND_IMAGE_IDP_DISCO is not None else self.DEFAULT_BACKGROUND,
             'idp_disco_page': self.IDP_DISCO_PAGE if self.IDP_DISCO_PAGE is not None else 'None',
             'login_noprompt_bookmark': self.LOGIN_NOPROMPT_BOOKMARK,
+            'custom_demo_page_js': self.CUSTOM_DEMO_PAGE_JS if self.CUSTOM_DEMO_PAGE_JS is not None else 'None',
+            'custom_demo_page_css': self.CUSTOM_DEMO_PAGE_CSS,
+            'background_custom_page': self.BACKGROUND_CUSTOM_DEMO,
             'app_permissions_claim': APP_PERMISSIONS_CLAIM,
             'api_permissions_claim': API_PERMISSIONS_CLAIM,
             'allow_impersonation': self.ALLOW_IMPERSONATION,
@@ -163,7 +157,6 @@ class Config(object):
                 udp = json.loads(requests.get(url_get_configs).content)
                 end = datetime.now()
                 print('{0}################## GET {1} ({2})'.format(end, url_get_configs, end-start))
-                # print('udp: {}'.format(udp))
 
                 config.update({
                     'base_url': udp['okta_org_name'].replace('https://', '').replace('http://', ''),
@@ -213,9 +206,16 @@ class Config(object):
                         idp_disco_page = client.get_login_disco_url()
                         if idp_disco_page and len(idp_disco_page) > 0:
                             config.update({'idp_disco_page': idp_disco_page})
-
                     if 'login_noprompt_bookmark' in udp_settings:
                         config.update({'login_noprompt_bookmark': udp_settings['login_noprompt_bookmark']})
+                    if 'custom_demo_page_js' in udp_settings and udp_settings['custom_demo_page_js'] != "":
+                        config.update({'custom_demo_page_js': udp_settings['custom_demo_page_js']})
+                    else:
+                        config.update({'custom_demo_page_js': 'None'})
+                    if 'custom_demo_page_css' in udp_settings:
+                        config.update({'custom_demo_page_css': udp_settings['custom_demo_page_css']})
+                    if 'background_custom_page' in udp_settings:
+                        config.update({'background_custom_page': udp_settings['background_custom_page']})
                     if 'delegation_service_endpoint' in udp_settings:
                         config.update({'delegation_service_endpoint': udp_settings['delegation_service_endpoint']})
             except Exception as e:
