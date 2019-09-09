@@ -79,6 +79,24 @@ class Config(object):
         self.DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
         self.ALLOW_IMPERSONATION = False
 
+        #Claims that do stuff
+        if settings.APP_PERMISSIONS_CLAIM is None or settings.APP_PERMISSIONS_CLAIM == 'None' or settings.APP_PERMISSIONS_CLAIM == '':
+            self.APP_PERMISSIONS_CLAIM = 'groups'
+        else:
+            self.APP_PERMISSIONS_CLAIM = settings.APP_PERMISSIONS_CLAIM
+
+        if settings.API_PERMISSIONS_CLAIM is None or settings.API_PERMISSIONS_CLAIM == 'None' or settings.API_PERMISSIONS_CLAIM == '':
+            self.API_PERMISSIONS_CLAIM = 'groups'
+        else:
+            self.API_PERMISSIONS_CLAIM = settings.API_PERMISSIONS_CLAIM
+
+        if settings.API_XFER_AUTH_CLAIM is None or settings.API_XFER_AUTH_CLAIM == 'None' or settings.API_XFER_AUTH_CLAIM == '':
+            self.API_XFER_AUTH_CLAIM = 'xfer_auth_amount'
+        else:
+            self.API_XFER_AUTH_CLAIM = settings.API_XFER_AUTH_CLAIM
+
+        self.XFER_AUTH_CLIENT_ID = settings.XFER_AUTH_CLIENT_ID
+
     def get_config(self, request):
         meta = request.META
         scheme = 'http'
@@ -142,10 +160,12 @@ class Config(object):
             'custom_demo_page_js': self.CUSTOM_DEMO_PAGE_JS if self.CUSTOM_DEMO_PAGE_JS is not None else 'None',
             'custom_demo_page_css': self.CUSTOM_DEMO_PAGE_CSS,
             'background_custom_page': self.BACKGROUND_CUSTOM_DEMO,
-            'app_permissions_claim': APP_PERMISSIONS_CLAIM,
-            'api_permissions_claim': API_PERMISSIONS_CLAIM,
+            'app_permissions_claim': self.APP_PERMISSIONS_CLAIM,
+            'api_permissions_claim': self.API_PERMISSIONS_CLAIM,
+            'api_xfer_auth_claim': self.API_XFER_AUTH_CLAIM,
             'allow_impersonation': self.ALLOW_IMPERSONATION,
-            'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT
+            'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT,
+            'xfer_auth_client_id': self.XFER_AUTH_CLIENT_ID
         }
 
         if read_the_config:
@@ -218,6 +238,17 @@ class Config(object):
                         config.update({'background_custom_page': udp_settings['background_custom_page']})
                     if 'delegation_service_endpoint' in udp_settings:
                         config.update({'delegation_service_endpoint': udp_settings['delegation_service_endpoint']})
+
+                    if 'app_permissions_claim' in udp_settings:
+                        config.update({'app_permissions_claim': udp_settings['app_permissions_claim']})
+                    if 'api_permissions_claim' in udp_settings:
+                        config.update({'api_permissions_claim': udp_settings['api_permissions_claim']})
+                    if 'api_xfer_auth_claim' in udp_settings:
+                        config.update({'api_xfer_auth_claim': udp_settings['api_xfer_auth_claim']})
+                    if 'xfer_auth_client_id' in udp_settings:
+                        config.update({'xfer_auth_client_id': udp_settings['xfer_auth_client_id']})
+
+
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
 
