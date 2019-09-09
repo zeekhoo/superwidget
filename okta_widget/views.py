@@ -9,6 +9,7 @@ from .client.users_client import UsersClient
 from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from .configs import *
+from .authx import *
 import time
 import redis
 
@@ -198,6 +199,7 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
                         iss=cfg['iss'],
                         aud=cfg['aud'],
                         redirect=cfg['redirect_uri'],
+                        xfer_auth_client_id=cfg['xfer_auth_client_id'],
                         auth_groupadmin_redirect=cfg['auth_groupadmin_redirect_uri'],
                         scopes=scps,
                         idps=idps,
@@ -615,6 +617,20 @@ def process_creds(request):
     response.status_code = 200
     return response
 
+#Step up MFA demo
+def view_sensitive_operations(request):
+    page = 'sensitive_operations'
+
+    if not sensitive_transactions_access(request):
+        return HttpResponseRedirect(reverse('not_authorized'))
+
+    new_conf = _update_conf(request, {
+        "js": _do_format(request, '/js/sensitive_transactions.js', page),
+        "srv_access_token": get_access_token(request),
+        "srv_id_token": get_id_token(request)
+    })
+
+    return render(request, 'sensitive_operations.html', new_conf)
 
 # IMPERSONATION Demo (Deprecated)
 # def login_delegate(request):

@@ -2,17 +2,11 @@ from django.conf import settings
 import json
 import base64
 import re
+from .configs import *
 
 
-# Option: Admin Functions
-APP_PERMISSIONS_CLAIM = settings.APP_PERMISSIONS_CLAIM
-API_PERMISSIONS_CLAIM = settings.API_PERMISSIONS_CLAIM
-
-if APP_PERMISSIONS_CLAIM is None or APP_PERMISSIONS_CLAIM == 'None' or APP_PERMISSIONS_CLAIM == '':
-    APP_PERMISSIONS_CLAIM = 'groups'
-if API_PERMISSIONS_CLAIM is None or API_PERMISSIONS_CLAIM == 'None' or API_PERMISSIONS_CLAIM == '':
-    API_PERMISSIONS_CLAIM = 'groups'
-
+# Some of the auth settings are configurable- lets get our config.
+CONFIG = Config()
 
 def is_logged_in(request):
     return 'id_token' in request.session or 'access_token' in request.session
@@ -73,13 +67,23 @@ def logout_all(request):
     for key in list(request.session.keys()):
         del request.session[key]
 
+def sensitive_transactions_access(request):
+    conf = CONFIG.get_config(request)
+
+    if conf['app_permissions_claim'] in request.session['id_token']:
+        list = _formatted_list(request.session['id_token'][conf['app_permissions_claim']])
+        print(list)
+        return 'sensitivetransactions' in list
+    return False
 
 def is_admin(request):
     if can_delegate(request):
         return True
 
-    if APP_PERMISSIONS_CLAIM in request.session['id_token']:
-        list = _formatted_list(request.session['id_token'][APP_PERMISSIONS_CLAIM])
+    conf = CONFIG.get_config(request)
+
+    if conf.app_permissions_claim in request.session['id_token']:
+        list = _formatted_list(request.session['id_token'][conf.app_permissions_claim])
         return set(['admin', 'companyadmin']) & set(list)
 
     return False
@@ -97,27 +101,40 @@ def _can_delegate(token):
     return False
 
 
-def api_access_admin(bearer_token):
+def api_access_admin(request, bearer_token):
+    conf = CONFIG.get_config(request)
     token = parse_bearer_token(bearer_token)
     # if _can_delegate(token):
     #     return True
 
-    if API_PERMISSIONS_CLAIM in token:
-        return 'admin' in _formatted_list(token[API_PERMISSIONS_CLAIM])
+    if conf.api_permissions_claim in token:
+        return 'admin' in _formatted_list(token[conf.api_permissions_claim])
 
     return False
 
 
-def api_access_company_admin(bearer_token):
+def api_access_company_admin(request, bearer_token):
+    conf = CONFIG.get_config(request)
     token = parse_bearer_token(bearer_token)
     if _can_delegate(token):
         return True
 
-    if API_PERMISSIONS_CLAIM in token:
-        return set(['companyadmin']) & set(_formatted_list(token[API_PERMISSIONS_CLAIM]))
+    if conf.api_permissions_claim in token:
+        return set(['companyadmin']) & set(_formatted_list(token[conf.api_permissions_claim]))
 
     return False
 
+def transfer_authorization(request, bearer_token):
+    token = parse_bearer_token(bearer_token)
+    conf = CONFIG.get_config(request)
+
+    if conf['api_xfer_auth_claim'] in token:
+        print(token[conf['api_xfer_auth_claim']])
+        return token[conf['api_xfer_auth_claim']]
+    else:
+        return 0
+
+    return False
 
 def _formatted_list(claims_array):
     if len(claims_array) <= 0:

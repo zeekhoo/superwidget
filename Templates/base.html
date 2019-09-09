@@ -90,7 +90,7 @@
 
                       <a v-if="showAdminButton" role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'admin' %}" aria-pressed="true">Admin</a>
                       <a v-if="showDelegateButton" role="button" class="btn btn-primary btn-sm navbar-btn pull-right" href="{% url 'auth_groupadmin' %}" aria-pressed="true">Delegate</a>
-
+                      <a v-if="showSensitiveButton" role="button" class="btn btn-warning btn-sm navbar-btn pull-right" href="{% url 'sensitive_operations' %}" aria-pressed="true">Sensitive Operations</a>
                       <li><a href="{% url 'logout' %}">Logout</a></li>
                       {% endif %}
                   </ul>
