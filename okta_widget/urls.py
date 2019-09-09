@@ -8,7 +8,7 @@ urlpatterns = [
 
     # home
     url(r'^$', view_home, name='home'),
-    url(r'^tokens$', view_tokens, name='tokens'),
+    url(r'^tokens$', view_tokens, name='tokens'),  # FIXME: Remote this
     url(r'^login$', view_login, name='login_default'),
     url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
     url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
@@ -17,13 +17,13 @@ urlpatterns = [
 
     # login
     url(r'^logout$', view_logout, name='logout'),
-    url(r'^clear-session', clear_session, name='clear_session'),
+    url(r'^clear-session', clear_session, name='clear_session'),  # FIXME: Still needed?
 
     # profile page
     url(r'^profile$', view_profile, name='profile'),
 
     # admin/crud
-    url(r'^admin/', view_admin, name='admin'),
+    url(r'^admin/', view_admin, name='admin'),  # FIXME: Protect route
     url(r'^list-users', list_users, name='list_users'),
     url(r'^list-user', list_user, name='list_user'),
     url(r'^add-users', add_users, name='add_users'),
