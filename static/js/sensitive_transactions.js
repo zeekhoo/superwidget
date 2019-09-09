@@ -30,6 +30,9 @@ function post_transfer(amount) {
       authXferClient.token.getWithPopup(oidc_config)
       .then(function(tokenOrTokens) {
         accessToken = tokenOrTokens.accessToken;
+        authXferClient.tokenManager.remove('cash_xfer_access_token')
+        authXferClient.tokenManager.add('cash_xfer_access_token', tokenOrTokens)
+
         $.ajax({
             url: '/transfer',
             method: 'POST',
