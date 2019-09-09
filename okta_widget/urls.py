@@ -72,4 +72,8 @@ urlpatterns = [
     # health check
     url(r'^health/$', health_check, name='health_check'),
     url(r'^hello-redis/$', hello_redis, name='hello_redis'),
+
+    # Sensitive Access- Step-up MFA secured.
+    url(r'^sensitive_operations/', view_sensitive_operations, name='sensitive_operations'),
+    url(r'^transfer', transfer_money, name='transfer_money'),
 ]

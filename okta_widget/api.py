@@ -10,7 +10,26 @@ from okta_widget.views import config, _get_config
 
 from django.http import HttpResponse
 from .authx import api_access_admin, api_access_company_admin, parse_bearer_token
+from .authx import transfer_authorization
 
+@csrf_exempt
+@access_token_required
+def transfer_money(request, token):
+    post_data = request.POST
+    authorized_amount = transfer_authorization(request, token)
+    requested_amount = int(post_data['amount'])
+    print('Authorized Amount: {}'.format(authorized_amount))
+    print('Requested Amount: {}'.format(requested_amount))
+    response = HttpResponse("", content_type="application/json; charset=utf-8")
+    if requested_amount <= authorized_amount:
+        retVal = '{"Status":"SUCCESS", "Message":"Success! Money has been transferred."}'
+        response.status_code = 200
+    else:
+        retVal = '{{"Status":"FAILURE", "Message":"You are unauthorized to transfer this amount of money. Requested: {}, Authorized: {}"}}'.format(requested_amount, authorized_amount)
+        response.status_code = 403
+
+    response.content = retVal
+    return response
 
 @access_token_required
 def list_users(request, access_token):
@@ -36,9 +55,9 @@ def list_users(request, access_token):
     else:
         profile_dict = request.session['profile']
         company_name = profile_dict.get('companyName')
-        if api_access_admin(access_token):
+        if api_access_admin(request, access_token):
             users = client.list_users(15, starts_with)
-        elif api_access_company_admin(access_token):
+        elif api_access_company_admin(request, access_token):
             users = client.list_users_scoped(15, company_name, starts_with)
         else:
             return not_authorized(request)
@@ -58,7 +77,7 @@ def list_user(request, access_token):
         user_id = get['user']
     client = UsersClient('https://' + conf['org'], config.get_api_key(request))
 
-    if api_access_admin(access_token) or api_access_company_admin(access_token):
+    if api_access_admin(request, access_token) or api_access_company_admin(request, access_token):
         users = client.list_user(user_id)
     else:
         return not_authorized(request)
@@ -114,9 +133,9 @@ def add_users(request, access_token):
             }
         }
 
-        if api_access_admin(access_token):
+        if api_access_admin(request, access_token):
             users = client.create_user(user=user, activate=activate)
-        elif api_access_company_admin(access_token):
+        elif api_access_company_admin(request, access_token):
             users = client.create_user(user=user, activate=activate)
         else:
             return not_authorized(request)
@@ -172,9 +191,9 @@ def update_user(request, access_token):
                 }
             }
 
-            if api_access_admin(access_token):
+            if api_access_admin(request, access_token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
-            elif api_access_company_admin(access_token):
+            elif api_access_company_admin(request, access_token):
                 users = client.update_user(user=user, user_id=user_id, deactivate=deactivate)
             else:
                 return not_authorized(request)
@@ -196,10 +215,10 @@ def list_groups(request, access_token):
     if 'companyName' in profile_dict:
         company_name = profile_dict.get('companyName')
 
-    if api_access_admin(access_token):
+    if api_access_admin(request, access_token):
         client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
         response.content = client.list_groups(15)
-    elif api_access_company_admin(access_token):
+    elif api_access_company_admin(request, access_token):
         client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
         response.content = client.list_groups(15, company_name)
     else:
@@ -221,7 +240,7 @@ def get_group(request, access_token):
         group_id = get['group_id']
     client = GroupsClient('https://' + conf['org'], config.get_api_key(request))
 
-    if api_access_company_admin(access_token):
+    if api_access_company_admin(request, access_token):
         response.content = client.get_group_by_id(group_id)
     else:
         return not_authorized(request)
@@ -236,7 +255,7 @@ def app_schema(request, access_token):
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_company_admin(access_token):
+    if api_access_company_admin(request, access_token):
         client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
         schema = client.get_schema()
         response.content = schema
@@ -254,7 +273,7 @@ def list_perms(request, access_token):
     response = HttpResponse()
     response.status_code = 200
 
-    if api_access_admin(access_token) or api_access_company_admin(access_token):
+    if api_access_admin(request, access_token) or api_access_company_admin(request, access_token):
         client = AppsClient('https://' + conf['org'], config.get_api_key(request), conf['aud'])
 
         group_id = None
@@ -287,7 +306,7 @@ def update_perm(request, access_token):
     response = HttpResponse()
     response.status_code = 200
 
-    if (api_access_admin(access_token) or api_access_company_admin(access_token))\
+    if (api_access_admin(request, access_token) or api_access_company_admin(request, access_token))\
             and group_id and group_id and perms:
         if perms[-1:] == ',':
             perms = perms[:-1]
@@ -339,9 +358,9 @@ def add_group(request, access_token):
                 }
             }
 
-            if api_access_admin(access_token):
+            if api_access_admin(request, access_token):
                 response.content = client.create_group(group)
-            elif api_access_company_admin(access_token):
+            elif api_access_company_admin(request, access_token):
                 response.content = client.create_group(group)
             else:
                 return not_authorized(request)
