@@ -4,6 +4,8 @@ $("#sw").keyup(function(event) {
     }
 });
 
+var csrftoken = getCookie('csrftoken');
+console.log('csrftoken='+csrftoken);
 
 var authClient = new OktaAuth({url: 'https://' + base_url});
 var accessToken = '';
@@ -183,6 +185,7 @@ function addUser() {
         data: data,
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
         },
         statusCode: {
             200: function(xhr) {
@@ -231,6 +234,7 @@ function updateUser() {
         data: data,
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
         },
         statusCode: {
             200: function(xhr) {
@@ -275,6 +279,7 @@ function addGroup(groupName) {
             data: data,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
             },
             statusCode: {
                 200: function(xhr) {
@@ -416,6 +421,7 @@ function updatePermsGroup() {
         contentType: 'application/x-www-form-urlencoded',
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
         },
         complete: function(res, xhr, settings) {
             console.log(res);
@@ -423,26 +429,26 @@ function updatePermsGroup() {
     });
 }
 
-function doProxyLogin(target) {
-    data = {
-        "delegation_target": target
-    }
-    $.ajax({
-        url: delegation_service_endpoint + '/delegate/init',
-        method: 'POST',
-        data: JSON.stringify(data),
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
-        },
-        complete: function(res, xhr, settings) {
-            console.log(JSON.stringify(res));
-            if (res.responseJSON.status === 'SUCCESS') {
-                window.location = '/login-noprompt';
-            }
-        }
-    });
-}
+//function doProxyLogin(target) {
+//    data = {
+//        "delegation_target": target
+//    }
+//    $.ajax({
+//        url: delegation_service_endpoint + '/delegate/init',
+//        method: 'POST',
+//        data: JSON.stringify(data),
+//        beforeSend: function (xhr) {
+//            xhr.setRequestHeader("Content-Type", "application/json");
+//            xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+//        },
+//        complete: function(res, xhr, settings) {
+//            console.log(JSON.stringify(res));
+//            if (res.responseJSON.status === 'SUCCESS') {
+//                window.location = '/login-noprompt';
+//            }
+//        }
+//    });
+//}
 
 
 function proxyLogin(target) {
@@ -456,6 +462,7 @@ function proxyLogin(target) {
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
         },
         complete: function(res, xhr, settings) {
             console.log(JSON.stringify(res));

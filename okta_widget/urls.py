@@ -4,23 +4,21 @@ from .views import *
 
 
 urlpatterns = [
-    url(r'^edit-profile/', edit_profile, name='edit-profile'),
-
     # home
     url(r'^$', view_home, name='home'),
-    url(r'^tokens$', view_tokens, name='tokens'),  # FIXME: Remote this
-    url(r'^login$', view_login, name='login_default'),
-    url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
-    url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
     url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
     url(r'^auth-groupadmin', view_auth_groupadmin, name='auth_groupadmin'),
 
     # login
+    url(r'^login$', view_login, name='login_default'),
     url(r'^logout$', view_logout, name='logout'),
-    url(r'^clear-session', clear_session, name='clear_session'),  # FIXME: Still needed?
+
+    url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
+    url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
 
     # profile page
     url(r'^profile$', view_profile, name='profile'),
+    # url(r'^edit-profile/', edit_profile, name='edit-profile'), TODO: Implement
 
     # admin/crud
     url(r'^admin/', view_admin, name='admin'),  # FIXME: Protect route
@@ -71,9 +69,8 @@ urlpatterns = [
 
     # health check
     url(r'^health/$', health_check, name='health_check'),
-    url(r'^hello-redis/$', hello_redis, name='hello_redis'),
 
     # Sensitive Access- Step-up MFA secured.
-    url(r'^sensitive_operations/', view_sensitive_operations, name='sensitive_operations'),
+    url(r'^sensitive_operations/', view_sensitive_operations, name='sensitive_operations'), # FIXME: Protect this route
     url(r'^transfer', transfer_money, name='transfer_money'),
 ]

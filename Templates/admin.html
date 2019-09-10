@@ -11,6 +11,7 @@ var delegation_service_endpoint = '{{ delegation_service_endpoint }}';
 
 {% block content %}
 <div class="container">
+    {% csrf_token %}
     <div class="row">
         <p></p>
     </div>

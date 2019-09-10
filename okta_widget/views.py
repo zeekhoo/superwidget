@@ -6,12 +6,11 @@ from django.urls import reverse
 from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient
 from .client.users_client import UsersClient
-from .client.oktadelegate_client import OktadelegateClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
 from .configs import *
 from .authx import *
 import time
-import redis
+
 
 config = Config()
 
@@ -57,11 +56,6 @@ def edit_profile(request):
     else:
         return HttpResponseRedirect(reverse('not_authenticated'))
     return render(request, 'edit-profile.html', conf)
-
-
-def view_tokens(request):
-    conf = _get_config(request, 'viewTokens')
-    return render(request, 'tokens.html', conf)
 
 
 def _resolve_redirect_uri(redirect_uri, host):
@@ -113,7 +107,7 @@ def view_login(request, recoveryToken=None):
 def view_auth_groupadmin(request):
     page = 'groupadmin'
     conf = _get_config(request, page)
-    if not is_admin(request):
+    if not is_admin(request, conf):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     referrer = ''
@@ -315,7 +309,7 @@ def view_login_disco(request):
 
 def view_admin(request):
     conf = _get_config(request, 'admin')
-    if not is_admin(request):
+    if not is_admin(request, conf):
         return HttpResponseRedirect(reverse('not_authorized'))
 
     if can_delegate(request):
@@ -343,10 +337,10 @@ def view_logout(request):
     return render(request, 'logged_out.html', conf)
 
 
-def clear_session(request):
-    conf = _get_config(request, 'logout')
-    logout_all(request)
-    return render(request, 'logged_out.html', conf)
+# def clear_session(request):
+#     conf = _get_config(request, 'logout')
+#     logout_all(request)
+#     return render(request, 'logged_out.html', conf)
 
 
 # Sample custom registration form
@@ -588,18 +582,6 @@ def oauth2_post(request):
     return HttpResponseRedirect(reverse('home'))
 
 
-# IMPERSONATION Demo
-@csrf_exempt
-def delegate_init(request):
-    cfg = _get_config(request, 'delegate')
-    if request.method == 'POST':
-        client = OktadelegateClient(cfg['delegation_service_endpoint'],
-                                    request.META["HTTP_AUTHORIZATION"].split(" ")[1],
-                                    config.get_api_key(request))
-        result = client.delegate_init(json.loads(request.body)["delegation_target"])
-        return JsonResponse(json.loads(result.content))
-
-
 @csrf_exempt
 def process_creds(request):
     print('#####################################PROCESS CREDS START#####################################')
@@ -617,7 +599,8 @@ def process_creds(request):
     response.status_code = 200
     return response
 
-#Step up MFA demo
+
+# Step up MFA demo
 def view_sensitive_operations(request):
     page = 'sensitive_operations'
 
@@ -631,6 +614,7 @@ def view_sensitive_operations(request):
     })
 
     return render(request, 'sensitive_operations.html', new_conf)
+
 
 # IMPERSONATION Demo (Deprecated)
 # def login_delegate(request):
@@ -712,25 +696,4 @@ def health_check(request):
     return render(request, 'health_check.html')
 
 
-def hello_redis(request):
-    """Example Hello Redis Program"""
 
-    # step 3: create the Redis Connection object
-    try:
-
-        # The decode_repsonses flag here directs the client to convert the responses from Redis into Python strings
-        # using the default encoding utf-8.  This is client specific.
-        r = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, password='', decode_responses=True)
-
-        # step 4: Set the hello message in Redis
-        r.set("msg:hello", "Hello Redis!!!")
-
-        # step 5: Retrieve the hello message from Redis
-        msg = r.get("msg:hello")
-        r_ctx = { 'hello_redis': msg}
-        print(msg)
-
-    except Exception as e:
-        print(e)
-
-    return render(request, 'hello_redis.html', r_ctx)

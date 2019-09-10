@@ -1,5 +1,5 @@
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from .authx import *
+from django.conf import settings
 from .client.apps_client import AppsClient
 import re
 import requests
@@ -79,7 +79,7 @@ class Config(object):
         self.DELEGATION_SERVICE_ENDPOINT = settings.DELEGATION_SERVICE_ENDPOINT
         self.ALLOW_IMPERSONATION = False
 
-        #Claims that do stuff
+        # AuthZ Claims hardcoded to 'groups' or 'you_decide'
         if settings.APP_PERMISSIONS_CLAIM is None or settings.APP_PERMISSIONS_CLAIM == 'None' or settings.APP_PERMISSIONS_CLAIM == '':
             self.APP_PERMISSIONS_CLAIM = 'groups'
         else:
@@ -247,7 +247,6 @@ class Config(object):
                         config.update({'api_xfer_auth_claim': udp_settings['api_xfer_auth_claim']})
                     if 'xfer_auth_client_id' in udp_settings:
                         config.update({'xfer_auth_client_id': udp_settings['xfer_auth_client_id']})
-
 
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
