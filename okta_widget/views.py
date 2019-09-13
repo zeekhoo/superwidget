@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 
-from .client.oauth2_client import OAuth2Client
 from .client.auth_proxy import AuthClient
 from .client.users_client import UsersClient
 from .forms import RegistrationForm, RegistrationForm2, TextForm, ActivationForm, ActivationWithEmailForm
@@ -90,7 +89,6 @@ def _update_conf(request, obj):
     return conf
 
 
-@csrf_exempt
 def view_login(request, recoveryToken=None):
     unused = recoveryToken
 
@@ -136,7 +134,10 @@ def view_login_auto(request):
     if referrer and referrer != '':
         request.session['entry_page'] = referrer
 
-    _update_conf(request, {"js": _do_format(request, '/js/get_without_prompt.js', page)})
+    if request.method == 'POST':
+        return _do_refresh(request, page)
+    else:
+        _update_conf(request, {"js": _do_format(request, '/js/get_without_prompt.js', page)})
 
     saved_entry_page = request.session['entry_page']
     logout(request)
@@ -206,7 +207,6 @@ def _do_format(request, url, page, idps='[]', btns='[]', embed_link=None):
         return text
 
 
-@csrf_exempt
 def view_login_css(request):
     page = 'login_css'
     conf = _get_config(request, page)
@@ -219,7 +219,6 @@ def view_login_css(request):
     return render(request, 'index_css.html', conf)
 
 
-@csrf_exempt
 def view_login_custom(request):
     page = 'login_custom'
     conf = _get_config(request, page)
@@ -231,7 +230,6 @@ def view_login_custom(request):
     return render(request, 'index_login-form.html', conf)
 
 
-@csrf_exempt
 def view_login_custom_demo(request):
     page = 'login_custom_demo'
     conf = _get_config(request, page)
@@ -244,7 +242,6 @@ def view_login_custom_demo(request):
     return render(request, 'index_custom.html', conf)
 
 
-@csrf_exempt
 def okta_hosted_login(request):
     page = 'login_okta_hosted'
     conf = _get_config(request, page)
@@ -253,7 +250,6 @@ def okta_hosted_login(request):
     return render(request, 'customized-okta-hosted.html', conf)
 
 
-@csrf_exempt
 def view_login_idp(request):
     page = 'login_idp'
     conf = _get_config(request, page)
@@ -295,7 +291,6 @@ def view_login_idp(request):
 
 
 # Demo: IdP discovery
-@csrf_exempt
 def view_login_disco(request):
     page = 'login_idp_disco'
     conf = _get_config(request, page)

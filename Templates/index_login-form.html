@@ -13,6 +13,7 @@
 					<div id="code-preview" class="code-preview">
 						<br><br>
 						<form class="form-horizontal" name="CodeForm" action="{% url 'login_custom' %}" method="post">
+							{% csrf_token %}
 							<div class="btn-toolbar" role="toolbar" aria-label="...">
 								<button type="submit" class="btn btn-primary btn-xs" name="Update">Update & Reload</button>
 								<button type="submit" class="btn btn-primary btn-xs" name="Default">Reset</button>
