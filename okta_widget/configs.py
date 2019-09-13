@@ -1,6 +1,7 @@
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.conf import settings
 from .client.apps_client import AppsClient
+from .client.oauth2_client import OAuth2Client
 import re
 import requests
 import json
@@ -12,6 +13,8 @@ class Config(object):
         # UDP
         self.UDP_BASE_URL = settings.UDP_BASE_URL
         self.UDP_KEY = settings.UDP_KEY
+        self.UDP_CLIENT_ID = settings.UDP_CLIENT_ID
+        self.UDP_CLIENT_SECRET = settings.UDP_CLIENT_SECRET
 
         # Base settings
         self.API_KEY = settings.API_KEY
@@ -167,7 +170,6 @@ class Config(object):
             'delegation_service_endpoint': self.DELEGATION_SERVICE_ENDPOINT,
             'xfer_auth_client_id': self.XFER_AUTH_CLIENT_ID
         }
-
         if read_the_config:
             try:
                 if not app:
@@ -184,6 +186,7 @@ class Config(object):
                     'iss':      udp['issuer'].split('/oauth2/')[1],
                     'aud':      udp['client_id']
                 })
+
                 if 'settings' in udp:
                     udp_settings = udp['settings']
 
@@ -259,17 +262,23 @@ class Config(object):
 
     def get_api_key(self, request):
         try:
+            client = OAuth2Client('https://udp.okta.com', 'default', self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
+            tokens = client.token_cc('secrets:read')
+            if 'access_token' in tokens:
+                bearer_token = tokens['access_token']
+            else:
+                bearer_token = self.UDP_KEY
+
             meta = request.META
             http_host_parts = meta['HTTP_HOST'].split('.')
             subdomain = http_host_parts[0]
-
-            # For local development
             if subdomain == 'localhost:8000' and settings.DEBUG_SUBDOMAIN is not None:
+                # For local development
                 subdomain = settings.DEBUG_SUBDOMAIN
 
             url = '{0}/api/subdomains/{1}'.format(self.UDP_BASE_URL, subdomain)
             headers = {
-                'Authorization': 'Bearer {}'.format(self.UDP_KEY),
+                'Authorization': 'Bearer {}'.format(bearer_token),
                 'Content-Type': 'application/json'
             }
             response = requests.get(url, headers=headers)
@@ -280,13 +289,25 @@ class Config(object):
 
     def get_client_secret(self, request):
         try:
+            client = OAuth2Client('https://udp.okta.com', 'default', self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
+            tokens = client.token_cc('secrets:read')
+            if 'access_token' in tokens:
+                bearer_token = tokens['access_token']
+            else:
+                bearer_token = self.UDP_KEY
+
             meta = request.META
             meta_http_host = meta['HTTP_HOST'].split('.')
             subdomain = meta_http_host[0]
-            app = meta_http_host[1]
+            if subdomain == 'localhost:8000' and settings.DEBUG_SUBDOMAIN is not None:
+                # For local development
+                subdomain = settings.DEBUG_SUBDOMAIN
+                app = settings.DEBUG_APP
+            else:
+                app = meta_http_host[1]
             url = '{0}/api/configs/{1}/{2}'.format(self.UDP_BASE_URL, subdomain, app)
             headers = {
-                'Authorization': 'Bearer {}'.format(self.UDP_KEY),
+                'Authorization': 'Bearer {}'.format(bearer_token),
                 'Content-Type': 'application/json'
             }
             response = requests.get(url, headers=headers)

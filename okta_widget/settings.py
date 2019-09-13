@@ -34,6 +34,9 @@ if os.environ.get('ALLOWED_HOSTS') is not None:
 
 UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
 UDP_KEY = os.environ.get('UDP_KEY')
+UDP_CLIENT_ID = os.environ.get('UDP_CLIENT_ID')
+UDP_CLIENT_SECRET = os.environ.get('UDP_CLIENT_SECRET')
+
 URL = os.environ.get('URL')
 DEFAULT_PORT = os.environ.get('DEFAULT_PORT')
 OKTA_ORG = os.environ.get('OKTA_ORG')

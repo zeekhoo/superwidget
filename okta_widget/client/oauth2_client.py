@@ -31,10 +31,22 @@ class OAuth2Client(object):
         # print('tokens = {}'.format(tokens))
         return tokens
 
+    def token_cc(self, scope):
+        try:
+            url = self.base_url + '/oauth2/{}/v1/token'.format(self.auth_server)
+            payload = {
+                'grant_type': 'client_credentials',
+                'scope': scope.split(',')
+            }
+            auth = {'Authorization': 'Basic ' + self.basic}
+            response = requests.post(url, data=payload, headers=auth)
+            tokens = response.json()
+        except Exception as e:
+            tokens = {'error': e}
+        return tokens
+
     def profile(self, token):
         url = '{0}/oauth2/{1}/v1/userinfo'.format(self.base_url, self.auth_server)
-        # print('userinfo url={}'.format(url))
-
         headers = {'Authorization': 'Bearer ' + token}
         profile = {}
         try:

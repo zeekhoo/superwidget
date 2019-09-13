@@ -5,8 +5,6 @@ $("#sw").keyup(function(event) {
 });
 
 var csrftoken = getCookie('csrftoken');
-console.log('csrftoken='+csrftoken);
-
 var authClient = new OktaAuth({url: 'https://' + base_url});
 var accessToken = '';
 if (srv_access_token != '') {

@@ -79,7 +79,7 @@ def _get_config(request, calledFrom=None):
         conf = config.get_config(request)
     end = datetime.now()
     diff = end - start
-    print('{0}################## time:({1})'.format(end, diff))
+    print('{0}################## {1} config time:({2})'.format(end, calledFrom, diff))
     return conf
 
 
@@ -561,9 +561,9 @@ def oauth2_post(request):
         client = OAuth2Client('https://' + conf['org'], conf['iss'], conf['aud'], config.get_client_secret(request))
         tokens = client.token(code, conf['redirect_uri'])
         # print('Tokens from the code retrieval {}'.format(tokens))
-        if tokens['access_token']:
+        if 'access_token' in tokens:
             access_token = tokens['access_token']
-        if tokens['id_token']:
+        if 'id_token' in tokens:
             id_token = tokens['id_token']
 
     if access_token:

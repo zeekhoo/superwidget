@@ -1,76 +1,76 @@
-from django.conf.urls import url
+from django.urls import path, re_path
 from .api import *
 from .views import *
 
 
 urlpatterns = [
     # home
-    url(r'^$', view_home, name='home'),
-    url(r'^login-noprompt', view_login_auto, name='login_noprompt'),
-    url(r'^auth-groupadmin', view_auth_groupadmin, name='auth_groupadmin'),
+    re_path(r'^$', view_home, name='home'),
+    path('login-noprompt/', view_login_auto, name='login_noprompt'),
+    path('auth-groupadmin/', view_auth_groupadmin, name='auth_groupadmin'),
 
     # login
-    url(r'^login$', view_login, name='login_default'),
-    url(r'^logout$', view_logout, name='logout'),
+    path('login/', view_login, name='login_default'),
+    path('logout/', view_logout, name='logout'),
 
-    url(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
-    url(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
+    re_path(r'^signin/reset-password/(?P<recoveryToken>.*)', view_login, name='reset_password'),
+    re_path(r'^signin/recovery-question/(?P<recoveryToken>.*)', view_login, name='admin_reset_password'),
 
     # profile page
-    url(r'^profile$', view_profile, name='profile'),
-    # url(r'^edit-profile/', edit_profile, name='edit-profile'), TODO: Implement
+    path('profile/', view_profile, name='profile'),
+    # re_path(r'^edit-profile/', edit_profile, name='edit-profile'), TODO: Implement
 
     # admin/crud
-    url(r'^admin/', view_admin, name='admin'),  # FIXME: Protect route
-    url(r'^list-users', list_users, name='list_users'),
-    url(r'^list-user', list_user, name='list_user'),
-    url(r'^add-users', add_users, name='add_users'),
-    url(r'^update-user', update_user, name='update_user'),
-    url(r'^add-group', add_group, name='add_group'),
-    url(r'^list-groups', list_groups, name='list_groups'),
-    url(r'^list-group', get_group, name='list_group'),  # TODO: unused api. please cleanup
-    url(r'^list-perms', list_perms, name='list_perms'),
-    url(r'^app-schema', app_schema, name='app_schema'),
-    url(r'^update-perm', update_perm, name='update_perm'),
+    path('admin/', view_admin, name='admin'),  # FIXME: Protect route
+    path('list-users/', list_users, name='list_users'),
+    path('list-user/', list_user, name='list_user'),
+    path('add-users', add_users, name='add_users'),
+    path('update-user', update_user, name='update_user'),
+    path('add-group', add_group, name='add_group'),
+    path('list-groups/', list_groups, name='list_groups'),
+    path('list-group/', get_group, name='list_group'),  # TODO: unused api. please cleanup
+    path('list-perms/', list_perms, name='list_perms'),
+    path('app-schema', app_schema, name='app_schema'),
+    path('update-perm', update_perm, name='update_perm'),
 
     # impersonation (Deprecated)
     # url(r'^set-name-id', setNameId, name='set_name_id'),
     # url(r'^login-delegate', login_delegate, name='login_delegate'),
 
     # impersonation
-    url(r'^delegate-init', delegate_init, name='delegate_init'),
+    path('delegate-init', delegate_init, name='delegate_init'),
 
     # alternate login pages
-    url(r'^login-css$', view_login_css, name='login_css'),
-    url(r'^for-okta-hosted$', okta_hosted_login, name='login_okta_hosted'),
-    url(r'^login-idp$', view_login_idp, name='login_idp'),
-    url(r'^login-disco', view_login_disco, name='login_idp_disco'),
-    url(r'^login-form$', view_login_custom, name='login_custom'),
-    url(r'^login-custom-demo$', view_login_custom_demo, name='login_custom_demo'),
+    path('login-css/', view_login_css, name='login_css'),
+    path('for-okta-hosted/', okta_hosted_login, name='login_okta_hosted'),
+    path('login-idp/', view_login_idp, name='login_idp'),
+    path('login-disco/', view_login_disco, name='login_idp_disco'),
+    path('login-form/', view_login_custom, name='login_custom'),
+    path('login-custom-demo/', view_login_custom_demo, name='login_custom_demo'),
 
     # auth code postback
-    url(r'^oauth2/callback', oauth2_post, name='oauth2_post'),
-    url(r'^oauth/callback', oauth2_callback, name='oauth2_callback'),
+    path('oauth2/callback', oauth2_post, name='oauth2_post'),
+    path('oauth/callback', oauth2_callback, name='oauth2_callback'),
 
     # callbacks
-    url(r'^process-creds', process_creds, name='process_creds'),
+    path('process-creds', process_creds, name='process_creds'),
 
     # registration examples
-    url(r'^register/', registration_view, name='register_user'),
-    url(r'^register2/', registration_view2, name='register_user2'),
-    url(r'^success/$', registration_success, name='registration_success'),
-    url(r'^success2/$', registration_success2, name='registration_success2'),
-    url(r'^activate/(?P<slug>.*)/$', activation_view, name='activate_user'),
-    url(r'^activate/$', activation_wo_token_view, name='activate_user2'),
+    path('register/', registration_view, name='register_user'),
+    path('register2/', registration_view2, name='register_user2'),
+    path('success/', registration_success, name='registration_success'),
+    path('success2/', registration_success2, name='registration_success2'),
+    re_path(r'^activate/(?P<slug>.*)/$', activation_view, name='activate_user'),
+    path('activate/', activation_wo_token_view, name='activate_user2'),
 
     # error pages
-    url(r'^not-authenticated/$', not_authenticated, name='not_authenticated'),
-    url(r'^not-authorized/$', not_authorized, name='not_authorized'),
+    path('not-authenticated/', not_authenticated, name='not_authenticated'),
+    path('not-authorized/', not_authorized, name='not_authorized'),
 
     # health check
-    url(r'^health/$', health_check, name='health_check'),
+    path('health/', health_check, name='health_check'),
 
     # Sensitive Access- Step-up MFA secured.
-    url(r'^sensitive_operations/', view_sensitive_operations, name='sensitive_operations'), # FIXME: Protect this route
-    url(r'^transfer', transfer_money, name='transfer_money'),
+    path('sensitive_operations/', view_sensitive_operations, name='sensitive_operations'), # FIXME: Protect this route
+    path('transfer', transfer_money, name='transfer_money'),
 ]
