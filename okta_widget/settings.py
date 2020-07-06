@@ -52,6 +52,7 @@ if os.environ.get('ALLOWED_HOSTS') is not None:
         AWS_LOCAL_IP = get_ec2_instance_ip()
         ALLOWED_HOSTS.append(AWS_LOCAL_IP)
 
+UDP_ORG = os.environ.get('UDP_ORG')
 UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
 UDP_KEY = os.environ.get('UDP_KEY')
 UDP_CLIENT_ID = os.environ.get('UDP_CLIENT_ID')
