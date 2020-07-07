@@ -12,6 +12,7 @@ class Config(object):
     def __init__(self):
         # UDP
         self.UDP_ORG = settings.UDP_ORG if settings.UDP_ORG is not None else 'https://udp.okta.com'
+        self.UDP_ORG_AS = settings.UDP_ORG_AS if settings.UDP_ORG_AS is not None else 'default'
         self.UDP_BASE_URL = settings.UDP_BASE_URL
         self.UDP_KEY = settings.UDP_KEY
         self.UDP_CLIENT_ID = settings.UDP_CLIENT_ID
@@ -263,7 +264,7 @@ class Config(object):
 
     def get_api_key(self, request):
         try:
-            client = OAuth2Client(self.UDP_ORG, 'default', self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
+            client = OAuth2Client(self.UDP_ORG, self.UDP_ORG_AS, self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
             tokens = client.token_cc('secrets:read')
             if 'access_token' in tokens:
                 bearer_token = tokens['access_token']
@@ -282,7 +283,6 @@ class Config(object):
                 'Authorization': 'Bearer {}'.format(bearer_token),
                 'Content-Type': 'application/json'
             }
-            print('retrieving subdomain with keys from {}'.format(url))
             response = requests.get(url, headers=headers)
             return response.json()['okta_api_token']
         except Exception as e:
@@ -291,7 +291,7 @@ class Config(object):
 
     def get_client_secret(self, request):
         try:
-            client = OAuth2Client(self.UDP_ORG, 'default', self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
+            client = OAuth2Client(self.UDP_ORG, self.UDP_ORG_AS, self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
             tokens = client.token_cc('secrets:read')
             if 'access_token' in tokens:
                 bearer_token = tokens['access_token']
