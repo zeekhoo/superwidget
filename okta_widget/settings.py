@@ -53,6 +53,7 @@ if os.environ.get('ALLOWED_HOSTS') is not None:
         ALLOWED_HOSTS.append(AWS_LOCAL_IP)
 
 UDP_ORG = os.environ.get('UDP_ORG')
+UDP_ORG_AS = os.environ.get('UDP_ORG_AS')
 UDP_BASE_URL = os.environ.get('UDP_BASE_URL')
 UDP_KEY = os.environ.get('UDP_KEY')
 UDP_CLIENT_ID = os.environ.get('UDP_CLIENT_ID')

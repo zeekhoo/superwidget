@@ -263,11 +263,9 @@ class Config(object):
 
     def get_api_key(self, request):
         try:
-            print('retrieving secrets:read access_token from {}'.format(self.UDP_ORG))
             client = OAuth2Client(self.UDP_ORG, 'default', self.UDP_CLIENT_ID, self.UDP_CLIENT_SECRET)
             tokens = client.token_cc('secrets:read')
             if 'access_token' in tokens:
-                print('successfully retrieved access_token')
                 bearer_token = tokens['access_token']
             else:
                 bearer_token = self.UDP_KEY
@@ -284,7 +282,7 @@ class Config(object):
                 'Authorization': 'Bearer {}'.format(bearer_token),
                 'Content-Type': 'application/json'
             }
-            print('retrieving subdomain info from {}'.format(url))
+            print('retrieving subdomain with keys from {}'.format(url))
             response = requests.get(url, headers=headers)
             return response.json()['okta_api_token']
         except Exception as e:
