@@ -1,16 +1,20 @@
-var xfer_config = {
-  url: 'https://[[org]]',
-  //grantType: 'authorization_code', Need to upgrade SDK for this.
-  issuer: '[[iss]]',
-  clientId: '[[xfer_auth_client_id]]'
-};
+var oktaSignIn = new OktaSignIn({
+    baseUrl: 'https://[[base_url]]',
+    clientId: '[[xfer_auth_client_id]]',
+    authParams: {
+        issuer: 'https://[[base_url]]/oauth2/[[iss]]',
+        pkce: false
+    }
+});
+var authXferClient = oktaSignIn.authClient;
+
 
 var oidc_config = {
   scopes: ['high_value_cash_xfer'],
   responseType: 'token',
   nonce:'device_id_fingerprint',
+  pkce: false
 }
-var authXferClient = new OktaAuth(xfer_config);
 
 var id_token_parts = srv_id_token.split('.');
 var profile = JSON.parse(window.atob(id_token_parts[1]));
@@ -28,17 +32,18 @@ function post_transfer(amount) {
     //Let's check locally to see if our normal token will work or not.
     if(!existingAccessToken.xfer_auth_amount || existingAccessToken.xfer_auth_amount < amount) {
       authXferClient.token.getWithPopup(oidc_config)
-      .then(function(tokenOrTokens) {
-        accessToken = tokenOrTokens.accessToken;
-        authXferClient.tokenManager.remove('cash_xfer_access_token')
-        authXferClient.tokenManager.add('cash_xfer_access_token', tokenOrTokens)
+      .then(function(res) {
+        accessToken = res.tokens.accessToken;
+        authXferClient.tokenManager.remove('cash_xfer_access_token');
+        authXferClient.tokenManager.add('cash_xfer_access_token', accessToken);
+        var jwt = accessToken.accessToken;
 
         $.ajax({
             url: '/transfer',
             method: 'POST',
             data: {"amount": amount},
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+                xhr.setRequestHeader("Authorization", "Bearer " + jwt);
             },
             success: function(res) {
               console.log(res.Message)
@@ -48,10 +53,10 @@ function post_transfer(amount) {
               alert(res.responseJSON.Message);
             }
         });
-        $('#access_token_subject').html("User: " + authXferClient.token.decode(accessToken).payload.sub);
-        $('#access_token_xfer_auth').html("Authorized Amount: " + authXferClient.token.decode(accessToken).payload.xfer_auth_amount);
-        if(authXferClient.token.decode(accessToken).payload.xfer_auth_message) {
-          $('#access_token_xfer_auth_message').html("Fraud System Adjustments: " + authXferClient.token.decode(accessToken).payload.xfer_auth_message);
+        $('#access_token_subject').html("User: " + authXferClient.token.decode(jwt).payload.sub);
+        $('#access_token_xfer_auth').html("Authorized Amount: " + authXferClient.token.decode(jwt).payload.xfer_auth_amount);
+        if(authXferClient.token.decode(jwt).payload.xfer_auth_message) {
+          $('#access_token_xfer_auth_message').html("Fraud System Adjustments: " + authXferClient.token.decode(jwt).payload.xfer_auth_message);
         }
       })
 

@@ -65,6 +65,7 @@ But first you need to provide the container with environment variables.
     BACKGROUND_IMAGE_CSS=/img/okta-brand/background/SFBayBridge.jpg
     BACKGROUND_IMAGE_AUTHJS=/img/okta-brand/background/focus.jpg
     BACKGROUND_IMAGE_IDP=/img/okta-brand/background/NewYork.jpg
+    BACKGROUND_IMAGE_IDP_DISCO=/static/img/okta-brand/background/NewYork.jpg
     ```
 
 3. In Okta, configure your App to support both **authorization_code**
@@ -151,6 +152,7 @@ You can also run this demo locally, without Docker:
     export BACKGROUND_IMAGE_CSS=/static/img/okta-brand/background/SFBayBridge.jpg
     export BACKGROUND_IMAGE_AUTHJS=/static/img/okta-brand/background/focus.jpg
     export BACKGROUND_IMAGE_IDP=/static/img/okta-brand/background/NewYork.jpg
+    export BACKGROUND_IMAGE_IDP_DISCO=/static/img/okta-brand/background/NewYork.jpg
     ````
 7. Source the .env file
     ```

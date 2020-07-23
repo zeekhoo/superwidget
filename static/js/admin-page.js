@@ -5,16 +5,32 @@ $("#sw").keyup(function(event) {
 });
 
 var csrftoken = getCookie('csrftoken');
-var authClient = new OktaAuth({url: 'https://' + base_url});
+
+
+//var authClient = new OktaAuth({url: 'https://' + base_url});
+var oktaSignIn = new OktaSignIn({
+    baseUrl: 'https://' + base_url,
+});
+var authClient = oktaSignIn.authClient;
+
+
 var accessToken = '';
 if (srv_access_token != '') {
     //get the accessToken from session if it exists
     accessToken = srv_access_token;
-}
-else if (authClient.tokenManager.get('accessToken')) {
+} else {
     //get the accessToken stored in local storage
-    accessToken = authClient.tokenManager.get('accessToken').accessToken;
+    authClient.tokenManager.get('accessToken')
+    .then(function(token){
+        accessToken = token.accessToken;
+    })
+    .catch(function(err){
+        console.log(err);
+    });
 }
+
+
+
 
 showToken();
 
@@ -99,10 +115,15 @@ var idToken = '';
 if (srv_id_token != '') {
     //get the idToken from session if it exists
     idToken = srv_id_token;
-}
-else if (authClient.tokenManager.get('idToken')) {
+} else {
     //get the idToken stored in local storage
-    idToken = authClient.tokenManager.get('idToken').idToken;
+    authClient.tokenManager.get('idToken')
+    .then(function(token){
+        idToken = token.idToken;
+    })
+    .catch(function(err){
+        console.log(err);
+    });
 }
 
 function listUsers(startsWith) {
@@ -463,7 +484,7 @@ function proxyLogin(target) {
             xhr.setRequestHeader('X-CSRFToken', csrftoken);
         },
         complete: function(res, xhr, settings) {
-            console.log(JSON.stringify(res));
+            console.log(res);
             if (res.responseJSON.status === 'SUCCESS') {
                 window.location = '/login-noprompt';
             }

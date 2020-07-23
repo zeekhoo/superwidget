@@ -15,26 +15,31 @@ var navbarApp = new Vue({
     }
 })
 
-var profileApp = new Vue({
-    delimiters: ['[[', ']]'],
-    el: '#vueapp-profile',
-    data: {
-        idToken: false,
-        idTokenRaw: false,
-        idTokenHeader: false,
-        idTokenBody: false,
-        accessToken: false,
-        accessTokenRaw: false,
-        accessTokenBody: false,
-        accessTokenHeader: false,
-        appLinks: false,
-        permissions: false,
-        adminBadge: false,
-        prfl: false,
-        showDelegateButton: false,
-        impersonationMode: false
-    }
-});
+var path = window.location.pathname;
+var loadProfileApp = path != "/";
+
+var profileApp = loadProfileApp ?
+    new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vueapp-profile',
+        data: {
+            idToken: false,
+            idTokenRaw: false,
+            idTokenHeader: false,
+            idTokenBody: false,
+            accessToken: false,
+            accessTokenRaw: false,
+            accessTokenBody: false,
+            accessTokenHeader: false,
+            appLinks: false,
+            permissions: false,
+            adminBadge: false,
+            prfl: false,
+            showDelegateButton: false,
+            impersonationMode: false
+        }
+    })
+    : undefined;
 
 function usersGroups(accessToken, idToken) {
     if ("user_context" in (accessToken)) {
@@ -84,14 +89,23 @@ var oktaSignIn = new OktaSignIn({
 });
 
 function getFreshTokens() {
-    oktaSignIn.session.get(function (res) {
-        if (res.status === 'ACTIVE') {
-            if (oktaSignIn.tokenManager.get('idToken')) {
-                id_token_str = oktaSignIn.tokenManager.get('idToken').idToken;
-            }
-            if (oktaSignIn.tokenManager.get('accessToken')) {
-                access_token_str = oktaSignIn.tokenManager.get('accessToken').accessToken;
-            }
+    oktaSignIn.authClient.session.exists()
+    .then(function(exists) {
+        if (exists) {
+            oktaSignIn.authClient.tokenManager.get('idToken')
+            .then(function(token){
+                if (token) id_token_str = token.idToken;
+            })
+            .catch(function(err){
+                console.log(err);
+            });
+            oktaSignIn.authClient.tokenManager.get('accessToken')
+            .then(function(token){
+                if (token) access_token_str = token.accessToken;
+            })
+            .catch(function(err){
+                console.log(err);
+            });
         }
     });
 }

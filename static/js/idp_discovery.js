@@ -9,9 +9,9 @@ var oktaSignIn = new OktaSignIn({
         idpDiscovery: true,
     },
 });
-
-oktaSignIn.session.get(function(res) {
-    if (res.status==='ACTIVE') {
+oktaSignIn.authClient.session.exists()
+.then(function(exists){
+    if (exists) {
         window.location.href = '/login-noprompt?from=login_idp_disco';
     } else {
         oktaSignIn.renderEl(
@@ -26,4 +26,7 @@ oktaSignIn.session.get(function(res) {
             }
         );
     }
+})
+.catch(function(err){
+    console.log(err);
 });

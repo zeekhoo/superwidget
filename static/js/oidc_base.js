@@ -4,8 +4,9 @@ var oktaSignIn = new OktaSignIn({ // Caution editing this section as you may bre
     redirectUri: '[[redirect]]',
     authParams: {
         issuer: 'https://[[base_url]]/oauth2/[[iss]]',
-        responseType: ['id_token', 'token'], //this app requires either 1) 'token+token' or 2) just 'code'
+        responseType: ['id_token','token'], //this app requires either 1) 'token+token' or 2) just 'code'
         scopes: [[scopes]],
+        pkce: false
     },
     // Enable or disable widget functionality with the following options. Some of these features require additional configuration in your Okta admin settings. Detailed information can be found here: https://github.com/okta/okta-signin-widget#okta-sign-in-widget
     features: {
@@ -27,7 +28,7 @@ var oktaSignIn = new OktaSignIn({ // Caution editing this section as you may bre
             'primaryauth.submit': 'Sign In',   // Changes the sign in button
             //'primaryauth.username.tooltip': 'Enter your APIDemo ID', // Changes the tooltip for username
             //'primaryauth.password.tooltip': 'Your APIDemo Password', // Changes the tooltip for password
-            // More e.g. [primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]. Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/dist/properties/login.properties
+            // More e.g. [primaryauth.username.placeholder,  primaryauth.password.placeholder, needhelp, etc.]. Full list here: https://github.com/okta/okta-signin-widget/blob/master/packages/@okta/i18n/src/properties/login.properties
         }
     }
 });
@@ -35,16 +36,12 @@ oktaSignIn.renderEl( //Caution editing this section as you may break the demo.
     {el: '#okta-login-container'},
     function (res) {
         var key = '';
-        if (res[0]) {
-            key = Object.keys(res[0])[0];
-            oktaSignIn.tokenManager.add(key, res[0]);
-        }
-        if (res[1]) {
-            key = Object.keys(res[1])[0];
-            oktaSignIn.tokenManager.add(key, res[1]);
-        }
-        if (res.status === 'SUCCESS') {
-            login(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
+        if (res.tokens) {
+            oktaSignIn.authClient.tokenManager.add('accessToken', res.tokens.accessToken);
+            oktaSignIn.authClient.tokenManager.add('idToken', res.tokens.idToken);
+            if (res.status === 'SUCCESS') {
+                login(res.tokens.idToken, res.tokens.accessToken);
+            }
         }
     }
 );

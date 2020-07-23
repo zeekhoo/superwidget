@@ -628,10 +628,6 @@ def view_sensitive_operations(request):
 # def view_login_brooklynbridge(request):
 #     return render(request, 'z-login-brooklynbridge.html');
 
-# def hellovue(request):
-#     return render(request, 'z-hellovue.html');
-
-
 # def proxy_callback(request):
 #     if 'profile' in request.session:
 #         del request.session['profile']
