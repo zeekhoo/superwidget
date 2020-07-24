@@ -16,25 +16,29 @@
 var oktaSignIn = new OktaSignIn({
     baseUrl: 'https://{{ base_url }}'
 });
-oktaSignIn.session.get(function (res) {
-    if (res.status === 'ACTIVE') {
+oktaSignIn.authClient.session.exists()
+.then(function(exists) {
+    if (exists) {
         //clear tokens from local storage
-        oktaSignIn.tokenManager.clear();
+        oktaSignIn.authClient.tokenManager.clear();
 
-        oktaSignIn.session.close(function (err) {
-            if (err) {
-                console.log(err);
-                return;
-            } else {
-                console.log('logged out successfully');
-                console.log('redirecting to page='+ '{{ page }}');
-                window.location.href = '{{ page }}';
-                return;
-            }
+        oktaSignIn.authClient.closeSession()
+        .then(()=>{
+            console.log('logged out successfully');
+            console.log('redirecting to page='+ '{{ page }}');
+            window.location.href = '{{ page }}';
+            return;
+        })
+        .catch((err)=>{
+            console.log(err);
+            return;
         });
     } else {
         window.location.href = '/';
     }
 })
+.catch(function(err) {
+    console.log(err);
+});
 </script>
 {% endblock %}

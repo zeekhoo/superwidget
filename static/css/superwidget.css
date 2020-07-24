@@ -1,0 +1,65 @@
+#okta-sign-in.auth-container.main-container {
+    background-color: transparent;
+    border-color: transparent;
+    width: 90%;
+}
+
+#okta-sign-in.auth-container .okta-sign-in-header {
+  /* -- Main Background and Border Colors -- */
+  /*border-bottom-color: #ddd;*/
+  border-bottom-color: transparent;
+
+}
+
+#okta-sign-in.auth-container .okta-dropdown-option.dropdown-list-title:hover {
+  /* -- Dropdown Colors -- */
+  background: transparent;
+}
+
+
+#okta-sign-in .o-form .input-fix {
+    border-radius: 9px;
+    height: 90%;
+    opacity: .5;
+    margin-top: 3px;
+    margin-bottom: -6px;
+    border-color: #ffffff;
+}
+
+#okta-sign-in.auth-container .okta-form-label {
+    display: block;
+    color: white;
+}
+
+#okta-sign-in.auth-container .o-form-explain {
+    color: white;
+}
+
+
+#okta-sign-in.auth-container .button-primary {
+    opacity: .75;
+    height: 90%;
+    border-radius: 9px;
+    border-color: #ffffff;
+}
+
+#okta-sign-in.auth-container .button {
+    border-radius: 9px;
+    height: 80%;
+}
+
+#okta-sign-in .o-form .custom-checkbox label {
+    color: white;
+}
+
+#okta-sign-in.auth-container .link, #okta-sign-in.auth-container .link:active, #okta-sign-in.auth-container .link:hover, #okta-sign-in.auth-container .link:link, #okta-sign-in.auth-container .link:visited {
+    color: white;
+}
+
+#okta-sign-in .forgot-password-call-enabled .mobile-recovery-hint, #okta-sign-in .forgot-password-call-enabled .sms-hint, #okta-sign-in .forgot-password-sms-enabled .mobile-recovery-hint, #okta-sign-in .forgot-password-sms-enabled .sms-hint {
+    color: white;
+}
+
+#okta-sign-in.auth-container h2, #okta-sign-in.auth-container h3 {
+    color: white;
+}

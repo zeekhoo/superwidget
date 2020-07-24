@@ -4,7 +4,6 @@ function getCookie(name) {
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
             var cookie = jQuery.trim(cookies[i]);
-            console.log('cookie' + i + ': ' + cookie);
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -21,11 +20,9 @@ function prettyPrint(ugly) {
 
 function login(id_token, access_token, org) {
   var formData = new FormData();
-  console.log('access_token='+access_token.accessToken);
   if (access_token !== 'undefined') {
       formData.append('access_token', access_token.accessToken);
   }
-  console.log('id_token='+id_token.idToken);
   if (id_token !== 'undefined') {
       formData.append('id_token', id_token.idToken);
   }

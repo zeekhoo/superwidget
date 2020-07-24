@@ -5,29 +5,23 @@ var oktaSignIn = new OktaSignIn({
     authParams: {
         issuer: 'https://[[base_url]]/oauth2/[[iss]]',
         display: 'popup',
-        responseType: ['id_token', 'token'],
+        responseType: ['code'],
         scopes: [[scopes]],
+        pkce: false
     },
-
     idps: [[idps]],
-
     customButtons: [[btns]],
 });
-
-oktaSignIn.renderEl(
+oktaSignIn.renderEl( //Caution editing this section as you may break the demo.
     {el: '#okta-login-container'},
     function (res) {
         var key = '';
-        if (res[0]) {
-            key = Object.keys(res[0])[0];
-            oktaSignIn.tokenManager.add(key, res[0]);
-        }
-        if (res[1]) {
-            key = Object.keys(res[1])[0];
-            oktaSignIn.tokenManager.add(key, res[1]);
-        }
-        if (res.status === 'SUCCESS') {
-            login(oktaSignIn.tokenManager.get('idToken'), oktaSignIn.tokenManager.get('accessToken'));
+        if (res.tokens) {
+            oktaSignIn.authClient.tokenManager.add('accessToken', res.tokens.accessToken);
+            oktaSignIn.authClient.tokenManager.add('idToken', res.tokens.idToken);
+            if (res.status === 'SUCCESS') {
+                login(res.tokens.idToken, res.tokens.accessToken);
+            }
         }
     }
 );

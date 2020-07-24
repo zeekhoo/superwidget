@@ -1,47 +1,41 @@
-var options = {
-    url: 'https://[[base_url]]',
+var oktaSignIn = new OktaSignIn({
+    baseUrl: 'https://[[base_url]]',
     clientId: '[[aud]]',
     redirectUri: '[[redirect]]',
-    issuer: 'https://[[base_url]]/oauth2/[[iss]]'
-}
-
-var authClient = new OktaAuth(options);
+    authParams: {
+        issuer: 'https://[[base_url]]/oauth2/[[iss]]',
+        pkce: false
+    }
+});
+var authClient = oktaSignIn.authClient;
 
 authClient.session.exists()
 .then(function(exists) {
     if (exists) {
         var scp = [[scopes]];
 
-        if (authClient.tokenManager.get('accessToken')) {
-            var access_token_str = authClient.tokenManager.get('accessToken').accessToken;
-            var access_token = JSON.parse(window.atob(access_token_str.split('.')[1]));
-            scp = access_token.scp;
-        }
-
-        authClient.token.getWithoutPrompt({
-            responseType: ['id_token', 'token'],
-            scopes: scp,
+        authClient.tokenManager.get('accessToken')
+        .then(function(token) {
+            if (token) {
+                scp = token.scopes;
+            }
+            console.log(scp);
+            authClient.token.getWithoutPrompt({
+                responseType: ['id_token', 'token'],
+                scopes: scp,
+            })
+            .then(function(res){
+                if (res.tokens) {
+                    authClient.tokenManager.add('accessToken', res.tokens.accessToken);
+                    authClient.tokenManager.add('idToken', res.tokens.idToken);
+                    login(res.tokens.idToken, res.tokens.accessToken);
+                }
+            });
         })
-        .then(function(tokens){
-            showApp(tokens);
-        })
-        .then(function(err){
+        .catch(function(err){
             console.log(err);
-        })
+        });
     } else {
         console.log('not logged in');
     }
 });
-
-function showApp(res) {
-    var key = '';
-    if (res[0]) {
-        key = Object.keys(res[0])[0];
-        authClient.tokenManager.add(key, res[0]);
-    }
-    if (res[1]) {
-        key = Object.keys(res[1])[0];
-        authClient.tokenManager.add(key, res[1]);
-    }
-    login(authClient.tokenManager.get('idToken'), authClient.tokenManager.get('accessToken'));
-}
