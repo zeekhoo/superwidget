@@ -5,9 +5,9 @@ variable "demo_app_name" {}
 variable "udp_subdomain" {}
 
 provider "okta" {
-  org_name  = "${var.org_name}"
-  api_token = "${var.api_token}"
-  base_url  = "${var.base_url}"
+  org_name  = var.org_name
+  api_token = var.api_token
+  base_url  = var.base_url
   version   = "~> 3.0"
 }
 provider "local" {
@@ -42,7 +42,7 @@ resource "okta_auth_server_claim" "resourceGroupsClaimR" {
   value_type        = "GROUPS"
   group_filter_type = "REGEX"
   value             = ".*"
-  auth_server_id    = "${okta_auth_server.superUnidemo.id}"
+  auth_server_id    = okta_auth_server.superUnidemo.id
 }
 resource "okta_auth_server_claim" "identityGroupsClaim" {
   name              = "groups"
@@ -51,7 +51,7 @@ resource "okta_auth_server_claim" "identityGroupsClaim" {
   value_type        = "GROUPS"
   group_filter_type = "REGEX"
   value             = ".*"
-  auth_server_id    = "${okta_auth_server.superUnidemo.id}"
+  auth_server_id    = okta_auth_server.superUnidemo.id
 }
 resource "okta_auth_server_policy" "superUnidemoDefaultPolicy" {
   status           = "ACTIVE"
@@ -59,11 +59,11 @@ resource "okta_auth_server_policy" "superUnidemoDefaultPolicy" {
   description      = "Default"
   priority         = 1
   client_whitelist = ["ALL_CLIENTS"]
-  auth_server_id   = "${okta_auth_server.superUnidemo.id}"
+  auth_server_id   = okta_auth_server.superUnidemo.id
 }
 resource "okta_auth_server_policy_rule" "superUnidemoDefaultPolicyRule" {
-  auth_server_id       = "${okta_auth_server.superUnidemo.id}"
-  policy_id            = "${okta_auth_server_policy.superUnidemoDefaultPolicy.id}"
+  auth_server_id       = okta_auth_server.superUnidemo.id
+  policy_id            = okta_auth_server_policy.superUnidemoDefaultPolicy.id
   status               = "ACTIVE"
   name                 = "Default"
   priority             = 1
