@@ -8,6 +8,9 @@ var oktaSignIn = new OktaSignIn({
     features: {
         idpDiscovery: true,
     },
+    authParams: {
+        pkce: false
+    }
 });
 oktaSignIn.authClient.session.exists()
 .then(function(exists){
