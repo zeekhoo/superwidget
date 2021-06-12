@@ -13,3 +13,4 @@ redis==3.3.2
 requests==2.25.1
 sqlparse==0.3.0
 urllib3==1.26.5
+whitenoise==5.2.0

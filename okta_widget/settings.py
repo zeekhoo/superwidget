@@ -36,21 +36,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', False)
 DEBUG_SUBDOMAIN = os.environ.get('DEBUG_SUBDOMAIN')
 DEBUG_APP = os.environ.get('DEBUG_APP')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'not_a_secret_for_dev#!@12345'
-if os.environ.get('SECRET_KEY') is not None:
-    SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = os.getenv('SECRET_KEY', 'not_a_secret_for_dev#!@12345')
 
-ALLOWED_HOSTS = ['172.17.0.2','localhost', '127.0.0.1', '[::1]']
+ALLOWED_HOSTS = ['172.17.0.2', 'localhost', '127.0.0.1', '[::1]']
 if os.environ.get('ALLOWED_HOSTS') is not None:
     ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
     if 'localhost' not in ALLOWED_HOSTS:
         AWS_LOCAL_IP = get_ec2_instance_ip()
         ALLOWED_HOSTS.append(AWS_LOCAL_IP)
+
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT', 6379)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db' if REDIS_HOST is None else 'redis_sessions.session'
 
 UDP_ORG = os.environ.get('UDP_ORG')
 UDP_ORG_AS = os.environ.get('UDP_ORG_AS')
@@ -91,14 +93,6 @@ API_PERMISSIONS_CLAIM = os.environ.get('API_PERMISSIONS_CLAIM')
 API_XFER_AUTH_CLAIM = os.environ.get('API_XFER_AUTH_CLAIM')
 XFER_AUTH_CLIENT_ID = os.environ.get('XFER_AUTH_CLIENT_ID')
 DELEGATION_SERVICE_ENDPOINT = os.environ.get('DELEGATION_SERVICE_ENDPOINT')
-REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT')
-if REDIS_HOST is None:
-    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-else:
-    SESSION_ENGINE = 'redis_sessions.session'
-if REDIS_PORT is None:
-    REDIS_PORT = 6379
 
 # IMPERSONATION_VERSION = os.environ.get('IMPERSONATION_VERSION')
 # IMPERSONATION_ORG = os.environ.get('IMPERSONATION_ORG')
@@ -128,6 +122,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -217,10 +212,9 @@ USE_TZ = True
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-
-STATIC_URL = '/static/'
-STATIC_ROOT = "/var/www/unidemo/static/"
+STATIC_URL = '/web/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "web/static")
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 CORS_URLS_REGEX = r'^/oauth/.*$'
-
 CORS_ORIGIN_ALLOW_ALL = False
