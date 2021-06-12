@@ -8,8 +8,8 @@ RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 EXPOSE 8000
 
-# CMD [ "python", "./manage.py", "runserver", "0.0.0.0:8000"]
+CMD [ "python", "./manage.py", "runserver", "0.0.0.0:8000"]
 
 # Use below when deploying
-ENTRYPOINT ["gunicorn", "--bind", ":8000", "--workers", "8"]
-CMD ["okta_widget.wsgi:application"]
+# ENTRYPOINT ["gunicorn", "--bind", ":8000", "--workers", "8"]
+# CMD ["okta_widget.wsgi:application"]
