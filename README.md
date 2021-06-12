@@ -161,8 +161,12 @@ You can also run this demo locally, without Docker:
 8. Make migrations
     ```
     python manage.py migrate
-    ```
-9. Start the server
+    ``` 
+9. Collect static files
+   ```
+   python manage.py collectstatic
+   ```
+10. Start the server
     ```
     python manage.py runserver
     ```
