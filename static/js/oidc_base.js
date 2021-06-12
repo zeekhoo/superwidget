@@ -6,7 +6,7 @@ var oktaSignIn = new OktaSignIn({ // Caution editing this section as you may bre
         issuer: 'https://[[base_url]]/oauth2/[[iss]]',
         responseType: ['id_token','token'], //this app requires either 1) 'token+token' or 2) just 'code'
         scopes: [[scopes]],
-        pkce: false
+        pkce: false // for implicit flows (responseType: id_token or token) set pkce=false
     },
     // Enable or disable widget functionality with the following options. Some of these features require additional configuration in your Okta admin settings. Detailed information can be found here: https://github.com/okta/okta-signin-widget#okta-sign-in-widget
     features: {
