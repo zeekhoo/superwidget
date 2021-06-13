@@ -47,7 +47,7 @@ class Config(object):
         self.BASE_TITLE = settings.BASE_TITLE if settings.BASE_TITLE is not None and settings.BASE_TITLE else 'API Products Demo'
         self.BASE_ICON = settings.BASE_ICON if settings.BASE_ICON is not None and settings.BASE_ICON else static(
             '/img/okta-brand/logo/okta32x32.png')
-        self.DEFAULT_BACKGROUND = static('/img/okta-brand/background/SFbayBridge.jpg')
+        self.DEFAULT_BACKGROUND = static('/img/okta-brand/background/SFBayBridge.jpg')
         if settings.BACKGROUND_IMAGE_DEFAULT and re.match('^/static/', settings.BACKGROUND_IMAGE_DEFAULT):
             self.BACKGROUND_IMAGE = static(re.search('(?<=/static)(.*)', settings.BACKGROUND_IMAGE_DEFAULT).group(0))
         else:
@@ -256,6 +256,13 @@ class Config(object):
             except Exception as e:
                 print('Exception in get_config: {}'.format(e))
 
+        # prevent background images from rendering blank
+        config['background'] = _test_url(config['background_idp'], static('/img/okta-brand/background/SFBayBridge.jpg'))
+        config['background_css'] = _test_url(config['background_css'], static('/img/okta-brand/background/SFBayBridge.jpg'))
+        config['background_authjs'] = _test_url(config['background_authjs'], static('/img/okta-brand/background/focus.jpg'))
+        config['background_idp'] = _test_url(config['background_idp'], static('/img/okta-brand/background/NewYork.jpg'))
+        config['background_idp_disco'] = _test_url(config['background_idp_disco'], static('/img/okta-brand/background/NewYork.jpg'))
+
         print('{0}################## INIT CONFIG {1}###################'.format(datetime.now(), session_key))
         request.session['config'] = config
         request.session['subdomain'] = subdomain
@@ -324,3 +331,14 @@ def _resolve_redirect_uri(redirect_uri, host):
         .replace('[[', '{') \
         .replace(']]', '}') \
         .format(host=host)
+
+
+def _test_url(url, default):
+    try:
+        res = requests.get(url)
+        if res.status_code == 200:
+            return url
+        else:
+            return default
+    except Exception as e:
+        return default
