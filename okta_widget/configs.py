@@ -257,7 +257,7 @@ class Config(object):
                 print('Exception in get_config: {}'.format(e))
 
         # prevent background images from rendering blank
-        config['background'] = _test_url(config['background_idp'], static('/img/okta-brand/background/SFBayBridge.jpg'))
+        config['background'] = _test_url(config['background'], static('/img/okta-brand/background/SFBayBridge.jpg'))
         config['background_css'] = _test_url(config['background_css'], static('/img/okta-brand/background/SFBayBridge.jpg'))
         config['background_authjs'] = _test_url(config['background_authjs'], static('/img/okta-brand/background/focus.jpg'))
         config['background_idp'] = _test_url(config['background_idp'], static('/img/okta-brand/background/NewYork.jpg'))
