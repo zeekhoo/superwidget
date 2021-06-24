@@ -1,4 +1,4 @@
-# Okta-API-Demo
+# Okta Super Widget Demo
 
 This sample project provides an easy to deploy demo app which
 demonstrates out-of-the-box features of Okta API Products.
